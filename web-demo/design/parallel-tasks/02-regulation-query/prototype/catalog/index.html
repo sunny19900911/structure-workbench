@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>“三院结构规范”地方规范目录</title>
+  <style>
+    :root { color-scheme: light; font-family: "Microsoft YaHei", system-ui, sans-serif; color: #17212b; background: #f5f7f8; }
+    body { margin: 0; }
+    main { max-width: 1180px; margin: 0 auto; padding: 32px 24px 48px; }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    .note { margin: 0 0 22px; color: #59636e; line-height: 1.7; }
+    .tools { display: grid; grid-template-columns: 220px minmax(240px, 1fr); gap: 12px; margin-bottom: 16px; }
+    select, input { box-sizing: border-box; width: 100%; padding: 10px 12px; border: 1px solid #cbd2d8; border-radius: 6px; background: white; font: inherit; }
+    .table-wrap { overflow: auto; background: white; border: 1px solid #dce1e5; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; min-width: 850px; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid #e8ecef; text-align: left; vertical-align: top; }
+    th { position: sticky; top: 0; background: #eef2f4; font-size: 13px; color: #4a5560; }
+    td { font-size: 14px; line-height: 1.55; }
+    .empty { padding: 36px; text-align: center; color: #6b747d; }
+    @media (max-width: 640px) { main { padding: 22px 14px; } .tools { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>“三院结构规范”地方规范目录</h1>
+    <p class="note" id="notice">正在读取目录……</p>
+    <div class="tools">
+      <select id="province" aria-label="省市筛选"><option value="">全部省市</option></select>
+      <input id="keyword" type="search" placeholder="搜索名称、编号或主题" aria-label="关键词搜索">
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>省市</th><th>规范名称</th><th>标准编号</th><th>目录说明</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </main>
+  <script>
+    const state = { records: [] };
+    const province = document.querySelector('#province');
+    const keyword = document.querySelector('#keyword');
+    const rows = document.querySelector('#rows');
+    const notice = document.querySelector('#notice');
+
+    const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    function render() {
+      const q = keyword.value.trim().toLowerCase();
+      const selected = province.value;
+      const filtered = state.records.filter(item => (!selected || item.province === selected) && (!q || [item.title, item.code, item.category, item.province].join(' ').toLowerCase().includes(q)));
+      rows.innerHTML = filtered.length ? filtered.map(item => `<tr><td>${escapeHtml(item.province)}</td><td>${escapeHtml(item.title)}</td><td>${escapeHtml(item.code || '—')}</td><td>${escapeHtml([item.file_variant, item.library_status_hint].filter(Boolean).join('；') || '待权威源核查')}</td></tr>`).join('') : '<tr><td class="empty" colspan="4">暂无匹配记录</td></tr>';
+    }
+
+    fetch('./catalog.json', { cache: 'no-store' }).then(response => response.json()).then(data => {
+      state.records = Array.isArray(data.records) ? data.records : [];
+      notice.textContent = data.notice || '';
+      [...new Set(state.records.map(item => item.province).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'zh-CN')).forEach(name => province.insertAdjacentHTML('beforeend', `<option>${escapeHtml(name)}</option>`));
+      render();
+    }).catch(error => { notice.textContent = `目录读取失败：${error.message}`; render(); });
+    province.addEventListener('change', render);
+    keyword.addEventListener('input', render);
+  </script>
+</body>
+</html>

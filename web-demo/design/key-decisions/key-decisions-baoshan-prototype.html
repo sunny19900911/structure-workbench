@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>重难点判断｜结构设计 AI 工作台</title>
+  <style>
+    :root {
+      --chrome: #647b8c;
+      --chrome-deep: #586f80;
+      --primary: #7394ab;
+      --primary-strong: #5d829c;
+      --primary-soft: #eaf1f5;
+      --jade: #6f9d86;
+      --jade-soft: #edf6f1;
+      --ink: #263747;
+      --muted: #73808c;
+      --line: #dce4e9;
+      --line-strong: #cbd6dd;
+      --bg: #f1f4f5;
+      --surface: #fff;
+      --soft: #f7f9fa;
+      --shadow: 0 14px 34px rgba(54, 73, 87, .08);
+      color-scheme: light;
+      font-family: "Microsoft YaHei UI", "PingFang SC", "Source Han Sans SC", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: var(--bg); }
+    body { margin: 0; color: var(--ink); background: var(--bg); font-size: 14px; }
+    button { font: inherit; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      min-height: 62px;
+      padding: 0 22px;
+      color: #fff;
+      background: linear-gradient(105deg, var(--chrome-deep), var(--chrome));
+      box-shadow: 0 8px 24px rgba(53, 72, 87, .14);
+    }
+    .brand { position: relative; margin-right: auto; padding-left: 31px; font-size: 17px; font-weight: 700; letter-spacing: .03em; white-space: nowrap; }
+    .brand::before { content: ""; position: absolute; left: 2px; top: 50%; width: 15px; height: 15px; border: 1.5px solid rgba(255,255,255,.92); border-radius: 3px; transform: translateY(-50%) rotate(45deg); box-shadow: 6px -6px 0 -4px rgba(255,255,255,.44); }
+    .context { display: flex; align-items: center; gap: 9px; }
+    .context span { color: rgba(255,255,255,.66); font-size: 12px; }
+    .context b { padding: 7px 11px; border: 1px solid rgba(255,255,255,.22); border-radius: 8px; background: rgba(255,255,255,.1); font-size: 12px; font-weight: 500; }
+
+    .tabs { display: flex; gap: 4px; padding: 9px 18px 8px; overflow-x: auto; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.98); }
+    .tabs button { flex: none; padding: 7px 14px; border: 1px solid transparent; border-radius: 8px; color: #64727e; background: transparent; font-size: 12.5px; }
+    .tabs .on { border-color: #cbdbe5; color: #fff; background: var(--primary); box-shadow: 0 4px 12px rgba(80,112,135,.15); font-weight: 700; }
+
+    .workspace { display: grid; grid-template-columns: 238px minmax(0,1fr); min-height: calc(100vh - 113px); }
+    .side { padding: 22px 14px; border-right: 1px solid var(--line); background: rgba(250,252,252,.96); }
+    .side h2 { margin: 0 8px 14px; color: #89949c; font-size: 11.5px; letter-spacing: .09em; }
+    .side a { display: block; margin: 3px 0; padding: 9px 11px; border-radius: 7px; color: #596873; font-size: 13px; text-decoration: none; }
+    .side a.active { color: var(--primary-strong); background: var(--primary-soft); font-weight: 700; }
+
+    .main { min-width: 0; padding: 32px 38px 72px; background: radial-gradient(circle at 86% 6%, rgba(115,148,171,.08), transparent 25rem), var(--bg); }
+    .page { width: min(1080px,100%); margin: 0 auto; }
+    .heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 20px; }
+    h1 { margin: 0; font-size: 25px; line-height: 1.3; letter-spacing: .01em; }
+    .heading p { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+    .project { color: #536675; font-size: 12.5px; white-space: nowrap; }
+
+    .module-switch { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
+    .module-button { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 58px; padding: 0 16px; border: 1px solid var(--line-strong); border-radius: 10px; color: #556875; background: #fff; cursor: pointer; text-align: left; }
+    .module-button strong { font-size: 14px; }
+    .module-button span { color: #8b969e; font-size: 11px; white-space: nowrap; }
+    .module-button.active { border-color: var(--primary); color: #fff; background: var(--primary); box-shadow: 0 8px 18px rgba(93,130,156,.16); }
+    .module-button.active span { color: rgba(255,255,255,.72); }
+
+    .panel { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+    .parameter-strip { display: grid; grid-template-columns: 1fr 1.25fr .72fr; border-bottom: 1px solid var(--line); background: var(--soft); }
+    .parameter { min-width: 0; padding: 14px 16px; border-right: 1px solid var(--line); }
+    .parameter:last-child { border-right: 0; }
+    .parameter span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 11px; }
+    .parameter strong { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 25px 12px; }
+    .panel-title h2 { margin: 0; font-size: 18px; }
+    .panel-title p { margin: 5px 0 0; color: var(--muted); font-size: 11.5px; }
+    .sub-switch { display: flex; gap: 6px; }
+    .sub-button { padding: 7px 11px; border: 1px solid var(--line-strong); border-radius: 7px; color: #5e6f7b; background: #fff; font-size: 12px; cursor: pointer; white-space: nowrap; }
+    .sub-button.active { border-color: var(--primary); color: #fff; background: var(--primary); font-weight: 700; }
+
+    .result-wrap { padding: 0 25px; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+    th { padding: 10px 13px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line-strong); background: var(--primary-soft); color: #506676; font-size: 12px; font-weight: 700; text-align: left; }
+    th:first-child { border-left: 1px solid var(--line); border-top-left-radius: 8px; }
+    th:last-child { border-right: 1px solid var(--line); border-top-right-radius: 8px; }
+    td { padding: 14px 13px; border-bottom: 1px solid var(--line); background: #fff; color: #435462; font-size: 12.5px; line-height: 1.6; vertical-align: middle; }
+    td:first-child { border-left: 1px solid var(--line); color: var(--ink); font-weight: 700; }
+    td:last-child { border-right: 1px solid var(--line); }
+    tbody tr:last-child td:first-child { border-bottom-left-radius: 8px; }
+    tbody tr:last-child td:last-child { border-bottom-right-radius: 8px; }
+    .rule { color: #526572; font-weight: 700; }
+    .value { color: var(--primary-strong); font-size: 16px; font-weight: 800; }
+    .basis { color: #687984; font-size: 11.5px; }
+
+    .logic { display: grid; grid-template-columns: repeat(4,1fr); margin-top: 16px; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: var(--soft); }
+    .logic[hidden] { display: none; }
+    .logic-item { position: relative; min-width: 0; padding: 12px 14px; border-right: 1px solid var(--line); }
+    .logic-item:last-child { border-right: 0; }
+    .logic-item span { display: block; margin-bottom: 5px; color: #82909a; font-size: 10.5px; }
+    .logic-item strong { display: block; color: #425b6b; font-size: 12.5px; line-height: 1.5; }
+
+    .conclusion { display: flex; align-items: center; justify-content: space-between; gap: 22px; margin-top: 18px; padding: 17px 19px; border: 1px solid #cee1d6; border-radius: 9px; background: var(--jade-soft); }
+    .conclusion span { color: #64806f; font-size: 12px; }
+    .conclusion strong { display: block; margin-top: 4px; color: #315c47; font-size: 19px; }
+    .conclusion-note { max-width: 480px; color: #708078; font-size: 12px; line-height: 1.55; text-align: right; }
+    .actions { display: flex; justify-content: flex-end; gap: 10px; padding: 20px 25px 24px; }
+    .btn { min-height: 38px; padding: 0 17px; border: 1px solid var(--line-strong); border-radius: 8px; color: #526572; background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn.primary { border-color: var(--primary); color: #fff; background: var(--primary); }
+    .btn.confirmed { border-color: var(--jade); background: var(--jade); cursor: default; }
+    .demo-note { margin: 13px 2px 0; color: #909aa1; font-size: 11px; }
+    .toast { position: fixed; left: 50%; bottom: 30px; z-index: 20; padding: 10px 16px; border-radius: 8px; color: #fff; background: #304553; box-shadow: 0 10px 26px rgba(38,55,71,.22); font-size: 13px; opacity: 0; pointer-events: none; transform: translate(-50%,12px); transition: opacity .2s ease, transform .2s ease; }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns: 1fr; }
+      .side { display: none; }
+      .main { padding: 26px 20px 56px; }
+      .module-button { align-items: flex-start; flex-direction: column; justify-content: center; gap: 3px; }
+    }
+
+    @media (max-width: 680px) {
+      .topbar { min-height: 56px; padding: 0 16px; }
+      .brand { font-size: 14px; }
+      .context { display: none; }
+      .tabs { padding-inline: 10px; }
+      .main { padding: 21px 13px 48px; }
+      .heading { align-items: start; flex-direction: column; gap: 8px; }
+      h1 { font-size: 21px; }
+      .project { white-space: normal; }
+      .module-switch { grid-template-columns: 1fr; gap: 7px; }
+      .module-button { align-items: center; flex-direction: row; justify-content: space-between; min-height: 48px; }
+      .parameter-strip { grid-template-columns: 1fr; }
+      .parameter { border-right: 0; border-bottom: 1px solid var(--line); }
+      .parameter:last-child { border-bottom: 0; }
+      .parameter strong { overflow: visible; text-overflow: clip; white-space: normal; }
+      .panel-head { align-items: start; flex-direction: column; padding: 17px 14px 12px; }
+      .sub-switch { width: 100%; overflow-x: auto; }
+      .sub-button { flex: 1; }
+      .result-wrap { padding: 0 14px; }
+      table { display: block; width: 100%; table-layout: auto; }
+      colgroup, thead { display: none; }
+      tbody { display: grid; width: 100%; gap: 12px; }
+      tbody tr { display: grid; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; }
+      td, td:first-child, td:last-child { display: grid; grid-template-columns: 88px 1fr; gap: 8px; padding: 11px 12px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
+      td:last-child { border-bottom: 0; }
+      td::before { content: attr(data-label); color: var(--muted); font-size: 10.5px; font-weight: 500; }
+      .logic { grid-template-columns: 1fr 1fr; }
+      .logic-item { border-bottom: 1px solid var(--line); }
+      .logic-item:nth-child(2n) { border-right: 0; }
+      .logic-item:nth-last-child(-n+2) { border-bottom: 0; }
+      .conclusion { align-items: start; flex-direction: column; }
+      .conclusion-note { text-align: left; }
+      .actions { padding: 18px 14px 20px; }
+      .btn { flex: 1; }
+      .demo-note { margin-inline: 14px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">结构与技术措施 · 一体化工作台</div>
+    <div class="context"><span>角色</span><b>设计人员</b><span>阶段</span><b>扩初阶段</b></div>
+  </header>
+
+  <nav class="tabs" aria-label="一级模块">
+    <button type="button">首页</button>
+    <button type="button" class="on">① 统一技术措施</button>
+    <button type="button">② 扩初说明</button>
+    <button type="button">③ 整理地方规范</button>
+    <button type="button">④ 反校核</button>
+  </nav>
+
+  <div class="workspace">
+    <aside class="side">
+      <h2>统一技术措施</h2>
+      <a href="#">项目前处理</a>
+      <a href="#">参数总表</a>
+      <a href="#" class="active" aria-current="page">重难点判断</a>
+    </aside>
+
+    <main class="main">
+      <div class="page">
+        <div class="heading">
+          <div>
+            <h1>重难点判断</h1>
+            <p>先查国家规则，再核对云南及保山地方规定。</p>
+          </div>
+          <div class="project">云南省 · 保山市隆阳区 · 2026年</div>
+        </div>
+
+        <div class="module-switch" aria-label="重难点板块">
+          <button class="module-button" type="button" data-module="seismic"><strong>抗震判断</strong><span>烈度＋等级</span></button>
+          <button class="module-button" type="button" data-module="green"><strong>绿色与装配式</strong><span>绿建＋装配率</span></button>
+          <button class="module-button" type="button" data-module="performance"><strong>性能化目标</strong><span>性能＋减震＋隔震</span></button>
+        </div>
+
+        <section class="panel" aria-labelledby="panelTitle">
+          <div class="parameter-strip" aria-label="当前项目参数">
+            <div class="parameter"><span>项目所在地</span><strong>云南省 · 保山市 · 隆阳区（兰城街道）</strong></div>
+            <div class="parameter"><span>项目条件</span><strong>新建政府投资学校 · 重点设防类 · 框架—剪力墙 · 高度48m · 单体＞1000㎡</strong></div>
+            <div class="parameter"><span>设防参数</span><strong>8度 · 0.20g</strong></div>
+          </div>
+
+          <div class="panel-head">
+            <div class="panel-title">
+              <h2 id="panelTitle">抗震判断</h2>
+              <p id="panelSubtitle">抗震设防烈度与抗震等级合并判断。</p>
+            </div>
+            <div class="sub-switch" id="subSwitch" aria-label="板块内专题"></div>
+          </div>
+
+          <div class="result-wrap">
+            <table>
+              <colgroup><col style="width:15%"><col style="width:31%"><col style="width:20%"><col style="width:34%"></colgroup>
+              <thead><tr><th>判断层级</th><th>当年有效规则</th><th>判断结果</th><th>条文原文／落实要求</th></tr></thead>
+              <tbody id="resultRows"></tbody>
+            </table>
+
+            <div class="logic" id="logic"></div>
+
+            <div class="conclusion">
+              <div><span>本例建议</span><strong id="finalValue"></strong></div>
+              <div class="conclusion-note" id="finalNote"></div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn" id="backButton">返回修改参数</button>
+            <button type="button" class="btn primary" id="confirmButton">专业负责人确认</button>
+          </div>
+        </section>
+
+        <p class="demo-note">当前为集成交互原型；结果不自动写入正式项目参数，须经专业负责人确认。</p>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const modules = {
+      seismic: {
+        title: '抗震判断',
+        subtitle: '抗震设防烈度与抗震等级合并判断。',
+        defaultTopic: 'intensity',
+        topics: {
+          intensity: {
+            label: '设防烈度',
+            rows: [
+              ['国家标准', '《中国地震动参数区划图》GB 18306—2015（含2026年第1号修改单）<br>第6.1.1条及附录C表C.25', '8度（0.20g）', '第6.1.1条：基本地震动峰值加速度应按图A.1取值，其中，乡镇人民政府所在地、县级以上城市基本地震动峰值加速度应按表C.1～表C.32取值。<br>表C.25：云南省保山市隆阳区兰城街道，Ⅱ类场地基本地震动峰值加速度为0.20g，反应谱特征周期为0.45s。', 'SRC-GB18306-2015-XG1-2026-C25-LONGYANG'],
+              ['云南地方核对', '《云南省建筑工程抗震设防专项审查管理办法》云建规〔2020〕5号<br>第4条第（5）项', '有安评成果时专项复核', '经地震安全性评价、地震动参数复核和开展过地震小区划工作的高层建筑工程，应当进行抗震设防专项审查。', 'SRC-YN-YJG-2020-5-A4'],
+              ['保山具体落实', '《保山市住房和城乡建设局关于进一步规范建筑工程抗震设防专项审查工作的通知》保建发〔2017〕31号<br>第一条', '不另行提高行政区基准', '做过设计地震动参数复核的高层建筑工程，应按规定权限进行抗震设防专项审查和批准；学校等规定范围项目同时纳入专项审查。', 'SRC-BS-BJF-2017-31-A1']
+            ],
+            final: '8度（0.20g）',
+            note: '这是隆阳区兰城街道行政区基准值；2026年第1号修改单未调整云南表C.25。项目如有经审定的地震安全性评价成果，按审定成果执行。'
+          },
+          grade: {
+            label: '抗震等级',
+            rows: [
+              ['国家分类要求', '《建筑工程抗震设防分类标准》GB 50223—2008<br>第3.0.3条第2款', '抗震措施提高一度', '重点设防类，应按高于本地区抗震设防烈度一度的要求加强其抗震措施；确定地震作用时，仍按本地区抗震设防烈度的要求采用。', 'SRC-GB50223-2008-A3.0.3'],
+              ['国家标准查表', '《建筑抗震设计标准》GB/T 50011—2010（2016年版·2024年局部修订）<br>第6.1.2条及表6.1.2', '框架一级；剪力墙一级', '第6.1.2条：钢筋混凝土房屋应根据设防类别、烈度、结构类型和房屋高度采用不同的抗震等级。<br>本例为重点设防类，8度按提高一度后的9度查表6.1.2；框架—抗震墙结构、高度48m，对应框架一级、抗震墙一级。', 'SRC-GBT50011-2024-A6.1.2'],
+              ['云南地方核对', '《云南省建筑工程抗震设防专项审查管理办法》云建规〔2020〕5号<br>第8条第（一）、（二）项', '复核国家查表结果', '专项审查应复核抗震设防依据和抗震设防标准，以及抗震概念设计、性能目标、基本要求和主要结构布置；云南现行文件未另设抗震等级查表值。', 'SRC-YN-YJG-2020-5-A8']
+            ],
+            final: '框架一级，剪力墙一级',
+            note: '系统可按已输入的设防类别、烈度、结构体系和高度完成查表；专项审查及最终采用值须由专业负责人确认。'
+          }
+        }
+      },
+      green: {
+        title: '绿色与装配式',
+        subtitle: '绿色建筑等级与装配式要求分别判断。',
+        defaultTopic: 'greenBuilding',
+        topics: {
+          greenBuilding: {
+            label: '绿色建筑',
+            rows: [
+              ['国家评价标准', '《绿色建筑评价标准》GB/T 50378—2019（2024年版）<br>第3.2.8条', '一星级总得分≥60分', '一星级、二星级、三星级绿色建筑均应满足全部控制项要求，各类指标的评分项得分不应小于其评分项满分值的30%，并应进行全装修；一星级总得分不应低于60分。', 'SRC-GBT50378-2024-A3.2.8'],
+              ['云南地方规定', '《云南省绿色建筑管理办法》云建规〔2026〕3号<br>第6条第（二）项', '一星级及以上', '全省新建公共机构建筑、政府投资公益性建筑、大型公共建筑应达到绿色建筑一星级及以上标准。', 'SRC-YN-YJG-2026-3-A6'],
+              ['保山具体落实', '《保山市住房和城乡建设局关于加快推进绿色建筑工作的通知》保建发〔2020〕37号<br>第一条、第二条第（一）项', '全过程执行绿色建筑标准', '自2020年9月1日起，保山市行政区域内新建建筑全面执行绿色建筑标准；在设计、施工图审查、施工许可、监理、竣工验收及备案等环节严格执行。', 'SRC-BS-BJF-2020-37-A1-A2']
+            ],
+            final: '绿色建筑一星级及以上',
+            note: '本例属于政府投资公益性学校，云南2026年现行规定直接确定为一星级及以上。'
+          },
+          prefab: {
+            label: '装配式建筑',
+            rows: [
+              ['国家认定标准', '《装配式建筑评价标准》GB/T 51129—2017<br>第3.0.3条', '认定门槛：装配率≥50%', '主体结构部分评价分值不低于20分；围护墙和内隔墙部分评价分值不低于10分；采用全装修；装配率不低于50%。', 'SRC-GBT51129-2017-A3.0.3'],
+              ['云南采用要求', '《云南省住房和城乡建设厅关于进一步促进装配式建筑产业健康发展的通知》云建科〔2021〕42号<br>第一条', '原则上采用装配式建造', '新建政府投资公益性建筑和市政设施，原则上应采用装配式建造方式；新建公共建筑优先采用钢结构。', 'SRC-YN-YJK-2021-42-A1'],
+              ['云南装配率要求', '同通知<br>第二条', '保山单体装配率≥15%', '采用装配式技术体系的混凝土建筑，昆明规定区域单体装配率不低于20%；其他城市单体建筑装配率不低于15%。保山市按“其他城市”执行。', 'SRC-YN-YJK-2021-42-A2']
+            ],
+            final: '原则上采用装配式；单体装配率≥15%',
+            note: '≥15%是云南“采用装配式技术体系”的实施门槛；若项目要认定为装配式建筑，仍须同时满足国家标准装配率≥50%、主体结构≥20分等条件。'
+          }
+        }
+      },
+      performance: {
+        title: '性能化目标',
+        subtitle: '国标提出性能目标，云南明确学校项目必须采用隔震减震技术。',
+        defaultTopic: 'target',
+        logic: [
+          ['1 识别项目', '隆阳区8度；学校；单体＞1000㎡'],
+          ['2 国家目标', '设防地震时保持正常使用'],
+          ['3 云南落实', '必须采用隔震或消能减震'],
+          ['4 人工确认', '两种方案比选后由专业负责人确定']
+        ],
+        topics: {
+          target: {
+            label: '性能目标',
+            rows: [
+              ['国家设计方法', '《建筑抗震设计标准》GB/T 50011—2010（2016年版·2024年局部修订）<br>第3.10.2条', '选定明确性能目标', '建筑的性能目标，宜采用不同地震动水准下的建筑性能状态要求进行表征，包括结构和非结构的性能要求。', 'SRC-GBT50011-2024-A3.10.2'],
+              ['国家强制要求', '《建设工程抗震管理条例》国务院令第744号<br>第16条', '设防地震时正常使用', '位于高烈度设防地区的新建学校等建筑，应当按照国家有关规定采用隔震减震等技术，保证发生本区域设防地震时能够满足正常使用要求。', 'SRC-GWY-744-A16'],
+              ['云南地方落实', '《云南省隔震减震建筑工程促进规定》云南省人民政府令第202号<br>第3条第（一）项、第8条', '必须采用；必须专项审查', '7度以上区域内三层以上且单体建筑面积1000㎡以上的学校校舍应当采用隔震减震技术；建设单位应在委托合同中明确，并在初步设计完成后报抗震设防专项审查。', 'SRC-YN-GOV-202-A3-A8']
+            ],
+            final: '设防地震时正常使用；必须采用隔震或消能减震',
+            note: '系统可以判断“是否必须采用”，但不能自动替代方案选择；隔震或消能减震由专业负责人结合专项分析确认。'
+          },
+          damping: {
+            label: '消能减震',
+            rows: [
+              ['国家标准', '《建筑抗震设计标准》GB/T 50011—2010（2016年版·2024年局部修订）<br>第3.8.1条、第3.8.2条', '可作为实现路径', '隔震与消能减震设计可用于对抗震安全性和使用功能有较高要求或专门要求的建筑；采用隔震或消能减震设计的建筑，可按高于本规范基本设防目标进行设计。', 'SRC-GBT50011-2024-A3.8'],
+              ['云南地方规定', '《云南省隔震减震建筑工程促进规定》云南省人民政府令第202号<br>第3条、第9条', '属于法定可选方案', '本例应当采用隔震减震技术；设计单位应执行国家和云南省技术标准，并在设计文件中对装置性能参数、检验检测、施工安装和工程维护提出技术要求。', 'SRC-YN-GOV-202-A3-A9'],
+              ['保山具体落实', '《保山市住房和城乡建设局关于进一步规范建筑工程抗震设防专项审查工作的通知》保建发〔2017〕31号<br>第一条', '须专项分析与专项审查', '学校等规定范围项目应采用隔震减震技术并进行抗震设防专项审查；采用减震等新技术的高层建筑工程也应按权限审查批准。', 'SRC-BS-BJF-2017-31-A1-DAMPING']
+            ],
+            final: '消能减震可选，须专项分析与专项审查',
+            note: '是否选用消能减震不能仅按地点自动决定，需与隔震方案比较后由专业负责人确认。'
+          },
+          isolation: {
+            label: '隔震',
+            rows: [
+              ['国家标准', '《建筑隔震设计标准》GB/T 51408—2021<br>第1.0.3条', '设防地震基本不损坏', '设防地震时主体结构基本不受损坏或不需修理可继续使用；罕遇地震时主体结构可能发生损坏，经修复后可继续使用。', 'SRC-GBT51408-2021-A1.0.3'],
+              ['云南地方规定', '《云南省隔震减震建筑工程促进规定》云南省人民政府令第202号<br>第3条、第8条、第9条', '属于法定可选方案', '本例必须在隔震或消能减震中选择；隔震设计应写入委托合同，完成初步设计后报专项审查，并在设计文件中明确装置性能、检测、安装和维护要求。', 'SRC-YN-GOV-202-A3-A8-A9'],
+              ['云南专项审查', '《云南省建筑工程抗震设防专项审查管理办法》云建规〔2020〕5号<br>第4条第（三）、（四）项，第7条第（五）项', '报送隔震专项资料', '采用隔震、减震等新技术的建筑工程及单体建筑面积1000㎡以上重点设防类建筑工程应进行专项审查；电子报审资料应包含隔震减震设计专项资料。', 'SRC-YN-YJG-2020-5-A4-A7']
+            ],
+            final: '隔震可选，须专项分析与专项审查',
+            note: '隔震方案与“设防地震时正常使用”目标直接匹配，但仍须结合建筑、设备、造价和隔震层条件人工确定。'
+          }
+        }
+      }
+    };
+
+    const state = { module: 'seismic', topics: { seismic: 'intensity', green: 'greenBuilding', performance: 'target' } };
+    const panelTitle = document.getElementById('panelTitle');
+    const panelSubtitle = document.getElementById('panelSubtitle');
+    const subSwitch = document.getElementById('subSwitch');
+    const resultRows = document.getElementById('resultRows');
+    const logic = document.getElementById('logic');
+    const finalValue = document.getElementById('finalValue');
+    const finalNote = document.getElementById('finalNote');
+    const confirmButton = document.getElementById('confirmButton');
+    const toast = document.getElementById('toast');
+    let toastTimer;
+
+    function render() {
+      const moduleData = modules[state.module];
+      const topicKey = state.topics[state.module] || moduleData.defaultTopic;
+      const topic = moduleData.topics[topicKey];
+
+      panelTitle.textContent = moduleData.title;
+      panelSubtitle.textContent = moduleData.subtitle;
+      subSwitch.innerHTML = Object.entries(moduleData.topics).map(([key, item]) =>
+        `<button type="button" class="sub-button${key === topicKey ? ' active' : ''}" data-topic="${key}">${item.label}</button>`
+      ).join('');
+
+      resultRows.innerHTML = topic.rows.map(row => `
+        <tr data-source-id="${row[4] || ''}">
+          <td data-label="判断层级">${row[0]}</td>
+          <td data-label="当年有效规则"><span class="rule">${row[1]}</span></td>
+          <td data-label="判断结果"><span class="value">${row[2]}</span></td>
+          <td data-label="条文／要求" class="basis">${row[3]}</td>
+        </tr>`).join('');
+
+      if (moduleData.logic) {
+        logic.hidden = false;
+        logic.innerHTML = moduleData.logic.map(item => `<div class="logic-item"><span>${item[0]}</span><strong>${item[1]}</strong></div>`).join('');
+      } else {
+        logic.hidden = true;
+        logic.innerHTML = '';
+      }
+
+      finalValue.textContent = topic.final;
+      finalNote.textContent = topic.note;
+      document.querySelectorAll('.module-button').forEach(button => {
+        const active = button.dataset.module === state.module;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      confirmButton.disabled = false;
+      confirmButton.classList.remove('confirmed');
+      confirmButton.textContent = '专业负责人确认';
+
+      subSwitch.querySelectorAll('.sub-button').forEach(button => button.addEventListener('click', () => {
+        state.topics[state.module] = button.dataset.topic;
+        render();
+      }));
+    }
+
+    function notify(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    document.querySelectorAll('.module-button').forEach(button => button.addEventListener('click', () => {
+      state.module = button.dataset.module;
+      render();
+    }));
+    document.getElementById('backButton').addEventListener('click', () => notify('正式接入时返回①统一技术措施的参数编辑位置'));
+    confirmButton.addEventListener('click', () => {
+      confirmButton.textContent = '已确认采用';
+      confirmButton.classList.add('confirmed');
+      confirmButton.disabled = true;
+      notify(`已确认：${finalValue.textContent}`);
+    });
+
+    render();
+  </script>
+</body>
+</html>

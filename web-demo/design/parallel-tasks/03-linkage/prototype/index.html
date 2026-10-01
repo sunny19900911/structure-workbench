@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="结构设计 AI 工作台——总说明编制与成果联动隔离原型" />
+    <title>总说明编制与成果联动｜隔离原型</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="../../../../workbuddy-integrated-studio.html" aria-label="返回正式工作台入口">
+          <span class="brand-mark" aria-hidden="true">构</span>
+          <span><strong>结构设计 AI 工作台</strong><small>隔离交互验证 · 点击返回正式入口</small></span>
+        </a>
+        <div class="project-summary">
+          <strong>示例项目 · XX 商业综合体（一期）</strong>
+          <span>版本 <b id="versionLabel">v0.3.1</b></span>
+        </div>
+        <div class="top-actions">
+          <button class="button ghost" id="compareButton" type="button">差异对比</button>
+          <button class="button ghost" id="rollbackButton" type="button">回退此版本</button>
+          <button class="button ghost" id="previewButton" type="button">预览</button>
+          <button class="button primary" id="exportButton" type="button" disabled>导出</button>
+        </div>
+      </header>
+
+      <div class="parameter-alert" id="parameterAlert">
+        <div>
+          <span class="alert-icon" aria-hidden="true">!</span>
+          <p><strong>项目条件已变更：</strong>抗震设防烈度由 7 度调整为 8 度，4 类成果需要复核。</p>
+        </div>
+        <button type="button" id="focusImpact">查看联动影响</button>
+      </div>
+
+      <main class="workspace">
+        <aside class="workflow" aria-label="总说明编制流程">
+          <div class="workflow-head">
+            <h1>总说明编制</h1>
+            <p>规则给建议，人作最终决定</p>
+          </div>
+          <ol id="workflowSteps"></ol>
+          <div class="source-boundary">
+            <span aria-hidden="true">⌁</span>
+            <p><strong>604 数据源：只读</strong><br />仅消费主任务提供的版本化接口，不在本原型写入真源。</p>
+          </div>
+        </aside>
+
+        <section class="review-stage" aria-labelledby="stageTitle">
+          <div class="stage-head">
+            <div>
+              <div class="heading-line">
+                <h2 id="stageTitle">条款人工复核</h2>
+                <span class="draft-label">工作草案 · 需结构负责人复核</span>
+              </div>
+              <p>删除、新增或拖拽后立即计算草案编号；发布编号只在负责人锁定后固化。</p>
+            </div>
+            <div class="stage-actions">
+              <button class="button ghost" id="undoButton" type="button" disabled>↶ 撤销</button>
+              <button class="button ghost" id="redoButton" type="button" disabled>↷ 重做</button>
+              <button class="button secondary" id="addClauseButton" type="button">＋ 新增条款</button>
+            </div>
+          </div>
+
+          <div class="numbering-notice" role="status">
+            <span>i</span>
+            <p><strong>自动编号已开启。</strong>被删除条款不占号；新增、删除、拖拽排序、撤销/重做均会按章节连续重排。</p>
+            <button type="button" id="showRulesButton">查看编号规则</button>
+          </div>
+
+          <div class="toolbar">
+            <label class="search-box">
+              <span aria-hidden="true">⌕</span>
+              <input id="searchInput" type="search" placeholder="搜索条款标题或 source_id" />
+            </label>
+            <div class="filters" aria-label="筛选条款">
+              <button class="filter active" type="button" data-filter="all">全部</button>
+              <button class="filter" type="button" data-filter="review">需复核</button>
+              <button class="filter" type="button" data-filter="overridden">人工覆盖</button>
+              <button class="filter" type="button" data-filter="deleted">拟删除</button>
+            </div>
+          </div>
+
+          <div class="table-scroll">
+            <table class="clause-table">
+              <thead>
+                <tr>
+                  <th class="drag-cell"><span class="sr-only">排序</span></th>
+                  <th>草案编号</th>
+                  <th>条款标题 / 来源</th>
+                  <th>规则建议</th>
+                  <th>人工复核</th>
+                  <th>修改理由</th>
+                  <th><span class="sr-only">操作</span></th>
+                </tr>
+              </thead>
+              <tbody id="clauseRows"></tbody>
+            </table>
+          </div>
+
+          <div class="stage-footer">
+            <p id="tableSummary"></p>
+            <div>
+              <button class="button ghost" id="dependencyButton" type="button">运行依赖检查</button>
+              <button class="button secondary" id="renumberButton" type="button">确认重排编号</button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="impact-panel" id="impactPanel" aria-label="联动影响与审签">
+          <div class="impact-tabs" role="tablist">
+            <button class="impact-tab active" type="button" role="tab" aria-selected="true" data-tab="impact">联动影响</button>
+            <button class="impact-tab" type="button" role="tab" aria-selected="false" data-tab="diff">差异对比</button>
+            <button class="impact-tab" type="button" role="tab" aria-selected="false" data-tab="signoff">审签</button>
+          </div>
+
+          <div class="tab-panel active" id="impactTab">
+            <div class="panel-intro">
+              <h3>成果联动</h3>
+              <p>参数变更只生成影响提示，不自动覆盖任何成果。</p>
+            </div>
+            <div class="impact-list" id="impactList"></div>
+            <section class="dependency-section">
+              <div class="section-title">
+                <h3>依赖检查</h3>
+                <span id="dependencyCount">未运行</span>
+              </div>
+              <div id="dependencyList" class="dependency-list empty-state">
+                完成人工复核后运行检查，阻断项未处理前不可导出。
+              </div>
+            </section>
+          </div>
+
+          <div class="tab-panel" id="diffTab">
+            <div class="panel-intro">
+              <h3>与 v0.3.0 对比</h3>
+              <p>显示业务差异，不用单纯文本 diff 淹没复核人。</p>
+            </div>
+            <div class="diff-summary">
+              <span class="added">新增 <b id="addedCount">0</b></span>
+              <span class="removed">删除 <b id="removedCount">0</b></span>
+              <span class="changed">修改 <b id="changedCount">0</b></span>
+            </div>
+            <div id="diffList" class="diff-list"></div>
+          </div>
+
+          <div class="tab-panel" id="signoffTab">
+            <div class="panel-intro">
+              <h3>专业负责人复核</h3>
+              <p>锁定后条款内容只读，形成可追溯版本；解锁必须填写理由。</p>
+            </div>
+            <div class="owner-card">
+              <div class="avatar">张</div>
+              <div><strong>张工</strong><span>结构专业负责人</span></div>
+              <span class="lock-state" id="lockState">未锁定</span>
+            </div>
+            <dl class="signoff-checklist" id="signoffChecklist"></dl>
+            <label class="signoff-note">
+              <span>复核意见</span>
+              <textarea id="signoffNote" rows="4" placeholder="锁定前填写复核意见（可选）"></textarea>
+            </label>
+            <button class="button primary full" id="lockButton" type="button">锁定并形成复核版本</button>
+            <div class="version-history">
+              <h4>版本记录</h4>
+              <ol id="versionHistory"></ol>
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="statusbar">
+        <span><i class="status-dot saved"></i><b id="saveStatus">已自动保存</b></span>
+        <span>规则版本：<b>Rule-2026.09.01</b></span>
+        <span>604 快照：<b>604@v1.4.0</b></span>
+        <span>待复核：<b id="pendingCount">0</b></span>
+        <span class="status-note">本页所有生成内容均为工作草案，须经结构专业负责人复核。</span>
+      </footer>
+    </div>
+
+    <dialog id="appDialog">
+      <form method="dialog" class="dialog-card" id="dialogForm">
+        <div class="dialog-head">
+          <div><h3 id="dialogTitle">确认操作</h3><p id="dialogDescription"></p></div>
+          <button class="icon-button" type="button" id="dialogClose" aria-label="关闭">×</button>
+        </div>
+        <div id="dialogBody"></div>
+        <div class="dialog-actions">
+          <button class="button ghost" value="cancel" type="button" id="dialogCancel">取消</button>
+          <button class="button primary" value="confirm" type="submit" id="dialogConfirm">确认</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1737 @@
+{
+  "schema_version": "0.1",
+  "as_of_date": "2026-09-28",
+  "source_id": "SRC-T2-PILOT-31PROVINCES-M9-20260928",
+  "review_status": "pilot_audited_snapshot",
+  "notice": "任务二接入主工作台的只读验证快照；覆盖全国31个省级地区不等于各地目录已经收全，也不替代601规范数据库。现行/非现行结论仅采用权威官网证据，冲突或证据不足时标记为待核实。",
+  "coverage": {
+    "province_level_regions": 31,
+    "completeness_status": "in_progress",
+    "catalog_baseline_source_id": "SRC-T2-IMA-CATALOG-355-20260925",
+    "audit_source_id": "SRC-T2-COVERAGE-AUDIT-M9-20260928"
+  },
+  "provinces": {
+    "天津市": {
+      "aliases": ["天津", "天津市"],
+      "records": [
+        {
+          "id": "TJ-01",
+          "title": "天津市岩土工程技术规范",
+          "code": "DB/T29-20-2017",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-DBT29-20-2017",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202010/W020201029539221398593.pdf"
+        },
+        {
+          "id": "TJ-02",
+          "title": "天津市岩土工程勘察规范",
+          "code": "DB/T29-247-2017",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-DBT29-247-2017",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202010/W020201029539255550825.pdf"
+        },
+        {
+          "id": "TJ-03",
+          "title": "天津市建筑基桩检测技术规程",
+          "code": "DB/T29-38-2025",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-DBT29-38-2025",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202508/W020260130364172357440.pdf"
+        },
+        {
+          "id": "TJ-04",
+          "title": "天津市预防混凝土碱骨料反应技术规程",
+          "code": "DB/T29-176-2016",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-DBT29-176-2016",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202010/W020201029539165237657.pdf"
+        },
+        {
+          "id": "TJ-05",
+          "title": "天津市绿色建筑设计标准",
+          "code": "DB29-205-2024",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-DB29-205-2024",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202402/W020240315404849525830.pdf"
+        },
+        {
+          "id": "TJ-06",
+          "title": "天津市绿色建筑评价标准",
+          "code": "DB/T29-204-2026",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-DBT29-204-2026",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202508/W020260306505365174301.pdf"
+        },
+        {
+          "id": "TJ-07",
+          "title": "天津市装配式建筑评价标准",
+          "code": "DB/T29-305-2024",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-DBT29-305-2024",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202403/W020240321560546742004.pdf"
+        },
+        {
+          "id": "TJ-08",
+          "title": "天津市城市轨道交通结构安全保护技术规程",
+          "code": "DB/T29-279-2020",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-DBT29-279-2020",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202102/W020210225526079993696.pdf"
+        },
+        {
+          "id": "TJ-09",
+          "title": "天津市轨道交通运营安全条例",
+          "code": "天津市人大常委会公告第一一三号",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-MOJ-2023007873",
+          "source_url": "https://www.moj.gov.cn/pub/sfbgw/fzgz/fzgzxzlf/fzgzbagz/202303/t20230313_474203.html"
+        },
+        {
+          "id": "TJ-10",
+          "title": "天津市建筑工程消能减震隔震技术规程",
+          "code": "DB/T29-320-2025",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-DBT29-320-2025",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202503/W020250331521348687587.pdf"
+        },
+        {
+          "id": "TJ-11",
+          "title": "天津市超限高层建筑工程设计要点（2016修订版）",
+          "code": "津建设〔2016〕39号",
+          "status": "pending",
+          "status_label": "待核实",
+          "source_id": "SRC-TJ-ZFCXJS-JINJIANSHE-2016-39-LATER-REFERENCE",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgfsj/202010/W020201029573134189664.pdf"
+        },
+        {
+          "id": "TJ-12",
+          "title": "关于贯彻落实《建设工程抗震管理条例》工作方案",
+          "code": "津住建设〔2022〕9号",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-JINZHUJIANSHE-2022-9",
+          "source_url": "https://zfcxjs.tj.gov.cn/xxgk_70/zcwj/wfwj/202204/t20220408_5851631.html"
+        },
+        {
+          "id": "TJ-13",
+          "title": "关于贯彻执行《中国地震动参数区划图》的通知",
+          "code": "津建设〔2016〕256号",
+          "status": "non_current",
+          "status_label": "已废止",
+          "status_date": "2022-12-19",
+          "status_replacement": "公告未注明替代文件",
+          "replacement_codes": [],
+          "source_id": "SRC-TJ-ZFCXJS-REPEAL-2022-12-19-ITEM12",
+          "source_url": "https://zfcxjs.tj.gov.cn/sylm/gabsycs/tzgggh/202212/t20221229_6063704.html"
+        },
+        {
+          "id": "TJ-14",
+          "title": "天津市民用建筑施工图设计审查要点（结构篇）",
+          "code": "津18MS-G / DBJT29-183-2018",
+          "status": "pending",
+          "status_label": "待核实",
+          "source_id": "SRC-TJ-ZFCXJS-DBJT29-183-2018",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgfsj/202010/W020201029573145809487.pdf"
+        },
+        {
+          "id": "TJ-15",
+          "title": "预制混凝土构件质量检验标准",
+          "code": "DB/T29-245-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-DBT29-245-2021",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202106/W020210602398830596282.pdf"
+        },
+        {
+          "id": "TJ-16",
+          "title": "装配式建筑预制混凝土构件质量与检验标准",
+          "code": "DB/T29-245-2017",
+          "status": "non_current",
+          "status_label": "已替代",
+          "source_id": "SRC-TJ-ZFCXJS-DBT29-245-2021-REPLACE",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202106/W020210602398830596282.pdf",
+          "status_date": "2021-07-01",
+          "status_replacement": "→ DB/T29-245-2021《预制混凝土构件质量检验标准》",
+          "replacement_codes": ["DB/T29-245-2021"]
+        },
+        {
+          "id": "TJ-17",
+          "title": "天津市蒸压砂加气混凝土制品应用技术规程",
+          "code": "DB/T29-128-2015",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-DBT29-128-2015",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202010/W020201029539124646948.pdf"
+        },
+        {
+          "id": "TJ-18",
+          "title": "天津市空间网格结构技术规程",
+          "code": "DB29-140-2011",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-DB29-140-2011",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202010/W020201029539483130408.pdf"
+        },
+        {
+          "id": "TJ-19",
+          "title": "天津市铝合金空间网格结构技术规程",
+          "code": "DB/T29-261-2019",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-TJ-ZFCXJS-DBT29-261-2019",
+          "source_url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/202010/W020201029539581361606.pdf"
+        }
+      ]
+    },
+    "北京市": {
+      "aliases": ["北京", "北京市"],
+      "records": [
+        {
+          "id": "BJ-01",
+          "title": "既有建筑抗震加固技术规程",
+          "code": "DB11/T 689-2025",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-SCJGJ-DB11T689-2025",
+          "source_url": "https://scjgj.beijing.gov.cn/zwxx/gs/dfbzgg/202507/t20250707_4143412.html"
+        },
+        {
+          "id": "BJ-02",
+          "title": "房屋结构综合安全性鉴定标准",
+          "code": "DB11/637-2015",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2024-10-01",
+          "status_replacement": "→ DB11/T 637-2024《房屋结构综合安全性鉴定标准》",
+          "replacement_codes": ["DB11/T 637-2024"],
+          "source_id": "SRC-BJ-ZJW-DB11T637-2024-REPLACE",
+          "source_url": "https://zjw.beijing.gov.cn/bjjs/bzgl17/bzxx/fbgg/743799392/index.shtml"
+        },
+        {
+          "id": "BJ-11",
+          "title": "房屋结构综合安全性鉴定标准",
+          "code": "DB11/T 637-2024",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-ZJW-DB11T637-2024",
+          "source_url": "https://zjw.beijing.gov.cn/bjjs/bzgl17/bzxx/fbgg/743799392/index.shtml"
+        },
+        {
+          "id": "BJ-03",
+          "title": "住宅设计规范",
+          "code": "DB11/1740-2020",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SAMR-DB11-1740-2020",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=A9C23746BB0D4037E05397BE0A0AAD35"
+        },
+        {
+          "id": "BJ-04",
+          "title": "地下室防水技术规程",
+          "code": "DB11/T 367-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SAMR-DB11T367-2021",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=BF83AA3C84EB27B9E05397BE0A0A964D"
+        },
+        {
+          "id": "BJ-05",
+          "title": "北京地区建筑地基基础勘察设计规范",
+          "code": "DBJ11-501-2009（2016年版）",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-GHZRZY-DBJ11-501-2009-2016",
+          "source_url": "https://ghzrzyw.beijing.gov.cn/biaozhunguanli/bz/kc/202002/t20200218_1655684.html"
+        },
+        {
+          "id": "BJ-06",
+          "title": "建筑防火涂料（板）工程设计、施工与验收规程",
+          "code": "DB11/1245-2015",
+          "status": "pending",
+          "status_label": "待核实",
+          "source_id": "SRC-BJ-GHZRZY-REVIEW-2021-DB11-1245-CONFLICT",
+          "source_url": "https://ghzrzyw.beijing.gov.cn/biaozhunguanli/bztg/202110/P020211012392065109420.pdf"
+        },
+        {
+          "id": "BJ-07",
+          "title": "房屋鉴定与结构检测操作规程",
+          "code": "DB11/T 849-2011",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2021-07-01",
+          "status_replacement": "→ DB11/T 849-2021《房屋结构检测与鉴定操作规程》",
+          "replacement_codes": ["DB11/T 849-2021"],
+          "source_id": "SRC-BJ-ZJW-DB11T849-2021-REPLACE",
+          "source_url": "https://zjw.beijing.gov.cn/bjjs/bzgl17/bzxx/fbgg/743800523/index.shtml"
+        },
+        {
+          "id": "BJ-12",
+          "title": "房屋结构检测与鉴定操作规程",
+          "code": "DB11/T 849-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-ZJW-DB11T849-2021",
+          "source_url": "https://zjw.beijing.gov.cn/bjjs/bzgl17/bzxx/fbgg/743800523/index.shtml"
+        },
+        {
+          "id": "BJ-08",
+          "title": "建筑抗震鉴定与加固技术规程",
+          "code": "DB11/T 689-2009",
+          "status": "non_current",
+          "status_label": "分拆替代",
+          "status_date": "鉴定 2015-06-01；加固 2017-07-01",
+          "status_replacement": "→ DB11/637-2015《房屋结构综合安全性鉴定标准》；DB11/689-2016《建筑抗震加固技术规程》",
+          "replacement_codes": ["DB11/637-2015", "DB11/689-2016"],
+          "source_id": "SRC-BJ-HISTORY-DB11T689-2009",
+          "source_url": "https://zjw.beijing.gov.cn/bjjs/bzgl17/bzxx/fbgg/743800868/index.shtml"
+        },
+        {
+          "id": "BJ-13",
+          "title": "建筑抗震加固技术规程",
+          "code": "DB11/689-2016",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2026-01-01",
+          "status_replacement": "→ DB11/T 689-2025《既有建筑抗震加固技术规程》",
+          "replacement_codes": ["DB11/T 689-2025"],
+          "source_id": "SRC-BJ-SCJGJ-DB11T689-2025-REPLACE",
+          "source_url": "https://scjgj.beijing.gov.cn/zwxx/gs/dfbzgg/202507/t20250707_4143412.html"
+        },
+        {
+          "id": "BJ-09",
+          "title": "房屋建筑安全评估技术规程",
+          "code": "DB11/T 882-2012",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2023-07-01",
+          "status_replacement": "→ DB11/T 882-2023《房屋建筑安全评估技术规程》",
+          "replacement_codes": ["DB11/T 882-2023"],
+          "source_id": "SRC-BJ-ZJW-DB11T882-2023-REPLACE",
+          "source_url": "https://zjw.beijing.gov.cn/bjjs/bzgl17/bzxx/fbgg/743800547/index.shtml"
+        },
+        {
+          "id": "BJ-14",
+          "title": "房屋建筑安全评估技术规程",
+          "code": "DB11/T 882-2023",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-ZJW-DB11T882-2023",
+          "source_url": "https://zjw.beijing.gov.cn/bjjs/bzgl17/bzxx/fbgg/743800547/index.shtml"
+        },
+        {
+          "id": "BJ-10",
+          "title": "装配式建筑评价标准",
+          "code": "DB11/T 1831-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-ZJW-DB11T1831-2021",
+          "source_url": "https://zjw.beijing.gov.cn/bjjs/bzgl17/bzxx/fbgg/743800523/index.shtml"
+        },
+        {
+          "id": "BJ-15",
+          "title": "建筑工程减隔震技术规程",
+          "code": "DB11/2075-2022",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-SAMR-DB11-2075-2022",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=F1E1504BFBCBC2D1E05397BE0A0AB86B"
+        },
+        {
+          "id": "BJ-16",
+          "title": "钢结构住宅技术规程",
+          "code": "DB11/T 1746-2020",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-SAMR-DB11T-1746-2020",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=A9C24DAD85984C24E05397BE0A0A266F"
+        },
+        {
+          "id": "BJ-17",
+          "title": "装配式框架及框架-剪力墙结构设计规程",
+          "code": "DB11/1310-2015",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-SAMR-DB11-1310-2015",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=91D99E4DE1F72E24E05397BE0A0A3A10"
+        },
+        {
+          "id": "BJ-18",
+          "title": "装配式剪力墙结构设计规程",
+          "code": "DB11/1003-2013",
+          "status": "non_current",
+          "status_label": "已替代",
+          "source_id": "SRC-BJ-SAMR-DB11-1003-2022-REPLACE",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=F1E15641F0DAC4B3E05397BE0A0A8C45",
+          "status_date": "2023-07-01",
+          "status_replacement": "→ DB11/1003-2022《装配式剪力墙结构设计规程》",
+          "replacement_codes": ["DB11/1003-2022"]
+        },
+        {
+          "id": "BJ-19",
+          "title": "装配式剪力墙结构设计规程",
+          "code": "DB11/1003-2022",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-SAMR-DB11-1003-2022",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=F1E15641F0DAC4B3E05397BE0A0A8C45"
+        },
+        {
+          "id": "BJ-20",
+          "title": "装配式混凝土结构工程施工与质量验收规程",
+          "code": "DB11/T 1030-2013",
+          "status": "non_current",
+          "status_label": "已替代",
+          "source_id": "SRC-BJ-SAMR-DB11T-1030-2021-REPLACE",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=BF83BE9BD2FB318AE05397BE0A0A770D",
+          "status_date": "2021-07-01",
+          "status_replacement": "→ DB11/T 1030-2021《装配式混凝土结构工程施工与质量验收规程》",
+          "replacement_codes": ["DB11/T 1030-2021"]
+        },
+        {
+          "id": "BJ-21",
+          "title": "装配式混凝土结构工程施工与质量验收规程",
+          "code": "DB11/T 1030-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-SAMR-DB11T-1030-2021",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=BF83BE9BD2FB318AE05397BE0A0A770D"
+        },
+        {
+          "id": "BJ-22",
+          "title": "绿色建筑评价标准",
+          "code": "DB11/T 825-2021",
+          "status": "non_current",
+          "status_label": "已替代",
+          "source_id": "SRC-BJ-SAMR-DB11T-825-2025-REPLACE",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=4995C6A4F0685D83E06397BE0A0A9DEF",
+          "status_date": "2026-04-01",
+          "status_replacement": "→ DB11/T 825-2025《绿色建筑评价标准》",
+          "replacement_codes": ["DB11/T 825-2025"]
+        },
+        {
+          "id": "BJ-23",
+          "title": "绿色建筑评价标准",
+          "code": "DB11/T 825-2025",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-SAMR-DB11T-825-2025",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=4995C6A4F0685D83E06397BE0A0A9DEF"
+        },
+        {
+          "id": "BJ-24",
+          "title": "建筑基坑支护技术规程",
+          "code": "DB11/T 489-2024",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-ZJW-DB11T489-2024",
+          "source_url": "https://zjw.beijing.gov.cn/bjjs/bzgl17/bzxx/fbgg/743800559/index.shtml"
+        },
+        {
+          "id": "BJ-25",
+          "title": "建筑基坑支护技术规程",
+          "code": "DB11/489-2016",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2024-07-01",
+          "status_replacement": "→ DB11/T 489-2024《建筑基坑支护技术规程》",
+          "replacement_codes": ["DB11/T 489-2024"],
+          "source_id": "SRC-BJ-ZJW-DB11T489-2024-REPLACE",
+          "source_url": "https://zjw.beijing.gov.cn/bjjs/bzgl17/bzxx/fbgg/743800559/index.shtml"
+        },
+        {
+          "id": "BJ-26",
+          "title": "基坑工程内支撑技术规程",
+          "code": "DB11/T 940-2024",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-BJ-ZJW-DB11T940-2024",
+          "source_url": "https://zjw.beijing.gov.cn/bjjs/bzgl17/bzxx/fbgg/743800559/index.shtml"
+        },
+        {
+          "id": "BJ-27",
+          "title": "基坑工程内支撑技术规程",
+          "code": "DB11/940-2012",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2024-07-01",
+          "status_replacement": "→ DB11/T 940-2024《基坑工程内支撑技术规程》",
+          "replacement_codes": ["DB11/T 940-2024"],
+          "source_id": "SRC-BJ-ZJW-DB11T940-2024-REPLACE",
+          "source_url": "https://zjw.beijing.gov.cn/bjjs/bzgl17/bzxx/fbgg/743800559/index.shtml"
+        }
+      ]
+    },
+    "上海市": {
+      "aliases": ["上海", "上海市"],
+      "records": [
+        {
+          "id": "SH-01",
+          "title": "建筑抗震设计标准",
+          "code": "DG/TJ08-9-2023",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-DGTJ08-9-2023",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20230328/cfba3332dba34d0c9b8723004d8470b9.html"
+        },
+        {
+          "id": "SH-02",
+          "title": "建筑抗震设计规程",
+          "code": "DGJ08-9-2013",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2023-06-01",
+          "status_replacement": "→ DG/TJ08-9-2023《建筑抗震设计标准》",
+          "replacement_codes": ["DG/TJ08-9-2023"],
+          "source_id": "SRC-SH-ZJW-DGTJ08-9-2023-REPLACE",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20230328/cfba3332dba34d0c9b8723004d8470b9.html"
+        },
+        {
+          "id": "SH-03",
+          "title": "地基基础设计标准",
+          "code": "DGJ08-11-2018",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-DGJ08-11-2018",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20190225/0011-57967.html"
+        },
+        {
+          "id": "SH-04",
+          "title": "地基基础设计规范",
+          "code": "DGJ08-11-2010",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2019-08-01",
+          "status_replacement": "→ DGJ08-11-2018《地基基础设计标准》",
+          "replacement_codes": ["DGJ08-11-2018"],
+          "source_id": "SRC-SH-ZJW-DGJ08-11-2018-REPLACE",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20190225/0011-57967.html"
+        },
+        {
+          "id": "SH-05",
+          "title": "现有建筑抗震鉴定与加固标准",
+          "code": "DGJ08-81-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-DGJ08-81-2021",
+          "source_url": "https://zjw.sh.gov.cn/cmsres/70/70c1a5c3608141f7b12e22dda36f702a/0eb4335ec853a054ba763ada4704072e.pdf"
+        },
+        {
+          "id": "SH-06",
+          "title": "建筑消能减震及隔震技术标准",
+          "code": "DG/TJ08-2326-2020",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-REVIEW-2024-DGTJ08-2326-2020",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20250206/ba2dcb8bc35245ef9206424ec77368eb.html"
+        },
+        {
+          "id": "SH-07",
+          "title": "基坑工程技术标准",
+          "code": "DG/TJ08-61-2018",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-DGTJ08-61-2018",
+          "source_url": "https://zjw.sh.gov.cn/cmsres/de/deb9c9b5f4d244a38fb0c39c6b4cbbcd/68c8216c59552f6eba595989143f81f0.pdf"
+        },
+        {
+          "id": "SH-08",
+          "title": "岩土工程勘察规范",
+          "code": "DGJ08-37-2012",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2023-12-01",
+          "status_replacement": "→ DG/TJ08-37-2023《岩土工程勘察标准》",
+          "replacement_codes": ["DG/TJ08-37-2023"],
+          "source_id": "SRC-SH-ZJW-DGTJ08-37-2023-REPLACE",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20230703/13d55c15901843efbdaa9796e1ea511f.html"
+        },
+        {
+          "id": "SH-09",
+          "title": "高层建筑钢结构设计标准",
+          "code": "DG/TJ08-32-2025",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-DGTJ08-32-2025",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20251223/9abd25d61f2d4a729aba30d897f34515.html"
+        },
+        {
+          "id": "SH-10",
+          "title": "高层建筑钢结构设计规程",
+          "code": "DG/TJ08-32-2008",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2026-05-01",
+          "status_replacement": "→ DG/TJ08-32-2025《高层建筑钢结构设计标准》",
+          "replacement_codes": ["DG/TJ08-32-2025"],
+          "source_id": "SRC-SH-ZJW-DGTJ08-32-2025-REPLACE",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20251223/9abd25d61f2d4a729aba30d897f34515.html"
+        },
+        {
+          "id": "SH-11",
+          "title": "关于进一步明确装配式建筑实施范围和单体预制率、装配率计算细则的通知",
+          "code": "沪建建材〔2025〕250号",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-HJJC-2025-250",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20250529/116d173660334dc3a77dd8687eeea89f.html"
+        },
+        {
+          "id": "SH-12",
+          "title": "关于进一步明确装配式建筑实施范围和相关工作要求的通知",
+          "code": "沪建建材〔2019〕97号",
+          "status": "non_current",
+          "status_label": "新项目已替代",
+          "status_date": "2025-09-01",
+          "status_replacement": "→ 沪建建材〔2025〕250号《关于进一步明确装配式建筑实施范围和单体预制率、装配率计算细则的通知》",
+          "replacement_codes": ["沪建建材〔2025〕250号"],
+          "source_id": "SRC-SH-ZJW-HJJC-2025-250-TRANSITION",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20250529/116d173660334dc3a77dd8687eeea89f.html"
+        },
+        {
+          "id": "SH-13",
+          "title": "上海市装配式建筑单体预制率和装配率计算细则",
+          "code": "沪建建材〔2019〕765号",
+          "status": "non_current",
+          "status_label": "新项目已替代",
+          "status_date": "2025-09-01",
+          "status_replacement": "→ 沪建建材〔2025〕250号《关于进一步明确装配式建筑实施范围和单体预制率、装配率计算细则的通知》",
+          "replacement_codes": ["沪建建材〔2025〕250号"],
+          "source_id": "SRC-SH-ZJW-HJJC-2025-250-TRANSITION",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20250529/116d173660334dc3a77dd8687eeea89f.html"
+        },
+        {
+          "id": "SH-14",
+          "title": "上海市超限高层建筑抗震设防管理实施细则",
+          "code": "沪建管〔2014〕954号",
+          "status": "pending",
+          "status_label": "仍被官方引用",
+          "status_date": "2020年度材料",
+          "source_id": "SRC-SH-ZJW-LATER-REFERENCE-2014-954",
+          "source_url": "https://zjw.sh.gov.cn/cmsres/ae/ae1badad44e24ad78b0c67a91e62d533/832ff1c2d2f2c570caccdb6c8d964b7c.pdf"
+        },
+        {
+          "id": "SH-15",
+          "title": "上海市建筑工程初步（总体）设计文件抗震设防审查管理办法",
+          "code": "沪建管〔2015〕958号",
+          "status": "pending",
+          "status_label": "仍被官方引用",
+          "status_date": "2023年度材料",
+          "source_id": "SRC-SH-ZJW-LATER-REFERENCE-2015-958",
+          "source_url": "https://zjw.sh.gov.cn/cmsres/0b/0bb88d3413744577b312c9e0e401834c/7badaf1e8611cbb4e187e783519d9c09.pdf"
+        },
+        {
+          "id": "SH-16",
+          "title": "高延性纤维增强水泥基复合材料加固砌体结构技术标准",
+          "code": "DG/TJ08-2415-2022",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-CURRENT-DGTJ08-2415-2022",
+          "source_url": "https://zjw.sh.gov.cn/xxbz/"
+        },
+        {
+          "id": "SH-17",
+          "title": "优秀历史建筑抗震鉴定与加固标准",
+          "code": "DG/TJ08-2403-2022",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-CURRENT-DGTJ08-2403-2022",
+          "source_url": "https://zjw.sh.gov.cn/xxbz/"
+        },
+        {
+          "id": "SH-18",
+          "title": "住宅设计标准",
+          "code": "DGJ08-20-2019",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-DGJ08-20-2019",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20191108/0011-71452.html"
+        },
+        {
+          "id": "SH-19",
+          "title": "住宅设计标准",
+          "code": "DGJ08-20-2013",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2020-01-01",
+          "status_replacement": "→ DGJ08-20-2019《住宅设计标准》",
+          "replacement_codes": ["DGJ08-20-2019"],
+          "source_id": "SRC-SH-ZJW-DGJ08-20-2019-REPLACE",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20191108/0011-71452.html"
+        },
+        {
+          "id": "SH-20",
+          "title": "混凝土结构工程施工标准",
+          "code": "DG/TJ08-020-2019",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-CURRENT-DGTJ08-020-2019",
+          "source_url": "https://zjw.sh.gov.cn/xxbz/index_11.html"
+        },
+        {
+          "id": "SH-21",
+          "title": "岩土工程勘察标准",
+          "code": "DG/TJ08-37-2023",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-DGTJ08-37-2023",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20230703/13d55c15901843efbdaa9796e1ea511f.html"
+        },
+        {
+          "id": "SH-22",
+          "title": "高层建筑钢-混凝土混合结构设计规程",
+          "code": "DG/TJ08-015-2018",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-DGTJ08-015-2018",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20190114/0011-56117.html"
+        },
+        {
+          "id": "SH-23",
+          "title": "高层建筑钢-混凝土混合结构设计规程",
+          "code": "DG/TJ08-015-2004",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2019-05-01",
+          "status_replacement": "→ DG/TJ08-015-2018《高层建筑钢-混凝土混合结构设计规程》",
+          "replacement_codes": ["DG/TJ08-015-2018"],
+          "source_id": "SRC-SH-ZJW-DGTJ08-015-2018-REPLACE",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20190114/0011-56117.html"
+        },
+        {
+          "id": "SH-24",
+          "title": "大跨度建筑空间结构抗连续倒塌设计标准",
+          "code": "DG/TJ08-2350-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-DGTJ08-2350-2021",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20210628/fdf729bb5c2a44cf9f9fdee67ede1260.html"
+        },
+        {
+          "id": "SH-25",
+          "title": "建筑地基与基桩检测技术规程",
+          "code": "DG/TJ08-218-2017",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-REVIEW-2022-DGTJ08-218-2017",
+          "source_url": "https://zjw.sh.gov.cn/pdf/%E5%A4%8D%E5%AE%A1%E7%BB%93%E6%9E%9C%E7%9A%84%E9%80%9A%E7%9F%A5%2B%EF%BC%88%E9%99%84%E4%BB%B61%E3%80%81%E9%99%84%E4%BB%B62%E3%80%81%E9%99%84%E4%BB%B63%EF%BC%89.pdf"
+        },
+        {
+          "id": "SH-26",
+          "title": "多高层钢结构住宅技术标准",
+          "code": "DG/TJ08-2029-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-DGTJ08-2029-2021",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20210706/e3387b05109c4fb581224542e0a0390b.html"
+        },
+        {
+          "id": "SH-27",
+          "title": "多高层钢结构住宅技术规程",
+          "code": "DG/TJ08-2029-2007",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2021-11-01",
+          "status_replacement": "→ DG/TJ08-2029-2021《多高层钢结构住宅技术标准》",
+          "replacement_codes": ["DG/TJ08-2029-2021"],
+          "source_id": "SRC-SH-ZJW-DGTJ08-2029-2021-REPLACE",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20210706/e3387b05109c4fb581224542e0a0390b.html"
+        },
+        {
+          "id": "SH-28",
+          "title": "地下铁道结构抗震设计标准",
+          "code": "DG/TJ08-2064-2022",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-DGTJ08-2064-2022",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20220923/9c0728b936df4895a4e0e447a9ffb29b.html"
+        },
+        {
+          "id": "SH-29",
+          "title": "地下铁道建筑结构抗震设计规范",
+          "code": "DG/TJ08-2064-2009",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2022-11-01",
+          "status_replacement": "→ DG/TJ08-2064-2022《地下铁道结构抗震设计标准》",
+          "replacement_codes": ["DG/TJ08-2064-2022"],
+          "source_id": "SRC-SH-ZJW-DGTJ08-2064-2022-REPLACE",
+          "source_url": "https://zjw.sh.gov.cn/jsgl/20220923/9c0728b936df4895a4e0e447a9ffb29b.html"
+        },
+        {
+          "id": "SH-30",
+          "title": "纤维增强复合材料加固混凝土结构技术规程",
+          "code": "DG/TJ08-012-2017",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-CURRENT-DGTJ08-012-2017",
+          "source_url": "https://zjw.sh.gov.cn/xxbz/index_14.html"
+        },
+        {
+          "id": "SH-31",
+          "title": "既有地下建筑改扩建技术规范",
+          "code": "DG/TJ08-2235-2017",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-CURRENT-DGTJ08-2235-2017",
+          "source_url": "https://zjw.sh.gov.cn/xxbz/index_14.html"
+        },
+        {
+          "id": "SH-32",
+          "title": "基坑工程微变形控制技术标准",
+          "code": "DG/TJ08-2364-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SH-ZJW-CURRENT-DGTJ08-2364-2021",
+          "source_url": "https://zjw.sh.gov.cn/xxbz/index_3.html"
+        }
+      ]
+    },
+    "广东省": {
+      "aliases": ["广东", "广东省", "广州", "广州市", "深圳", "深圳市"],
+      "records": [
+        {
+          "id": "GD-01",
+          "title": "高层建筑混凝土结构技术规程",
+          "code": "DBJ/T 15-92-2021",
+          "status": "pending",
+          "status_label": "已实施，现行待核",
+          "status_date": "2021-06-01",
+          "source_id": "SRC-GD-ZFCXJST-DBJT15-92-2021",
+          "source_url": "https://zfcxjst.gd.gov.cn/gkmlpt/content/3/3222/post_3222044.html"
+        },
+        {
+          "id": "GD-02",
+          "title": "高层建筑混凝土结构技术规程",
+          "code": "DBJ 15-92-2013",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2021-06-01",
+          "status_replacement": "→ DBJ/T 15-92-2021《高层建筑混凝土结构技术规程》",
+          "replacement_codes": ["DBJ/T 15-92-2021"],
+          "source_id": "SRC-GD-ZFCXJST-DBJT15-92-2021-REPLACE",
+          "source_url": "https://zfcxjst.gd.gov.cn/gkmlpt/content/3/3222/post_3222044.html"
+        },
+        {
+          "id": "GD-03",
+          "title": "建筑基坑工程技术规程",
+          "code": "DBJ/T15-20-2016",
+          "status": "pending",
+          "status_label": "已实施，现行待核",
+          "status_date": "2017-04-30",
+          "source_id": "SRC-GD-ZFCXJST-DBJT15-20-2016",
+          "source_url": "https://zfcxjst.gd.gov.cn/gkmlpt/content/1/1454/mmpost_1454771.html"
+        },
+        {
+          "id": "GD-04",
+          "title": "建筑基坑支护工程技术规程",
+          "code": "DBJ/T15-20-97",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2017-04-30",
+          "status_replacement": "→ DBJ/T15-20-2016《建筑基坑工程技术规程》",
+          "replacement_codes": ["DBJ/T15-20-2016"],
+          "source_id": "SRC-GD-ZFCXJST-DBJT15-20-2016-REPLACE",
+          "source_url": "https://zfcxjst.gd.gov.cn/gkmlpt/content/1/1454/mmpost_1454771.html"
+        },
+        {
+          "id": "GD-05",
+          "title": "锤击式预应力混凝土管桩工程技术规程",
+          "code": "DBJ/T 15-22-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-GD-ZFCXJST-DBJT15-22-2021-CORRIGENDUM",
+          "source_url": "https://zfcxjst.gd.gov.cn/gkmlpt/content/4/4245/post_4245193.html"
+        },
+        {
+          "id": "GD-06",
+          "title": "房屋建筑和市政基础设施工程绿色施工评价标准",
+          "code": "DBJ/T15-97-2025",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-GD-GDCIC-DBJT15-97-2025",
+          "source_url": "https://www.gdcic.net/ShowNews?KeyId=b38700aba4b1420bb213098322c29269"
+        },
+        {
+          "id": "GD-07",
+          "title": "建筑工程绿色施工评价标准",
+          "code": "DBJ/T15-97-2013",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2025-11-01",
+          "status_replacement": "→ DBJ/T15-97-2025《房屋建筑和市政基础设施工程绿色施工评价标准》",
+          "replacement_codes": ["DBJ/T15-97-2025"],
+          "source_id": "SRC-GD-GDCIC-DBJT15-97-2025-REPLACE",
+          "source_url": "https://www.gdcic.net/ShowNews?KeyId=b38700aba4b1420bb213098322c29269"
+        }
+      ]
+    },
+    "海南省": {
+      "aliases": ["海南", "海南省", "海口", "海口市", "三亚", "三亚市", "儋州", "儋州市"],
+      "records": [
+        {
+          "id": "HN-01",
+          "title": "非承重砌体材料应用技术规程",
+          "code": "DBJ46-008-2016",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-HN-ZJT-CURRENT-DBJ46-008-2016",
+          "source_url": "https://zjt.hainan.gov.cn/szjt/dexzzx/201902/d2c026586d88478cae814af3eafb0a72/files/8c2afd0f23774ccaa8601bbc660912b1.pdf"
+        },
+        {
+          "id": "HN-02",
+          "title": "预拌混凝土应用技术标准",
+          "code": "DBJ46-018-2019",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-HN-ZJT-CURRENT-DBJ46-018-2019",
+          "source_url": "https://zjt.hainan.gov.cn/szjt/dexzzx/201902/d2c026586d88478cae814af3eafb0a72/files/14d4278714064f378ac9edfc219aeec1.pdf"
+        },
+        {
+          "id": "HN-03",
+          "title": "装配式混凝土结构工程施工质量验收标准",
+          "code": "DBJ46-047-2018",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-HN-ZJT-CURRENT-DBJ46-047-2018",
+          "source_url": "https://zjt.hainan.gov.cn/szjt/dexzzx/201902/d2c026586d88478cae814af3eafb0a72/files/076cc2e5c95d4b9085e4981a650e9bc4.pdf"
+        },
+        {
+          "id": "HN-04",
+          "title": "海南省建筑工程防水技术标准",
+          "code": "DBJ46-048-2018",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-HN-ZJT-CURRENT-DBJ46-048-2018",
+          "source_url": "https://zjt.hainan.gov.cn/szjt/dexzzx/201902/d2c026586d88478cae814af3eafb0a72/files/a91db62517854102a5aa0bb56da1e763.pdf"
+        },
+        {
+          "id": "HN-05",
+          "title": "海南省建筑钢结构防腐技术标准",
+          "code": "DBJ46-057-2020",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-HN-ZJT-CURRENT-DBJ46-057-2020",
+          "source_url": "https://zjt.hainan.gov.cn/szjt/dexzzx/201902/d2c026586d88478cae814af3eafb0a72/files/2fedaeabddca4d06a4bc533698172a91.pdf"
+        },
+        {
+          "id": "HN-06",
+          "title": "海南省绿色建筑评价标准（民用建筑篇）",
+          "code": "DBJ46-064-2023",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-HN-ZJT-CURRENT-DBJ46-064-2023",
+          "source_url": "https://zjt.hainan.gov.cn/szjt/dexzzx/201902/d2c026586d88478cae814af3eafb0a72/files/9dcd5ae0f7b9417fa53bd571e5ea5888.pdf"
+        },
+        {
+          "id": "HN-07",
+          "title": "海南省装配式混凝土预制构件生产和安装技术标准",
+          "code": "DBJ46-058-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-HN-ZJT-CURRENT-DBJ46-058-2021",
+          "source_url": "https://zjt.hainan.gov.cn/szjt/dexzzx/201902/d2c026586d88478cae814af3eafb0a72/files/282d1686bc394b38aee271c43a9b0be0.pdf"
+        },
+        {
+          "id": "HN-08",
+          "title": "海南省装配式建筑标准化设计技术标准",
+          "code": "DBJ46-061-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-HN-ZJT-CURRENT-DBJ46-061-2021",
+          "source_url": "https://zjt.hainan.gov.cn/szjt/dexzzx/201902/d2c026586d88478cae814af3eafb0a72/files/13243f02768b467eab2ae60428733f13.pdf"
+        }
+      ]
+    },
+    "江苏省": {
+      "aliases": ["江苏", "江苏省", "南京", "南京市", "苏州", "苏州市"],
+      "records": [
+        {
+          "id": "JS-01",
+          "title": "建筑地基基础检测规程",
+          "code": "DB32/T 3916-2020",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SAMR-DB32T3916-2020",
+          "source_url": "https://dbba.sacinfo.org.cn/stdDetail/25a113ec00f6a1fa086f2497cdb821c9aad347f7298bd80ea039402c3548c6c9"
+        },
+        {
+          "id": "JS-02",
+          "title": "住宅设计标准",
+          "code": "DB32/3920-2020",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-SAMR-DB32-3920-2020",
+          "source_url": "https://dbba.sacinfo.org.cn/stdDetail/edcffc0f090d0cf456c6d3149eaeb6ab2a973b01728d1d4711d7944692248731"
+        },
+        {
+          "id": "JS-03",
+          "title": "江苏省城市地下管线探测技术规程",
+          "code": "DGJ32/TJ186-2015",
+          "status": "non_current",
+          "status_label": "已废止",
+          "status_date": "2025-07-21",
+          "status_replacement": "公告未注明替代文件",
+          "replacement_codes": [],
+          "source_id": "SRC-JS-ZJST-REPEAL-2025-8",
+          "source_url": "https://jsszfhcxjst.jiangsu.gov.cn/art/2025/7/21/art_49384_11604977.html"
+        },
+        {
+          "id": "JS-04",
+          "title": "江苏省城市地下管线数据标准",
+          "code": "DGJ32/TJ187-2015",
+          "status": "non_current",
+          "status_label": "已废止",
+          "status_date": "2025-07-21",
+          "status_replacement": "公告未注明替代文件",
+          "replacement_codes": [],
+          "source_id": "SRC-JS-ZJST-REPEAL-2025-8",
+          "source_url": "https://jsszfhcxjst.jiangsu.gov.cn/art/2025/7/21/art_49384_11604977.html"
+        },
+        {
+          "id": "JS-05",
+          "title": "南京地区建筑基坑工程监测技术规程",
+          "code": "DGJ32/J189-2015",
+          "status": "non_current",
+          "status_label": "已废止",
+          "status_date": "2025-07-21",
+          "status_replacement": "公告未注明替代文件",
+          "replacement_codes": [],
+          "source_id": "SRC-JS-ZJST-REPEAL-2025-8",
+          "source_url": "https://jsszfhcxjst.jiangsu.gov.cn/art/2025/7/21/art_49384_11604977.html"
+        },
+        {
+          "id": "JS-06",
+          "title": "建筑外窗工程检测与评定规程",
+          "code": "DGJ32/TJ197-2015",
+          "status": "non_current",
+          "status_label": "已废止",
+          "status_date": "2025-07-21",
+          "status_replacement": "公告未注明替代文件",
+          "replacement_codes": [],
+          "source_id": "SRC-JS-ZJST-REPEAL-2025-8",
+          "source_url": "https://jsszfhcxjst.jiangsu.gov.cn/art/2025/7/21/art_49384_11604977.html"
+        },
+        {
+          "id": "JS-07",
+          "title": "城市轨道交通接触网系统工程质量验收规范",
+          "code": "DGJ32/TJ198-2015",
+          "status": "non_current",
+          "status_label": "已废止",
+          "status_date": "2025-07-21",
+          "status_replacement": "公告未注明替代文件",
+          "replacement_codes": [],
+          "source_id": "SRC-JS-ZJST-REPEAL-2025-8",
+          "source_url": "https://jsszfhcxjst.jiangsu.gov.cn/art/2025/7/21/art_49384_11604977.html"
+        },
+        {
+          "id": "JS-08",
+          "title": "钢骨架集成模块建筑技术标准",
+          "code": "DB32/T 3750-2020",
+          "status": "non_current",
+          "status_label": "已废止",
+          "status_date": "2025-07-21",
+          "status_replacement": "公告未注明替代文件",
+          "replacement_codes": [],
+          "source_id": "SRC-JS-ZJST-REPEAL-2025-8",
+          "source_url": "https://jsszfhcxjst.jiangsu.gov.cn/art/2025/7/21/art_49384_11604977.html"
+        },
+        {
+          "id": "JS-09",
+          "title": "江苏省防震减灾条例（2017年修正）",
+          "code": "江苏省地方性法规",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-JS-RD-EARTHQUAKE-2017",
+          "source_url": "https://www.jsrd.gov.cn/qwfb/sjfg/201706/t20170607_1221118.shtml"
+        },
+        {
+          "id": "JS-10",
+          "title": "预应力混凝土管桩基础技术规程",
+          "code": "DGJ32/TJ109-2010",
+          "status": "pending",
+          "status_label": "仍被官方引用",
+          "status_date": "2021-03",
+          "source_id": "SRC-JS-SUZHOU-LATER-REFERENCE-DGJ32TJ109",
+          "source_url": "https://www.suzhou.gov.cn/szsrmzf/bmwj/202103/81005361c7034e96a95b8c597f6be39e.shtml"
+        },
+        {
+          "id": "JS-11",
+          "title": "江苏省建筑防水工程技术规程",
+          "code": "DGJ32/TJ212-2016",
+          "status": "pending",
+          "status_label": "出版库显示现行",
+          "status_date": "省厅目录待核",
+          "source_id": "SRC-JS-CABP-DBJ32TJ212-2016-CANDIDATE",
+          "source_url": "https://ebook.chinabuilding.com.cn/zbooklib/book/detail/show?SiteID=1&bookID=102894"
+        },
+        {
+          "id": "JS-12",
+          "title": "高层建筑工程抗震设防超限界定标准",
+          "code": "DB32/T 4399-2022",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-JS-SAMR-DB32T-4399-2022",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=EEAB111F7BA16675E05397BE0A0A0E4E"
+        },
+        {
+          "id": "JS-13",
+          "title": "基桩自平衡法静载试验技术规程",
+          "code": "DB32/T 3917-2020",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-JS-SAMR-DB32T-3917-2020",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=B8C50F87B1E77A7FE05397BE0A0A2A6E"
+        },
+        {
+          "id": "JS-14",
+          "title": "绿色建筑设计标准",
+          "code": "DB32/3962-2020",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-JS-SAMR-DB32-3962-2020",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=B96682D1F0FA2591E05397BE0A0A48B6"
+        },
+        {
+          "id": "JS-15",
+          "title": "预应力混凝土空心方桩基础技术规程（含第1号修改单）",
+          "code": "DB32/T 4285-2022",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-JS-SAMR-DB32T-4285-2022-AMENDMENT1",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=20055B838C3B4922E06397BE0A0AF48E"
+        },
+        {
+          "id": "JS-16",
+          "title": "预应力混凝土实心方桩基础技术规程",
+          "code": "DB32/T 4111-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-JS-SAMR-DB32T-4111-2021",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=D8996864BEEE4563E05397BE0A0A6D75"
+        },
+        {
+          "id": "JS-17",
+          "title": "防灾避难场所建设技术标准",
+          "code": "DB32/3709-2019",
+          "status": "non_current",
+          "status_label": "已废止",
+          "source_id": "SRC-JS-SAMR-DB32-3709-2019-REPEAL",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=9DB959268689D016E05397BE0A0AFE92",
+          "status_date": "2025-08-25",
+          "status_replacement": "平台未注明替代文件",
+          "replacement_codes": []
+        },
+        {
+          "id": "JS-18",
+          "title": "模块装配式剪力墙结构应用技术规程",
+          "code": "DB32/T 3968-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-JS-SAMR-DB32T-3968-2021",
+          "source_url": "https://std.samr.gov.cn/db/search/stdDBDetailed?id=BBA85C1CA0998B26E05397BE0A0A6531"
+        }
+      ]
+    },
+    "浙江省": {
+      "aliases": ["浙江", "浙江省", "杭州", "杭州市", "宁波", "宁波市"],
+      "records": [
+        {
+          "id": "ZJ-01",
+          "title": "刚-柔性复合桩基技术规程",
+          "code": "DB33/1048-2010",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-ZJ-ZJST-REVIEW-DB33-1048-2010",
+          "source_url": "https://jst.zj.gov.cn/module/download/downfile.jsp?classid=0&filename=3576ac8f96644975ab1879c049fb7094.pdf"
+        },
+        {
+          "id": "ZJ-02",
+          "title": "复合地基技术规程",
+          "code": "DB33/1051-2008",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-ZJ-ZJST-REVIEW-DB33-1051-2008",
+          "source_url": "https://jst.zj.gov.cn/module/download/downfile.jsp?classid=0&filename=3576ac8f96644975ab1879c049fb7094.pdf"
+        },
+        {
+          "id": "ZJ-03",
+          "title": "建筑地基基础设计规范",
+          "code": "DB33/T1136-2017",
+          "status": "pending",
+          "status_label": "已实施，现行待核",
+          "status_date": "2017-10-01",
+          "source_id": "SRC-ZJ-ZJST-DB33T1136-2017",
+          "source_url": "https://jst.zj.gov.cn/attach/-1/1904041240517888613.pdf"
+        },
+        {
+          "id": "ZJ-04",
+          "title": "建筑用砂混合轻量土配合比设计规程",
+          "code": "DB33/T1046-2008",
+          "status": "non_current",
+          "status_label": "复审废止",
+          "status_date": "结论未载明日期",
+          "status_replacement": "复审结果未注明替代文件",
+          "replacement_codes": [],
+          "source_id": "SRC-ZJ-ZJST-REVIEW-DB33T1046-2008",
+          "source_url": "https://jst.zj.gov.cn/module/download/downfile.jsp?classid=0&filename=3576ac8f96644975ab1879c049fb7094.pdf"
+        },
+        {
+          "id": "ZJ-05",
+          "title": "固定式塔式起重机基础技术规程",
+          "code": "DB33/T1053-2008",
+          "status": "non_current",
+          "status_label": "复审废止",
+          "status_date": "结论未载明日期",
+          "status_replacement": "复审结果未注明替代文件",
+          "replacement_codes": [],
+          "source_id": "SRC-ZJ-ZJST-REVIEW-DB33T1053-2008",
+          "source_url": "https://jst.zj.gov.cn/module/download/downfile.jsp?classid=0&filename=3576ac8f96644975ab1879c049fb7094.pdf"
+        },
+        {
+          "id": "ZJ-06",
+          "title": "建筑结构抗震性能化设计标准",
+          "code": "DBJ33/T 1318-2024",
+          "status": "pending",
+          "status_label": "已发布施行",
+          "source_id": "SRC-ZJ-JST-DBJ33T-1318-2024",
+          "source_url": "https://zjjcmspublic.oss-cn-hangzhou-zwynet-d01-a.internet.cloud.zj.gov.cn/jcms_files/jcms1/web3162/site/attach/0/86faea3e2d41447aa687a80bf5ce8a21.pdf",
+          "status_date": "2024-10-01",
+          "status_replacement": ""
+        },
+        {
+          "id": "ZJ-07",
+          "title": "蒸压加气混凝土墙板应用技术规程",
+          "code": "DB33/T1232-2021",
+          "status": "pending",
+          "status_label": "仍被官方引用",
+          "source_id": "SRC-ZJ-JST-LATER-REFERENCE-DB33T-1232-2021",
+          "source_url": "https://jst.zj.gov.cn/module/download/downfile.jsp?classid=0&filename=9ec6dd19786f41ab92b7c8384663dc50.pdf",
+          "status_date": "2025技术资料",
+          "status_replacement": ""
+        },
+        {
+          "id": "ZJ-08",
+          "title": "蒸压加气混凝土砌块应用技术规程",
+          "code": "DB33/T1027-2018",
+          "status": "pending",
+          "status_label": "官网正文可查",
+          "source_id": "SRC-ZJ-JST-DB33T-1027-2018",
+          "source_url": "https://jst.zj.gov.cn/attach/-1/1904041304121404174.pdf",
+          "status_date": "2018-12-01施行",
+          "status_replacement": ""
+        },
+        {
+          "id": "ZJ-09",
+          "title": "装配式建筑评价标准",
+          "code": "DB33/T1165-2019",
+          "status": "non_current",
+          "status_label": "已替代",
+          "source_id": "SRC-ZJ-JST-DB33T-1165-2024-REPLACE",
+          "source_url": "https://jst.zj.gov.cn/module/download/downfile.jsp?classid=0&filename=9ec6dd19786f41ab92b7c8384663dc50.pdf",
+          "status_date": "2025-01-01",
+          "status_replacement": "→ DB33/T1165-2024《装配式建筑评价标准》",
+          "replacement_codes": ["DB33/T1165-2024"]
+        },
+        {
+          "id": "ZJ-10",
+          "title": "装配式建筑评价标准",
+          "code": "DB33/T1165-2024",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-ZJ-JST-DB33T-1165-2024",
+          "source_url": "https://jst.zj.gov.cn/module/download/downfile.jsp?classid=0&filename=9ec6dd19786f41ab92b7c8384663dc50.pdf"
+        }
+      ]
+    },
+    "云南省": {
+      "aliases": ["云南", "云南省", "昆明", "昆明市", "云南省昆明市"],
+      "records": [
+        {
+          "id": "YN-01",
+          "title": "建筑基坑工程监测技术规程",
+          "code": "DBJ53/T-67-2014",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-YN-ZFCXJST-CURRENT-DBJ53T-67-2014",
+          "source_url": "https://zfcxjst.yn.gov.cn/ztzl/ynsgcjsdfbz/202606/t20260630_3273947.html"
+        },
+        {
+          "id": "YN-02",
+          "title": "云南省建筑基坑支护技术规程",
+          "code": "DBJ53/T-71-2015",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-YN-ZFCXJST-CURRENT-DBJ53T-71-2015",
+          "source_url": "https://zfcxjst.yn.gov.cn/ztzl/ynsgcjsdfbz/202606/t20260630_3273947.html"
+        },
+        {
+          "id": "YN-03",
+          "title": "云南省膨胀土地区建筑技术规程",
+          "code": "DBJ 53/T-83-2017",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-YN-ZFCXJST-CURRENT-DBJ53T-83-2017",
+          "source_url": "https://zfcxjst.yn.gov.cn/ztzl/ynsgcjsdfbz/202606/t20260630_3273947.html"
+        },
+        {
+          "id": "YN-04",
+          "title": "云南省膨胀土地区建筑技术规程（原版）",
+          "code": "云建科〔1988〕524号",
+          "status": "non_current",
+          "status_label": "已替代",
+          "status_date": "2018-01-01",
+          "status_replacement": "→ DBJ 53/T-83-2017《云南省膨胀土地区建筑技术规程》",
+          "replacement_codes": ["DBJ 53/T-83-2017"],
+          "source_id": "SRC-YN-ZFCXJST-DBJ53T-83-2017-REPLACE",
+          "source_url": "https://zfcxjst.yn.gov.cn/ztzl/ynsgcjsdfbz/202606/t20260630_3273947.html"
+        },
+        {
+          "id": "YN-05",
+          "title": "云南省建筑工程叠层橡胶隔震支座性能要求和检验标准",
+          "code": "DBJ 53/T-47-2020",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-YN-ZFCXJST-CURRENT-DBJ53T-47-2020",
+          "source_url": "https://zfcxjst.yn.gov.cn/ztzl/ynsgcjsdfbz/202606/t20260630_3273846.html"
+        },
+        {
+          "id": "YN-06",
+          "title": "云南省建筑工程叠层橡胶隔震支座施工及验收标准",
+          "code": "DBJ 53/T-48-2020",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-YN-ZFCXJST-CURRENT-DBJ53T-48-2020",
+          "source_url": "https://zfcxjst.yn.gov.cn/ztzl/ynsgcjsdfbz/202606/t20260630_3273846.html"
+        },
+        {
+          "id": "YN-07",
+          "title": "建筑结构隔震构造详图",
+          "code": "滇20G9-1",
+          "status": "pending",
+          "status_label": "官网原文可查",
+          "source_date": "2020",
+          "source_id": "SRC-YN-ZFCXJST-DIAN20G9-1",
+          "source_url": "https://zfcxjst.yn.gov.cn/submodule/Editor/uploadfile/20200722162244200.pdf"
+        },
+        {
+          "id": "YN-08",
+          "title": "建筑隔震工程专用标识技术规程",
+          "code": "DBJ 53/T-70-2015",
+          "status": "non_current",
+          "status_label": "同编号已更新",
+          "status_date": "2025版进入现行目录",
+          "status_replacement": "→ DBJ 53/T-70-2025《云南省隔震减震建筑标识标准》",
+          "replacement_codes": ["DBJ 53/T-70-2025"],
+          "source_id": "SRC-YN-ZFCXJST-CURRENT-CATALOG-DBJ53T-70-2025",
+          "source_url": "https://zfcxjst.yn.gov.cn/ztzl/ynsgcjsdfbz/202606/t20260630_3273846.html"
+        },
+        {
+          "id": "YN-09",
+          "title": "云南省隔震减震建筑标识标准",
+          "code": "DBJ 53/T-70-2025",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-YN-ZFCXJST-CURRENT-DBJ53T-70-2025",
+          "source_url": "https://zfcxjst.yn.gov.cn/ztzl/ynsgcjsdfbz/202606/t20260630_3273846.html"
+        },
+        {
+          "id": "YN-10",
+          "title": "云南省建筑消能减震应用技术规程",
+          "code": "DBJ 53/T-125-2021",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-YN-ZFCXJST-CURRENT-DBJ53T-125-2021",
+          "source_url": "https://zfcxjst.yn.gov.cn/ztzl/ynsgcjsdfbz/202606/t20260630_3273846.html"
+        },
+        {
+          "id": "YN-11",
+          "title": "云南省建筑工程抗震设防专项审查技术要点（试行）",
+          "code": "云建震〔2020〕178号",
+          "status": "pending",
+          "status_label": "仍被官方引用",
+          "status_date": "2021项目审查",
+          "source_id": "SRC-YN-ZFCXJST-LATER-REFERENCE-YJZ-2020-178",
+          "source_url": "https://zfcxjst.yn.gov.cn/ewebeditor/uploadfile/20220105101845217.pdf"
+        },
+        {
+          "id": "YN-12",
+          "title": "云南省隔震减震建筑工程促进规定",
+          "code": "云南省人民政府令第202号",
+          "status": "current",
+          "status_label": "现行",
+          "source_id": "SRC-YN-GOV-CURRENT-RULE-202",
+          "source_url": "https://www.yn.gov.cn/zwgk/zfxxgkpt/gkptzcwj/ynsrmzfxxyxgzml/202305/t20230505_258597.html"
+        },
+        {
+          "id": "YN-13",
+          "title": "云南省隔震减震建筑工程促进规定实施细则",
+          "code": "云南住建厅公告第54号",
+          "status": "pending",
+          "status_label": "官网原文可查",
+          "status_date": "2017-02-01施行",
+          "source_id": "SRC-YN-ZFCXJST-IMPLEMENTATION-RULE-54",
+          "source_url": "https://zfcxjst.yn.gov.cn/ewebeditor/uploadfile/20210906155015474.pdf"
+        },
+        {
+          "id": "YN-14",
+          "title": "云南省装配式建筑评价标准",
+          "code": "DBJ 53/T-96-2018",
+          "status": "pending",
+          "status_label": "仍被官方引用",
+          "status_date": "2023官方文件",
+          "source_id": "SRC-YN-ZFCXJST-LATER-REFERENCE-DBJ53T-96",
+          "source_url": "https://zfcxjst.yn.gov.cn/zfxxgk/zcwj/bjwj/202304/t20230404_2068749.html"
+        },
+        {
+          "id": "YN-15",
+          "title": "关于进一步促进装配式建筑产业健康发展的通知",
+          "code": "云建科〔2021〕42号",
+          "status": "pending",
+          "status_label": "官网原文可查",
+          "status_date": "2021-04-06",
+          "source_id": "SRC-YN-ZFCXJST-YJK-2021-42",
+          "source_url": "https://zfcxjst.yn.gov.cn/gongzuodongtai2/gongshigonggao4/282891.html"
+        },
+        {
+          "id": "YN-16",
+          "title": "云南省人民政府办公厅关于大力发展装配式建筑的实施意见",
+          "code": "云政办发〔2017〕65号",
+          "status": "pending",
+          "status_label": "仍被官方引用",
+          "status_date": "2021政策文件",
+          "source_id": "SRC-YN-ZFCXJST-LATER-REFERENCE-YZBF-2017-65",
+          "source_url": "https://zfcxjst.yn.gov.cn/zhengfuxinxigongkai/zhengcejiedu8735/282893.html"
+        },
+        {
+          "id": "YN-17",
+          "title": "云南省山地城镇建筑设计导则（试行）",
+          "code": "2013年版",
+          "status": "pending",
+          "status_label": "仍被官方审查引用",
+          "status_date": "2021项目审查",
+          "source_id": "SRC-YN-ZFCXJST-LATER-REFERENCE-MOUNTAIN-GUIDE",
+          "source_url": "https://zfcxjst.yn.gov.cn/ewebeditor/uploadfile/20220105184051961.pdf"
+        }
+      ]
+    },
+    "重庆市": {
+      "aliases": ["重庆", "重庆市"],
+      "records": [
+        {
+          "id": "CQ-01", "title": "建筑地基基础设计标准", "code": "DBJ50/T-047-2024", "status": "current", "status_label": "现行", "source_id": "SRC-CQ-ZFCXJW-DBJ50T-047-2024", "source_url": "https://zfcxjw.cq.gov.cn/zwxx_166/gsgg/202412/t20241211_13881773_jlb.html"
+        },
+        {
+          "id": "CQ-02", "title": "建筑地基基础设计规范", "code": "DBJ50-047-2016", "status": "non_current", "status_label": "已替代", "status_date": "2025-03-01", "status_replacement": "→ DBJ50/T-047-2024《建筑地基基础设计标准》", "replacement_codes": ["DBJ50/T-047-2024"], "source_id": "SRC-CQ-ZFCXJW-DBJ50T-047-2024-REPLACE", "source_url": "https://zfcxjw.cq.gov.cn/zwxx_166/gsgg/202412/t20241211_13881773_jlb.html"
+        },
+        {
+          "id": "CQ-03", "title": "工程勘察标准", "code": "DBJ50/T-043-2024", "status": "current", "status_label": "现行", "source_id": "SRC-CQ-ZFCXJW-REVIEW-DBJ50T-043-2024", "source_url": "https://zfcxjw.cq.gov.cn/zwxx_166/gsgg/202412/P020241203672891774435.pdf"
+        },
+        {
+          "id": "CQ-04", "title": "工程地质勘察规范", "code": "DBJ50/T-043-2016", "status": "non_current", "status_label": "已替代", "status_date": "2024-07-01", "status_replacement": "→ DBJ50/T-043-2024《工程勘察标准》", "replacement_codes": ["DBJ50/T-043-2024"], "source_id": "SRC-CQ-STD-TEXT-DBJ50T-043-2024-REPLACE", "source_url": "https://zfcxjw.cq.gov.cn/zwxx_166/gsgg/202406/P020240611433189977629.pdf"
+        },
+        {
+          "id": "CQ-05", "title": "建筑桩基础技术标准", "code": "DBJ50/T-200-2024", "status": "current", "status_label": "现行", "source_id": "SRC-CQ-ZFCXJW-DBJ50T-200-2024", "source_url": "https://zfcxjw.cq.gov.cn/zwxx_166/gsgg/202411/t20241122_13824988.html"
+        },
+        {
+          "id": "CQ-06", "title": "建筑桩基础设计与施工验收规范", "code": "DBJ50-200-2014", "status": "non_current", "status_label": "已替代", "status_date": "2025-02-01", "status_replacement": "→ DBJ50/T-200-2024《建筑桩基础技术标准》", "replacement_codes": ["DBJ50/T-200-2024"], "source_id": "SRC-CQ-ZFCXJW-DBJ50T-200-2024-REPLACE", "source_url": "https://zfcxjw.cq.gov.cn/zwxx_166/gsgg/202411/t20241122_13824988.html"
+        },
+        {
+          "id": "CQ-07", "title": "旋挖成孔灌注桩工程技术规程", "code": "DBJ50-156-2012", "status": "non_current", "status_label": "已替代", "status_date": "2025-02-01", "status_replacement": "→ DBJ50/T-200-2024《建筑桩基础技术标准》", "replacement_codes": ["DBJ50/T-200-2024"], "source_id": "SRC-CQ-ZFCXJW-DBJ50T-200-2024-REPLACE", "source_url": "https://zfcxjw.cq.gov.cn/zwxx_166/gsgg/202411/t20241122_13824988.html"
+        },
+        {
+          "id": "CQ-08", "title": "旋转挤压灌注桩技术规程", "code": "DBJ50/T-207-2014", "status": "non_current", "status_label": "已替代", "status_date": "2025-02-01", "status_replacement": "→ DBJ50/T-200-2024《建筑桩基础技术标准》", "replacement_codes": ["DBJ50/T-200-2024"], "source_id": "SRC-CQ-ZFCXJW-DBJ50T-200-2024-REPLACE", "source_url": "https://zfcxjw.cq.gov.cn/zwxx_166/gsgg/202411/t20241122_13824988.html"
+        },
+        {
+          "id": "CQ-09", "title": "建筑与市政工程地基基础施工质量验收标准", "code": "DBJ50/T-125-2025", "status": "current", "status_label": "现行", "source_id": "SRC-CQ-ZFCXJW-DBJ50T-125-2025", "source_url": "https://zfcxjw.cq.gov.cn/zwxx_166/gsgg/202509/t20250925_15040607_jlb.html"
+        },
+        {
+          "id": "CQ-10", "title": "建筑地基基础工程施工质量验收规范", "code": "DBJ50-125-2011", "status": "non_current", "status_label": "已替代", "status_date": "2025-12-01", "status_replacement": "→ DBJ50/T-125-2025《建筑与市政工程地基基础施工质量验收标准》", "replacement_codes": ["DBJ50/T-125-2025"], "source_id": "SRC-CQ-ZFCXJW-DBJ50T-125-2025-REPLACE", "source_url": "https://zfcxjw.cq.gov.cn/zwxx_166/gsgg/202509/t20250925_15040607_jlb.html"
+        },
+        {
+          "id": "CQ-11", "title": "建筑高边坡工程施工安全技术标准", "code": "DBJ50/T-344-2019", "status": "current", "status_label": "现行", "source_id": "SRC-CQ-ZFCXJW-DBJ50T-344-2019", "source_url": "https://zfcxjw.cq.gov.cn/zwxx_166/gsgg/201912/t20191230_5275377.html"
+        },
+        {
+          "id": "CQ-12", "title": "建筑护栏技术标准", "code": "DBJ50/T-123-2020", "status": "current", "status_label": "现行", "source_id": "SRC-CQ-ZFCXJW-DBJ50T-123-2020", "source_url": "https://zfcxjw.cq.gov.cn/zwxx_166/gsgg/202004/t20200414_7049281.html"
+        },
+        {
+          "id": "CQ-13", "title": "建筑护栏技术规程", "code": "DBJ50-123-2010", "status": "non_current", "status_label": "已替代", "status_date": "2020-08-01", "status_replacement": "→ DBJ50/T-123-2020《建筑护栏技术标准》", "replacement_codes": ["DBJ50/T-123-2020"], "source_id": "SRC-CQ-ZFCXJW-DBJ50T-123-2020-REPLACE", "source_url": "https://zfcxjw.cq.gov.cn/zwxx_166/gsgg/202004/t20200414_7049281.html"
+        }
+      ]
+    },
+    "河北省": {
+      "aliases": ["河北", "河北省", "雄安", "雄安新区", "河北雄安新区"],
+      "records": [
+        {"id":"HE-01","title":"雄安新区工程建设关键质量指标体系：建筑工程","code":"DB1331/T 025.1-2022","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB1331T-025-1-2022","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=F0B644751BE94AB8E05397BE0A0A118E"},
+        {"id":"HE-02","title":"雄安新区工程建设关键质量指标体系：地下空间工程","code":"DB1331/T 025.5-2022","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB1331T-025-5-2022","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=F0B644751BED4AB8E05397BE0A0A118E"},
+        {"id":"HE-03","title":"雄安新区工程建设关键质量指标体系：防灾减灾工程","code":"DB1331/T 025.7-2022","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB1331T-025-7-2022","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=F0B644751BEF4AB8E05397BE0A0A118E"},
+        {"id":"HE-04","title":"雄安新区建设工程防水技术规程","code":"DB1331/T 053-2023","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB1331T-053-2023","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=12A54B926F94DAF5E06397BE0A0AF7DF"},
+        {"id":"HE-05","title":"雄安新区建设工程抗震设防标准","code":"DB1331/T 109-2025","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB1331T-109-2025","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=337D893ED753BBB6E06397BE0A0A5942"},
+        {"id":"HE-06","title":"雄安新区建设工程振动舒适度标准","code":"DB1331/T 110-2025","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB1331T-110-2025","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailedCNF?id=337D893ED754BBB6E06397BE0A0A5942"},
+        {"id":"HE-07","title":"雄安新区建设工程基坑导则","code":"DB1331/T 015-2022","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB1331T-015-2022","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailedCNF?id=EAA53848E1B530D8E05397BE0A0A4C0D"},
+        {"id":"HE-08","title":"雄安新区综合管廊防水技术规程","code":"DB1331/T 098-2024","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB1331T-098-2024","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=2B00EFB776B660FAE06397BE0A0AADDF"},
+        {"id":"HE-09","title":"既有建筑地基基础鉴定与加固技术标准","code":"DB13(J)/T 8422-2021","status":"pending","status_label":"出版库显示现行","status_date":"省厅现行目录待核","source_id":"SRC-HE-CABP-DB13JT-8422-2021","source_url":"https://ebook.chinabuilding.com.cn/zbooklib/book/detail/show?SiteID=1&bookID=149000"},
+        {"id":"HE-10","title":"建筑基坑支护技术规程","code":"DB13(J)/T 8390-2020","status":"pending","status_label":"出版库显示现行","status_date":"省厅现行目录待核","source_id":"SRC-HE-CABP-DB13JT-8390-2020","source_url":"https://ebook.chinabuilding.com.cn/zbooklib/book/detail/show?SiteID=1&bookID=147652"}
+      ]
+    },
+    "山西省": {
+      "aliases": ["山西", "山西省", "太原", "太原市"],
+      "records": [
+        {"id":"SX-01","title":"建筑地基基础检测规程","code":"DBJ04/T 312-2015","status":"pending","status_label":"出版库显示现行","status_date":"省厅现行目录待核","source_id":"SRC-SX-CABP-DBJ04T-312-2015","source_url":"https://ebook.chinabuilding.com.cn/zbooklib/book/detail/show?SiteID=1&bookID=75601"},
+        {"id":"SX-02","title":"建筑地基基础工程施工质量验收规程","code":"DBJ04/T 258-2016","status":"pending","status_label":"仍被官方引用","status_date":"2025省属机构资料","source_id":"SRC-SX-OFFICIAL-LATER-REFERENCE-DBJ04T-258-2016","source_url":"https://kcy.sxcig.com/info/1291/7051.htm"},
+        {"id":"SX-03","title":"装配式混凝土建筑技术标准","code":"DBJ04/T 415-2021","status":"pending","status_label":"出版库显示现行","status_date":"省厅现行目录待核","source_id":"SRC-SX-CABP-DBJ04T-415-2021","source_url":"https://ebook.chinabuilding.com.cn/zbooklib/book/detail/show?SiteID=1&bookID=148860"},
+        {"id":"SX-04","title":"湿陷性黄土地区建筑基坑工程技术标准","code":"DBJ04/T 374-2018","status":"pending","status_label":"出版库显示现行","status_date":"省厅现行目录待核","source_id":"SRC-SX-CABP-DBJ04T-374-2018","source_url":"https://ebook.chinabuilding.com.cn/zbooklib/book/detail/show?SiteID=1&bookID=127212"}
+      ]
+    },
+    "辽宁省": {
+      "aliases": ["辽宁", "辽宁省", "沈阳", "沈阳市", "大连", "大连市"],
+      "records": [
+        {"id":"LN-01","title":"建筑地基基础技术规范","code":"DB21/T 907-2015","status":"current","status_label":"现行至2026-09-29","status_date":"新版2026-09-30实施","status_replacement":"→ DB21/T 907-2026《建筑地基基础技术标准》","replacement_codes":["DB21/T 907-2026"],"source_id":"SRC-SAMR-DB21T-907-2015","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=91D99E4D36502E24E05397BE0A0A3A10"},
+        {"id":"LN-02","title":"建筑地基基础技术标准","code":"DB21/T 907-2026","status":"pending","status_label":"已发布，尚未实施","status_date":"2026-09-30实施","source_id":"SRC-SAMR-DB21T-907-2026","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=5AF0C5295D6E3523E06397BE0A0A7480"},
+        {"id":"LN-03","title":"地下混凝土结构防裂技术规程","code":"DB21/T 1745-2009","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB21T-1745-2009","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailedCNF?id=91D99E4DE0282E24E05397BE0A0A3A10"},
+        {"id":"LN-04","title":"辽宁省既有建筑绿色改造评价标准","code":"DB21/T 3410-2021","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB21T-3410-2021","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=C362B3DB6272A067E05397BE0A0A1ED8"},
+        {"id":"LN-05","title":"预应力混凝土管桩基础技术规程","code":"DB21/T 1565-2015","status":"non_current","status_label":"已替代","status_date":"2025-08-30","status_replacement":"→ DB21/T 1565-2025《预应力混凝土管桩基础技术规程》","replacement_codes":["DB21/T 1565-2025"],"source_id":"SRC-SAMR-DB21T-1565-2015-UPDATE","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=91D99E4D2E702E24E05397BE0A0A3A10"},
+        {"id":"LN-06","title":"预应力混凝土管桩基础技术规程","code":"DB21/T 1565-2025","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB21T-1565-2025","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=3D279E455EBF2A8FE06397BE0A0A7BE6"},
+        {"id":"LN-07","title":"多层装配式钢结构建筑技术标准","code":"DB21/T 3196-2019","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB21T-3196-2019","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailedCNF?id=9A6D0B5D94303E0BE05397BE0A0AB704"},
+        {"id":"LN-08","title":"绿色建筑评价标准","code":"DB21/T 2017-2022","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB21T-2017-2022","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=DDAEF7147B102E93E05397BE0A0AAA92"}
+      ]
+    },
+    "吉林省": {
+      "aliases": ["吉林", "吉林省", "长春", "长春市"],
+      "records": [
+        {"id":"JL-01","title":"螺旋锥体挤土压灌桩技术标准","code":"DB22/T 5008-2018","status":"non_current","status_label":"已替代","status_date":"2023-07-12","status_replacement":"→ DB22/T 5008-2023《螺旋锥体挤土压灌桩技术标准》","replacement_codes":["DB22/T 5008-2023"],"source_id":"SRC-SAMR-DB22T-5008-2018-UPDATE","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=D7B84D7F3BF945E5E05397BE0A0A47D2"},
+        {"id":"JL-02","title":"螺旋锥体挤土压灌桩技术标准","code":"DB22/T 5008-2023","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB22T-5008-2023","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=00F6A069E8B7FC7BE06397BE0A0AB9E2"},
+        {"id":"JL-03","title":"双静压管桩技术标准","code":"DB22/T 5026-2019","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB22T-5026-2019","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailedCNF?id=D7B6988FDA4FAABEE05397BE0A0A1B36"},
+        {"id":"JL-04","title":"绿色建筑评价标准","code":"DB22/T 5045-2020","status":"non_current","status_label":"已废止","status_date":"2026-05-01","status_replacement":"平台未注明替代文件","replacement_codes":[],"source_id":"SRC-SAMR-DB22T-5045-2020-REPEAL","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=D7B6988FDA11AABEE05397BE0A0A1B36"},
+        {"id":"JL-05","title":"绿色建筑设计标准","code":"DB22/T 5055-2021","status":"non_current","status_label":"已废止","status_date":"平台未载明日期","status_replacement":"平台未注明替代文件","replacement_codes":[],"source_id":"SRC-SAMR-DB22T-5055-2021-REPEAL","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailedCNF?id=D7B6988FD9F6AABEE05397BE0A0A1B36"},
+        {"id":"JL-06","title":"预拌砂浆应用技术标准","code":"DB22/T 5056-2021","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB22T-5056-2021","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=D7B6988FD9F7AABEE05397BE0A0A1B36"},
+        {"id":"JL-07","title":"长螺旋钻孔压灌混凝土桩基础技术规程","code":"DB22/T 5090-2014","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB22T-5090-2014","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailedCNF?id=17D5144C5F1F6F77E06397BE0A0ADFD5"},
+        {"id":"JL-08","title":"预应力混凝土桩基础技术标准","code":"DB22/T 5159-2024","status":"current","status_label":"现行","source_id":"SRC-JL-JST-DB22T-5159-2024","source_url":"https://jst.jl.gov.cn/zwgk/dfnzh/jlsgcjsdfbzqwgk/202406/t20240624_3247890.html"}
+      ]
+    },
+    "黑龙江省": {
+      "aliases": ["黑龙江", "黑龙江省", "哈尔滨", "哈尔滨市"],
+      "records": [
+        {"id":"HLJ-01","title":"黑龙江省建设施工现场安全生产标准化实施标准","code":"DB23/T 1318-2020","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB23T-1318-2020","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailedCNF?id=ABA58E1641331CE8E05397BE0A0AD33C"},
+        {"id":"HLJ-02","title":"建筑地基基础设计规程","code":"DB23/T 902-2019","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB23T-902-2019","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=9A5BB811ED2C3E9DE05397BE0A0AA9A0"},
+        {"id":"HLJ-03","title":"黑龙江省建筑与市政地基基础检测技术标准","code":"DB23/T 3822-2024","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB23T-3822-2024","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=22D43926AD7B09FAE06397BE0A0AAED7"},
+        {"id":"HLJ-04","title":"建筑屋面结构雪荷载设计标准","code":"DB23/T 4000-2026","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB23T-4000-2026","source_url":"https://ba.sacinfo.org.cn/portal/online/7b934d5136df194a1654b561b1b9e275f3b8fce04e0824396d490ffd0f93d73a"},
+        {"id":"HLJ-05","title":"黑龙江省超低能耗建筑检测技术标准","code":"DB23/T 3559-2023","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB23T-3559-2023","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailedCNF?id=0201987C77EA494EE06397BE0A0ABE85"},
+        {"id":"HLJ-06","title":"黑龙江省既有建筑绿色低碳改造技术标准","code":"DB23/T 4057-2026","status":"pending","status_label":"已发布，尚未实施","status_date":"2026-09-28实施","source_id":"SRC-SAMR-DB23T-4057-2026","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=597570A5C6113233E06397BE0A0ABA8E"},
+        {"id":"HLJ-07","title":"黑龙江省地震安全性评价场地地震工程地质条件钻孔标准化数据规则","code":"DB23/T 3486-2023","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB23T-3486-2023","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=020006B60461C724E06397BE0A0A4179"}
+      ]
+    },
+    "安徽省": {
+      "aliases": ["安徽", "安徽省", "合肥", "合肥市"],
+      "records": [
+        {"id":"AH-01","title":"装配式钢结构预制墙板应用技术规程","code":"DB34/T 3953-2021","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB34T-3953-2021","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=C9E4811D5A2E3A47E05397BE0A0AA777"},
+        {"id":"AH-02","title":"建筑墙式金属阻尼器减震技术规程","code":"DB34/T 3957-2021","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB34T-3957-2021","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=C9E4811D5A323A47E05397BE0A0AA777"},
+        {"id":"AH-03","title":"装配式钢-混叠合柱框架结构技术规程","code":"DB34/T 3958-2021","status":"non_current","status_label":"已废止","status_date":"平台未载明日期","status_replacement":"平台未注明替代文件","replacement_codes":[],"source_id":"SRC-SAMR-DB34T-3958-2021-REPEAL","source_url":"https://dbba.sacinfo.org.cn/stdDetail/25b01df15e92de0d4751342b0f9d4c80417d548172b8f05747b786d77db26733"},
+        {"id":"AH-04","title":"住宅工程质量通病防治技术规程","code":"DB34/1659-2012","status":"non_current","status_label":"已替代","status_date":"2022-05-29","status_replacement":"→ DB34/1659-2022《住宅工程质量常见问题防治技术规程》","replacement_codes":["DB34/1659-2022"],"source_id":"SRC-SAMR-DB34-1659-2012-UPDATE","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=91D99E4D517E2E24E05397BE0A0A3A10"},
+        {"id":"AH-05","title":"住宅工程质量常见问题防治技术规程","code":"DB34/1659-2022","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB34-1659-2022","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=DE3E818AF78EDBBEE05397BE0A0A35A2"},
+        {"id":"AH-06","title":"建筑工程施工质量验收统一标准","code":"DB34/5005-2014","status":"pending","status_label":"出版库显示现行","status_date":"省厅现行目录待核","source_id":"SRC-AH-CABP-DB34-5005-2014","source_url":"https://ebook.chinabuilding.com.cn/zbooklib/book/detail/show?SiteID=1&bookID=62112"},
+        {"id":"AH-07","title":"装配式混凝土结构技术规程","code":"DB34/T 5018-2015","status":"pending","status_label":"已发布施行","status_date":"现行状态待省厅确认","source_id":"SRC-AH-PUBLISHER-DB34T-5018-2015","source_url":"https://www.biaozhuns.com/archives/20210828/show-294809-24-1.html"}
+      ]
+    },
+    "福建省": {
+      "aliases": ["福建", "福建省", "福州", "福州市", "厦门", "厦门市"],
+      "records": [
+        {"id":"FJ-01","title":"福建省桩基础与地下结构防腐蚀技术标准","code":"DBJ/T 13-200-2025","status":"current","status_label":"现行","source_id":"SRC-FJ-ZJT-DBJT13-200-2025","source_url":"https://zjt.fujian.gov.cn/xxgk/zfxxgkzl/xxgkml/dfxfgzfgzhgfxwj/jskj_3794/202503/t20250324_6787101.htm"},
+        {"id":"FJ-02","title":"桩基础与地下结构防腐蚀技术规程","code":"DBJ/T 13-200-2014","status":"non_current","status_label":"已替代","status_date":"2025-06-01","status_replacement":"→ DBJ/T 13-200-2025《福建省桩基础与地下结构防腐蚀技术标准》","replacement_codes":["DBJ/T 13-200-2025"],"source_id":"SRC-FJ-ZJT-DBJT13-200-2025-REPLACE","source_url":"https://zjt.fujian.gov.cn/xxgk/zfxxgkzl/xxgkml/dfxfgzfgzhgfxwj/jskj_3794/202503/P020250324636190031271.pdf"},
+        {"id":"FJ-03","title":"建筑与市政工程地基处理技术标准","code":"DBJ/T 13-471-2024","status":"current","status_label":"现行","source_id":"SRC-FJ-ZJT-DBJT13-471-2024","source_url":"https://zjt.fujian.gov.cn/xxgk/zfxxgkzl/xxgkml/dfxfgzfgzhgfxwj/jskj_3794/202501/t20250122_6706689.htm"},
+        {"id":"FJ-04","title":"建筑地基检测技术规程","code":"DBJ/T 13-146-2012","status":"pending","status_label":"官网已发布","status_date":"废止状态待核","source_id":"SRC-FJ-ZJT-DBJT13-146-2012","source_url":"https://zjt.fujian.gov.cn/ztzl/wqzt/gcjsbzzl/dfbz/xxfb/201202/t20120214_2856577.htm"},
+        {"id":"FJ-05","title":"福建省既有建筑地基基础检测技术规程","code":"DBJ/T 13-291-2018","status":"current","status_label":"现行","source_id":"SRC-FJ-ZJT-DBJT13-291-2018","source_url":"https://zjt.fujian.gov.cn/xxgk/zfxxgkzl/xxgkml/dfxfgzfgzhgfxwj/jskj_3794/201807/t20180731_3597503.htm"},
+        {"id":"FJ-06","title":"福建省建筑结构风压规程","code":"DBJ/T 13-141-2011","status":"pending","status_label":"官网已发布","status_date":"废止状态待核","source_id":"SRC-FJ-ZJT-DBJT13-141-2011","source_url":"https://zjt.fujian.gov.cn/hygl/kxjs/wjhb/201107/t20110728_2791522.htm"},
+        {"id":"FJ-07","title":"旋挖成孔灌注桩工程技术规程","code":"DBJ/T 13-301-2018","status":"pending","status_label":"待省厅复核","status_date":"已收录原始目录","source_id":"SRC-FJ-IMA-DBJT13-301-2018","source_url":"https://zjt.fujian.gov.cn/hygl/kxjs/jsbz/"},
+        {"id":"FJ-08","title":"灌注桩后注浆施工技术规程","code":"DBJ/T 13-247-2016","status":"pending","status_label":"待省厅复核","status_date":"已收录原始目录","source_id":"SRC-FJ-IMA-DBJT13-247-2016","source_url":"https://zjt.fujian.gov.cn/hygl/kxjs/jsbz/"},
+        {"id":"FJ-09","title":"福建省建筑工程常见质量问题控制规程","code":"DBJ/T 13-107-2015","status":"pending","status_label":"待省厅复核","status_date":"已收录原始目录","source_id":"SRC-FJ-IMA-DBJT13-107-2015","source_url":"https://zjt.fujian.gov.cn/hygl/kxjs/jsbz/"},
+        {"id":"FJ-10","title":"福建省既有建筑改造提升工程结构加固技术标准","code":"DBJ/T 13-212-2024","status":"current","status_label":"现行","source_id":"SRC-FJ-ZJT-DBJT13-212-2024","source_url":"https://zjt.fujian.gov.cn/xxgk/zfxxgkzl/xxgkml/dfxfgzfgzhgfxwj/jskj_3794/202410/t20241029_6555511.htm"}
+      ]
+    },
+    "江西省": {
+      "aliases": ["江西", "江西省", "南昌", "南昌市", "九江", "九江市"],
+      "records": [
+        {"id":"JX-01","title":"建筑与市政地基基础技术标准","code":"DBJ/T 36-061-2021","status":"pending","status_label":"已发布施行","status_date":"省厅现行目录待核","source_id":"SRC-JX-ZJT-DISCOVERY-DBJT36-061-2021","source_url":"https://zjt.jiangxi.gov.cn/"},
+        {"id":"JX-02","title":"桥梁工程清水混凝土施工技术规程","code":"DB36/T 1009-2018","status":"pending","status_label":"国家平台已收录","status_date":"现行状态待核","source_id":"SRC-SAMR-SEARCH-DB36T-1009-2018","source_url":"https://std.samr.gov.cn/search/stdPage?q=DB36%2FT%201009-2018"}
+      ]
+    },
+    "山东省": {
+      "aliases": ["山东", "山东省", "济南", "济南市", "青岛", "青岛市"],
+      "records": [
+        {"id":"SD-01","title":"建筑工程抗震性态设计规范","code":"DB37/T 5055-2016","status":"non_current","status_label":"已替代","status_date":"2024-08-29","status_replacement":"→ DB37/T 5055-2024《建筑工程抗震性态设计标准》","replacement_codes":["DB37/T 5055-2024"],"source_id":"SRC-SAMR-DB37T-5055-2016","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=DFBC2F851D365FEAE05397BE0A0ABF39"},
+        {"id":"SD-02","title":"建筑工程抗震性态设计标准","code":"DB37/T 5055-2024","status":"non_current","status_label":"已废止","status_date":"2026-06-05","status_replacement":"国家平台未列替代标准","replacement_codes":[],"source_id":"SRC-SAMR-DB37T-5055-2024","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=490AA99A3A219D72E06397BE0A0AA7AC"},
+        {"id":"SD-03","title":"建筑岩土工程勘察设计规范","code":"DB37/5052-2015","status":"pending","status_label":"国家平台已收录","status_date":"现行状态待核","source_id":"SRC-SAMR-SEARCH-DB37-5052-2015","source_url":"https://std.samr.gov.cn/search/stdPage?q=DB37%2F5052-2015"},
+        {"id":"SD-04","title":"钢结构装配式建筑楼板应用技术规程","code":"DB37/T 5180-2021","status":"non_current","status_label":"已废止","status_date":"2026-06-30","status_replacement":"国家平台未列替代标准","replacement_codes":[],"source_id":"SRC-SAMR-DB37T-5180-2021","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=DFD0629FECEA41ABE05397BE0A0A7E58"},
+        {"id":"SD-05","title":"装配式钢结构建筑技术规程","code":"DB37/T 5115-2018","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB37T-5115-2018","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailedCNF?id=DFBEBC33A8C02042E05397BE0A0A751D"},
+        {"id":"SD-06","title":"住宅工程质量常见问题防控技术标准","code":"DB37/T 5157-2020","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB37T-5157-2020","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=DFCDF7D98A916D10E05397BE0A0A9E53"},
+        {"id":"SD-07","title":"绿色建筑设计标准","code":"DB37/T 5043-2021","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB37T-5043-2021","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=DFCF96C6247407B8E05397BE0A0A8E64"},
+        {"id":"SD-08","title":"钢结构装配式建筑外墙板应用技术规程","code":"DB37/T 5179-2021","status":"pending","status_label":"国家平台待复核","status_date":"已收录原始目录","source_id":"SRC-SAMR-SEARCH-DB37T-5179-2021","source_url":"https://std.samr.gov.cn/search/stdPage?q=DB37%2FT%205179-2021"},
+        {"id":"SD-09","title":"绿色建筑评价标准","code":"DB37/T 5097-2021","status":"pending","status_label":"国家平台待复核","status_date":"已收录原始目录","source_id":"SRC-SAMR-SEARCH-DB37T-5097-2021","source_url":"https://std.samr.gov.cn/search/stdPage?q=DB37%2FT%205097-2021"},
+        {"id":"SD-10","title":"区域性地震安全性评价技术规范","code":"DB37/T 3646-2019","status":"pending","status_label":"国家平台待复核","status_date":"已收录原始目录","source_id":"SRC-SAMR-SEARCH-DB37T-3646-2019","source_url":"https://std.samr.gov.cn/search/stdPage?q=DB37%2FT%203646-2019"}
+      ]
+    },
+    "河南省": {
+      "aliases": ["河南", "河南省", "郑州", "郑州市"],
+      "records": [
+        {"id":"HA-01","title":"河南省建筑地基基础勘察设计规范","code":"DBJ41/138-2014","status":"pending","status_label":"省厅公开库收录","status_date":"现行状态待核","source_id":"SRC-HA-ZJT-DBJ41-138-2014","source_url":"https://hnjs.henan.gov.cn/xxgk/xxgkml/zcfg/bzgg/xzzq/"},
+        {"id":"HA-02","title":"湿陷性黄土地区勘察与地基处理技术标准","code":"DBJ41/T 243-2021","status":"pending","status_label":"省厅公开库收录","status_date":"现行状态待核","source_id":"SRC-HA-ZJT-DBJ41T-243-2021","source_url":"https://hnjs.henan.gov.cn/xxgk/xxgkml/zcfg/bzgg/xzzq/"},
+        {"id":"HA-03","title":"CRB600H高强钢筋应用技术规程","code":"DBJ41/T 167-2017","status":"pending","status_label":"省厅公开库收录","status_date":"现行状态待核","source_id":"SRC-HA-ZJT-DBJ41T-167-2017","source_url":"https://hnjs.henan.gov.cn/xxgk/xxgkml/zcfg/bzgg/xzzq/"},
+        {"id":"HA-04","title":"河南省装配式建筑评价标准","code":"DBJ41/T 222-2019","status":"non_current","status_label":"已替代","status_date":"2024版实施日待核","status_replacement":"→ DBJ41/T 222-2024《河南省装配式建筑评价标准》","replacement_codes":["DBJ41/T 222-2024"],"source_id":"SRC-HA-ZJT-DBJ41T-222-2024-REPLACE","source_url":"https://hnjs.henan.gov.cn/xxgk/xxgkml/zcfg/bzgg/xzzq/"},
+        {"id":"HA-05","title":"河南省装配式建筑评价标准","code":"DBJ41/T 222-2024","status":"pending","status_label":"新版已发布","status_date":"实施日待核","source_id":"SRC-HA-ZJT-DBJ41T-222-2024","source_url":"https://hnjs.henan.gov.cn/xxgk/xxgkml/zcfg/bzgg/xzzq/"},
+        {"id":"HA-06","title":"现浇石膏墙体应用技术标准","code":"DBJ41/T 244-2021","status":"pending","status_label":"省厅公开库收录","status_date":"现行状态待核","source_id":"SRC-HA-ZJT-DBJ41T-244-2021","source_url":"https://hnjs.henan.gov.cn/xxgk/xxgkml/zcfg/bzgg/xzzq/"},
+        {"id":"HA-07","title":"超低能耗建筑施工及质量验收标准","code":"DBJ41/T 247-2021","status":"pending","status_label":"省厅公开库收录","status_date":"现行状态待核","source_id":"SRC-HA-ZJT-DBJ41T-247-2021","source_url":"https://hnjs.henan.gov.cn/xxgk/xxgkml/zcfg/bzgg/xzzq/"},
+        {"id":"HA-08","title":"超低能耗公共建筑节能设计标准","code":"DBJ41/T 246-2021","status":"pending","status_label":"省厅公开库收录","status_date":"现行状态待核","source_id":"SRC-HA-ZJT-DBJ41T-246-2021","source_url":"https://hnjs.henan.gov.cn/xxgk/xxgkml/zcfg/bzgg/xzzq/"},
+        {"id":"HA-09","title":"600MPa级热轧带肋钢筋应用技术标准","code":"DBJ41/T 242-2021","status":"pending","status_label":"省厅公开库收录","status_date":"现行状态待核","source_id":"SRC-HA-ZJT-DBJ41T-242-2021","source_url":"https://hnjs.henan.gov.cn/xxgk/xxgkml/zcfg/bzgg/xzzq/"},
+        {"id":"HA-10","title":"木结构设计标准","code":"DBJ41/T 239-2021","status":"pending","status_label":"省厅公开库收录","status_date":"现行状态待核","source_id":"SRC-HA-ZJT-DBJ41T-239-2021","source_url":"https://hnjs.henan.gov.cn/xxgk/xxgkml/zcfg/bzgg/xzzq/"}
+      ]
+    },
+    "湖北省": {
+      "aliases": ["湖北", "湖北省", "武汉", "武汉市"],
+      "records": [
+        {"id":"HB-01","title":"建筑地基基础技术规范","code":"DB42/242-2014","status":"non_current","status_label":"已替代","status_date":"2026-08-03","status_replacement":"→ DB42/T 242-2026《建筑地基基础技术标准》","replacement_codes":["DB42/T 242-2026"],"source_id":"SRC-HB-ZJT-DB42T-242-2026-REPLACE","source_url":"https://zjt.hubei.gov.cn/zfxxgk/zc/qtzdgkwj/202606/t20260616_5959289.shtml"},
+        {"id":"HB-02","title":"建筑地基基础技术标准","code":"DB42/T 242-2026","status":"current","status_label":"现行","source_id":"SRC-HB-ZJT-DB42T-242-2026","source_url":"https://zjt.hubei.gov.cn/zfxxgk/zc/qtzdgkwj/202606/t20260616_5959289.shtml"},
+        {"id":"HB-03","title":"建筑防水工程技术规范","code":"DB42/T 1386-2018","status":"non_current","status_label":"已替代","status_date":"2025-12-20","status_replacement":"→ DB42/T 1386-2025《建筑防水工程技术标准》","replacement_codes":["DB42/T 1386-2025"],"source_id":"SRC-SAMR-DB42T-1386-2018","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=91D99E4D9AC02E24E05397BE0A0A3A10"},
+        {"id":"HB-04","title":"建筑防水工程技术标准","code":"DB42/T 1386-2025","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB42T-1386-2025","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=3E6DA46A1CF82AA1E06397BE0A0ADA0F"},
+        {"id":"HB-05","title":"预应力混凝土管桩基础技术规程","code":"DB42/489-2008","status":"pending","status_label":"国家平台待复核","status_date":"已收录原始目录","source_id":"SRC-SAMR-SEARCH-DB42-489-2008","source_url":"https://std.samr.gov.cn/search/stdPage?q=DB42%2F489-2008"},
+        {"id":"HB-06","title":"蒸压加气混凝土砌块工程技术规程","code":"DB42/T 268-2012","status":"pending","status_label":"国家平台待复核","status_date":"已收录原始目录","source_id":"SRC-SAMR-SEARCH-DB42T-268-2012","source_url":"https://std.samr.gov.cn/search/stdPage?q=DB42%2FT%20268-2012"},
+        {"id":"HB-07","title":"CRB600H高强钢筋应用技术规程","code":"DB42/T 1345-2018","status":"non_current","status_label":"已废止","status_date":"平台未载明日期","status_replacement":"国家平台未列替代标准","replacement_codes":[],"source_id":"SRC-SAMR-DB42T-1345-2018","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailedCNF?id=91D99E4D9EE62E24E05397BE0A0A3A10"},
+        {"id":"HB-08","title":"高强热轧带肋钢筋应用技术规程","code":"DB42/T 1534-2019","status":"non_current","status_label":"已废止","status_date":"2024-05-11","status_replacement":"国家平台未列替代标准","replacement_codes":[],"source_id":"SRC-SAMR-DB42T-1534-2019","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=9C7741AAF8FC3BA3E05397BE0A0A70CC"},
+        {"id":"HB-09","title":"岩溶地区勘察设计与施工技术规程","code":"DB4201/T 632-2020","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB4201T-632-2020","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=B7B9953AF8171C55E05397BE0A0AAC6D"}
+      ]
+    },
+    "湖南省": {
+      "aliases": ["湖南", "湖南省", "长沙", "长沙市"],
+      "records": [
+        {"id":"HUN-01","title":"湖南省地下工程混凝土结构自防水技术标准","code":"DBJ43/T 360-2020","status":"pending","status_label":"官网正文可核","status_date":"现行状态待核","source_id":"SRC-HUN-ZJT-DBJ43T-360-2020","source_url":"https://zjt.hunan.gov.cn/zjt/xxgk/xinxigongkaimulu/tzgg/tzgg2jzjnykj/202106/29310058/files/a9eedd738e17418ca424b11938a58344.pdf"},
+        {"id":"HUN-02","title":"住宅工程质量常见问题防治技术规程","code":"DBJ43/T 306-2014","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-HUN-IMA-DBJ43T-306-2014","source_url":"https://zjt.hunan.gov.cn/zjt/xxgk/xinxigongkaimulu/tzgg/tzgg2jzjnykj/"},
+        {"id":"HUN-03","title":"湖南省绿色装配式建筑评价标准","code":"DBJ43/T 332-2018","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-HUN-IMA-DBJ43T-332-2018","source_url":"https://zjt.hunan.gov.cn/zjt/xxgk/xinxigongkaimulu/tzgg/tzgg2jzjnykj/"}
+      ]
+    },
+    "广西壮族自治区": {
+      "aliases": ["广西", "广西壮族自治区", "南宁", "南宁市"],
+      "records": [
+        {"id":"GX-01","title":"广西膨胀土地区建筑勘察设计施工技术规程","code":"DB45/T 396-2007","status":"non_current","status_label":"已替代","status_date":"2022-02-28","status_replacement":"→ DB45/T 396-2022《膨胀土地区建筑技术规程》","replacement_codes":["DB45/T 396-2022"],"source_id":"SRC-SAMR-DB45T-396-2007","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=91D99E4D931A2E24E05397BE0A0A3A10"},
+        {"id":"GX-02","title":"膨胀土地区建筑技术规程","code":"DB45/T 396-2022","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB45T-396-2022","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=D9995C014BB4EFACE05397BE0A0A7C9F"},
+        {"id":"GX-03","title":"广西建筑地基基础设计规范","code":"DBJ45/003-2015","status":"pending","status_label":"自治区目录待核","status_date":"已收录原始目录","source_id":"SRC-GX-IMA-DBJ45-003-2015","source_url":"https://zjt.gxzf.gov.cn/zfxxgk/fdzdgknr/wjtz/"},
+        {"id":"GX-04","title":"岩溶地区建筑地基基础技术规范","code":"DBJ45/024-2016","status":"pending","status_label":"自治区目录待核","status_date":"已收录原始目录","source_id":"SRC-GX-IMA-DBJ45-024-2016","source_url":"https://zjt.gxzf.gov.cn/zfxxgk/fdzdgknr/wjtz/"},
+        {"id":"GX-05","title":"广西岩土工程勘察规范","code":"DBJ/T45-066-2018","status":"pending","status_label":"自治区目录待核","status_date":"已收录原始目录","source_id":"SRC-GX-IMA-DBJT45-066-2018","source_url":"https://zjt.gxzf.gov.cn/zfxxgk/fdzdgknr/wjtz/"},
+        {"id":"GX-06","title":"超长混凝土结构无缝施工技术规程","code":"DBJ/T45-047-2017","status":"pending","status_label":"自治区目录待核","status_date":"已收录原始目录","source_id":"SRC-GX-IMA-DBJT45-047-2017","source_url":"https://zjt.gxzf.gov.cn/zfxxgk/fdzdgknr/wjtz/"},
+        {"id":"GX-07","title":"预应力混凝土管桩建筑技术规程","code":"DBJ/T45-007-2012","status":"pending","status_label":"自治区目录待核","status_date":"已收录原始目录","source_id":"SRC-GX-IMA-DBJT45-007-2012","source_url":"https://zjt.gxzf.gov.cn/zfxxgk/fdzdgknr/wjtz/"},
+        {"id":"GX-08","title":"岩溶地区桩基技术规范","code":"DBJ/T45-082-2019","status":"pending","status_label":"复审结论：修订","status_date":"修订完成前继续核查","source_id":"SRC-GX-ZJT-REVIEW-DBJT45-082-2019","source_url":"https://zjt.gxzf.gov.cn/zfxxgk/fdzdgknr/wjtz/t26091038.shtml"}
+      ]
+    },
+    "四川省": {
+      "aliases": ["四川", "四川省", "成都", "成都市"],
+      "records": [
+        {"id":"SC-01","title":"四川省建筑地基基础检测技术规程","code":"DBJ51/T 014-2013","status":"non_current","status_label":"已替代","status_date":"2021版实施日待核","status_replacement":"→ DBJ51/014-2021《四川省建筑地基基础检测技术规程》","replacement_codes":["DBJ51/014-2021"],"source_id":"SRC-SC-ZJT-DBJ51T014-2013","source_url":"https://jst.sc.gov.cn/scjst/bzgf/2015/10/1/500dba830b394d7aa8d54de1bbd9621d/files/%E5%9B%9B%E5%B7%9D%E7%9C%81%E5%BB%BA%E7%AD%91%E5%9C%B0%E5%9F%BA%E5%9F%BA%E7%A1%80%E6%A3%80%E6%B5%8B%E6%8A%80%E6%9C%AF%E8%A7%84%E7%A8%8B.pdf"},
+        {"id":"SC-02","title":"四川省建筑地基基础检测技术规程","code":"DBJ51/014-2021","status":"current","status_label":"现行","source_id":"SRC-SC-ZJT-DBJ51-014-2021","source_url":"https://jst.sc.gov.cn/scjst/release/2021/7/8/393f03a97cd549d3857ee627d2d0190a/files/11dd6b5ec63a40f0a16377dd8ca161a7.pdf"},
+        {"id":"SC-03","title":"四川省旋挖钻孔灌注桩基技术规程","code":"DBJ51/T 062-2016","status":"current","status_label":"现行","source_id":"SRC-SC-ZJT-2025-SYSTEM-DBJ51T062","source_url":"https://jst.sc.gov.cn/scjst/gongshitg/2025/4/15/e03795f7202742268c3da43ac03c0c64/files/%E4%BA%8C%E3%80%81%E5%BB%BA%E7%AD%91%E5%B7%A5%E7%A8%8B%E8%AE%BE%E8%AE%A1%E9%83%A8%E5%88%86%EF%BC%88%E4%B8%BB%E7%BC%96%E5%8D%95%E4%BD%8D%EF%BC%9A%E4%B8%AD%E5%9B%BD%E5%BB%BA%E7%AD%91%E8%A5%BF%E5%8D%97%E8%AE%BE%E8%AE%A1%E7%A0%94%E7%A9%B6%E9%99%A2%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8%EF%BC%89.pdf"},
+        {"id":"SC-04","title":"四川省建筑工程清水混凝土施工技术规程","code":"DBJ51/T 065-2016","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-SC-IMA-DBJ51T065-2016","source_url":"https://jst.sc.gov.cn/scjst/bzgf/gcjsdfbz.shtml"},
+        {"id":"SC-05","title":"四川省建筑地下结构抗浮锚杆技术标准","code":"DBJ51/T 102-2018","status":"current","status_label":"现行","source_id":"SRC-SC-ZJT-2025-SYSTEM-DBJ51T102","source_url":"https://jst.sc.gov.cn/scjst/gongshitg/2025/4/15/e03795f7202742268c3da43ac03c0c64/files/%E4%B8%80%E3%80%81%E5%B7%A5%E7%A8%8B%E5%8B%98%E5%AF%9F%E6%B5%8B%E9%87%8F%E4%B8%8E%E5%BB%BA%E7%AD%91%E5%9C%B0%E5%9F%BA%E5%9F%BA%E7%A1%80%E9%83%A8%E5%88%86%EF%BC%88%E4%B8%BB%E7%BC%96%E5%8D%95%E4%BD%8D%EF%BC%9A%E4%B8%AD%E5%9B%BD%E5%BB%BA%E7%AD%91%E8%A5%BF%E5%8D%97%E5%8B%98%E5%AF%9F%E8%AE%BE%E8%AE%A1%E7%A0%94%E7%A9%B6%E9%99%A2%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8%EF%BC%89.pdf"},
+        {"id":"SC-06","title":"四川省住宅设计标准","code":"DBJ51/168-2021","status":"current","status_label":"现行","source_id":"SRC-SC-ZJT-DBJ51-168-2021","source_url":"https://jst.sc.gov.cn/scjst/release/2021/4/27/a3bc2266bcdf46bdaf4aa432428d2bee/files/%E3%80%8A%E5%9B%9B%E5%B7%9D%E7%9C%81%E4%BD%8F%E5%AE%85%E8%AE%BE%E8%AE%A1%E6%A0%87%E5%87%86%E3%80%8B%E5%BC%BA%E5%88%B6%E6%80%A7%E6%9D%A1%E6%96%87.pdf"},
+        {"id":"SC-07","title":"四川省绿色建筑设计标准","code":"DGJ51/T 037-2015","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-SC-IMA-DGJ51T037-2015","source_url":"https://jst.sc.gov.cn/scjst/bzgf/gcjsdfbz.shtml"},
+        {"id":"SC-08","title":"四川省绿色建筑评价标准","code":"DGJ51/T 009-2018","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-SC-IMA-DGJ51T009-2018","source_url":"https://jst.sc.gov.cn/scjst/bzgf/gcjsdfbz.shtml"},
+        {"id":"SC-09","title":"四川省抗震设防超限高层民用建筑工程界定标准","code":"DB51/T 5058-2020","status":"current","status_label":"现行","source_id":"SRC-SC-ZJT-2025-OVERLIMIT-DB51T5058","source_url":"https://jst.sc.gov.cn/scjst/gfxwj/2025/9/5/a19a8a16e7c24914852d72ccf52adff3/files/%E5%9B%9B%E5%B7%9D%E7%9C%81%E8%B6%85%E9%99%90%E9%AB%98%E5%B1%82%E5%BB%BA%E7%AD%91%E5%B7%A5%E7%A8%8B%E6%8A%97%E9%9C%87%E8%AE%BE%E9%98%B2%E5%AE%A1%E6%89%B9%E7%AE%A1%E7%90%86%E5%8A%9E%E6%B3%95.pdf"}
+      ]
+    },
+    "贵州省": {
+      "aliases": ["贵州", "贵州省", "贵阳", "贵阳市"],
+      "records": [
+        {"id":"GZ-01","title":"贵州建筑桩基设计与施工技术规程","code":"DBJ52/T 088-2018","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-GZ-IMA-DBJ52T088-2018","source_url":"https://zfcxjst.guizhou.gov.cn/"},
+        {"id":"GZ-02","title":"贵州建筑岩土工程技术规范","code":"DBJ52/T 046-2018","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-GZ-IMA-DBJ52T046-2018","source_url":"https://zfcxjst.guizhou.gov.cn/"},
+        {"id":"GZ-03","title":"贵州建筑地基基础设计规范","code":"DBJ52/T 045-2018","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-GZ-IMA-DBJ52T045-2018","source_url":"https://zfcxjst.guizhou.gov.cn/"},
+        {"id":"GZ-04","title":"岩溶地区建设工程勘察规范","code":"DB52/T 1336-2018","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB52T1336-2018","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=9347D23FBE75D5C0E05397BE0A0AF5D4"},
+        {"id":"GZ-05","title":"钢筋位置测定仪校准规范","code":"DBJ52/080-2016","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-GZ-IMA-DBJ52-080-2016","source_url":"https://zfcxjst.guizhou.gov.cn/"},
+        {"id":"GZ-06","title":"贵州省装配式建筑评价标准","code":"DBJ52/T 100-2020","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-GZ-IMA-DBJ52T100-2020","source_url":"https://zfcxjst.guizhou.gov.cn/"},
+        {"id":"GZ-07","title":"贵州省坡地民用建筑设计防火规范","code":"DBJ52-062-2013","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-GZ-IMA-DBJ52-062-2013","source_url":"https://zfcxjst.guizhou.gov.cn/"}
+      ]
+    },
+    "西藏自治区": {
+      "aliases": ["西藏", "西藏自治区", "拉萨", "拉萨市"],
+      "records": [
+        {"id":"XZ-01","title":"建筑工程隔震与减震技术规程","code":"DB54/T 0268-2022","status":"current","status_label":"现行","source_id":"SRC-SAMR-DB54T0268-2022","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=F105B855A88878DAE05397BE0A0ADB06"}
+      ]
+    },
+    "陕西省": {
+      "aliases": ["陕西", "陕西省", "西安", "西安市"],
+      "records": [
+        {"id":"SN-01","title":"预应力混凝土管桩基础技术规程","code":"DBJ61/T 101-2015","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-SN-IMA-DBJ61T101-2015","source_url":"https://js.shaanxi.gov.cn/sy/yw/gcjsbz/"},
+        {"id":"SN-02","title":"西安地裂缝场地勘察与工程设计规程","code":"DBJ61/T 182-2021","status":"pending","status_label":"后续官网仍引用","status_date":"现行状态待核","source_id":"SRC-SN-CCGP-DBJ61T182-2021","source_url":"https://www.ccgp-shaanxi.gov.cn/freecms/site/shaanxi/ggxx/info/2023/8a69c14b8c666e6a018c676ce9580a6e.html"},
+        {"id":"SN-03","title":"地下工程防水施工工艺标准","code":"DBJ/T61-35-2016","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-SN-IMA-DBJT61-35-2016","source_url":"https://js.shaanxi.gov.cn/sy/yw/gcjsbz/"}
+      ]
+    },
+    "甘肃省": {
+      "aliases": ["甘肃", "甘肃省", "兰州", "兰州市"],
+      "records": [
+        {"id":"GS-01","title":"大厚度湿陷性黄土场地建筑地基处理技术规程","code":"DB62/T25-3060-2012","status":"pending","status_label":"2021复审继续有效","status_date":"后续状态待核","source_id":"SRC-GS-ZJT-2021-REVIEW-3060","source_url":"https://zjt.gansu.gov.cn/zjt/c108286/202105/f6552841791b478ea72d0e1499606031/files/10187929d8474b9a9d1000f665541a88.pdf"},
+        {"id":"GS-02","title":"预应力混凝土管桩基础技术规程","code":"DB62/T25-3099-2015","status":"pending","status_label":"2021复审继续有效","status_date":"后续状态待核","source_id":"SRC-GS-ZJT-2021-REVIEW-3099","source_url":"https://zjt.gansu.gov.cn/zjt/c108286/202105/f6552841791b478ea72d0e1499606031/files/10187929d8474b9a9d1000f665541a88.pdf"},
+        {"id":"GS-03","title":"甘肃省建筑抗震设计规程","code":"DB62/T25-3055-2011","status":"non_current","status_label":"已替代","status_date":"2021-05-01","status_replacement":"→ DB62/T 3055-2020《建筑抗震设计规程》","replacement_codes":["DB62/T 3055-2020"],"source_id":"SRC-GS-ZJT-DB62T3055-2020-REPLACE","source_url":"https://zjt.gansu.gov.cn/zjt/c108355/202101/d7d28b8db64a4c67aa9e18b87a5fc174/files/6531f8c385a74155a6cace26b82f8174.pdf"},
+        {"id":"GS-04","title":"建筑抗震设计规程","code":"DB62/T 3055-2020","status":"current","status_label":"现行","source_id":"SRC-GS-ZJT-DB62T3055-2020","source_url":"https://zjt.gansu.gov.cn/zjt/c108355/202101/d7d28b8db64a4c67aa9e18b87a5fc174/files/6531f8c385a74155a6cace26b82f8174.pdf"},
+        {"id":"GS-05","title":"清水混凝土结构技术规程","code":"DB62/T25-3072-2013","status":"pending","status_label":"2021复审继续有效","status_date":"后续状态待核","source_id":"SRC-GS-ZJT-2021-REVIEW-3072","source_url":"https://zjt.gansu.gov.cn/zjt/c108286/202105/f6552841791b478ea72d0e1499606031/files/10187929d8474b9a9d1000f665541a88.pdf"},
+        {"id":"GS-06","title":"湿陷性黄土地区建筑灌注桩技术规程","code":"DB62/T25-3084-2014","status":"pending","status_label":"2021复审继续有效","status_date":"后续状态待核","source_id":"SRC-GS-ZJT-2021-REVIEW-3084","source_url":"https://zjt.gansu.gov.cn/zjt/c108286/202105/f6552841791b478ea72d0e1499606031/files/10187929d8474b9a9d1000f665541a88.pdf"},
+        {"id":"GS-07","title":"灌注桩后注浆技术规程","code":"DB62/T 3163-2019","status":"pending","status_label":"官网正文可核","status_date":"现行状态待核","source_id":"SRC-GS-ZJT-DB62T3163-2019","source_url":"https://zjt.gansu.gov.cn/zjt/c108355/202105/56802e9f5f8643e5b781ccaac5fa68b8/files/bf68d4c212ee42548ce6e1f45a3e680f.pdf"},
+        {"id":"GS-08","title":"高延性混凝土应用技术规程","code":"DB62/T 3159-2018","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-GS-IMA-DB62T3159-2018","source_url":"https://zjt.gansu.gov.cn/zjt/c108355/list.shtml"},
+        {"id":"GS-09","title":"自密实混凝土应用技术规程","code":"DB62/T 3156-2018","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-GS-IMA-DB62T3156-2018","source_url":"https://zjt.gansu.gov.cn/zjt/c108355/list.shtml"},
+        {"id":"GS-10","title":"住宅设计标准","code":"DB62/T 3182-2020","status":"pending","status_label":"省厅目录待核","status_date":"已收录原始目录","source_id":"SRC-GS-IMA-DB62T3182-2020","source_url":"https://zjt.gansu.gov.cn/zjt/c108355/list.shtml"}
+      ]
+    },
+    "青海省": {
+      "aliases": ["青海", "青海省", "西宁", "西宁市"],
+      "records": [
+        {"id":"QH-01","title":"页岩砖及页岩多孔砖砌体结构设计与施工技术规程","code":"DB63/868-2010","status":"non_current","status_label":"已废止","status_date":"2021-01-12","status_replacement":"国家平台未列替代标准","replacement_codes":[],"source_id":"SRC-SAMR-DB63-868-2010","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=91D99E4D658E2E24E05397BE0A0A3A10"},
+        {"id":"QH-02","title":"裹体碎石桩法处理地基技术规程","code":"DB63/T 885-2010","status":"non_current","status_label":"已废止","status_date":"2023-01-31","status_replacement":"国家平台未列替代标准","replacement_codes":[],"source_id":"SRC-SAMR-DB63T885-2010","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=91D99E4D26E42E24E05397BE0A0A3A10"},
+        {"id":"QH-03","title":"砌体结构加固技术规程","code":"DB63/1025-2011","status":"non_current","status_label":"已废止","status_date":"2021-01-12","status_replacement":"国家平台未列替代标准","replacement_codes":[],"source_id":"SRC-SAMR-DB63-1025-2011","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=91D99E4D51AB2E24E05397BE0A0A3A10"},
+        {"id":"QH-04","title":"预拌砂浆生产应用技术规程","code":"DB63/T 995-2011","status":"non_current","status_label":"已废止","status_date":"2023-01-31","status_replacement":"国家平台未列替代标准","replacement_codes":[],"source_id":"SRC-SAMR-DB63T995-2011","source_url":"https://std.samr.gov.cn/db/search/stdDBDetailed?id=91D99E4D4F862E24E05397BE0A0A3A10"}
+      ]
+    },
+    "宁夏回族自治区": {
+      "aliases": ["宁夏", "宁夏回族自治区", "银川", "银川市"],
+      "records": [
+        {"id":"NX-01","title":"居住建筑节能设计标准","code":"DB64/521-2022","status":"current","status_label":"现行","source_id":"SRC-NX-ZJT-CATALOG-DB64-521-2022","source_url":"https://jst.nx.gov.cn/zwgk/zcwjk/gcjsbz/202505/t20250529_4920847.html"},
+        {"id":"NX-02","title":"居住建筑节能设计标准","code":"DB64/521-2013","status":"non_current","status_label":"已替代","status_date":"2022-07-06","status_replacement":"→ DB64/521-2022《居住建筑节能设计标准》","replacement_codes":["DB64/521-2022"],"source_id":"SRC-NX-ZJT-CATALOG-DB64-521-2013-REPLACE","source_url":"https://jst.nx.gov.cn/zwgk/zcwjk/gcjsbz/202505/t20250529_4920847.html"},
+        {"id":"NX-03","title":"绿色建筑设计标准","code":"DB64/T 1544-2023","status":"current","status_label":"现行","source_id":"SRC-NX-ZJT-CATALOG-DB64T1544-2023","source_url":"https://jst.nx.gov.cn/zwfw/gsgg/202303/t20230316_3997800.html"},
+        {"id":"NX-04","title":"绿色建筑设计标准","code":"DB64/T 1544-2018","status":"non_current","status_label":"已替代","status_date":"2023-05-21","status_replacement":"→ DB64/T 1544-2023《绿色建筑设计标准》","replacement_codes":["DB64/T 1544-2023"],"source_id":"SRC-NX-ZJT-CATALOG-DB64T1544-2018-REPLACE","source_url":"https://jst.nx.gov.cn/zwfw/gsgg/202303/t20230316_3997800.html"},
+        {"id":"NX-05","title":"住宅工程裂缝与渗漏防控技术规程","code":"DB64/T 1872-2023","status":"current","status_label":"现行","source_id":"SRC-NX-ZJT-CATALOG-DB64T1872-2023","source_url":"https://jst.nx.gov.cn/zwgk/zcwjk/gcjsbz/202505/t20250529_4920847.html"},
+        {"id":"NX-06","title":"预拌混凝土质量管理规程","code":"DB64/T 1873-2023","status":"current","status_label":"现行","source_id":"SRC-NX-ZJT-CATALOG-DB64T1873-2023","source_url":"https://jst.nx.gov.cn/zwgk/zcwjk/gcjsbz/202505/t20250529_4920847.html"},
+        {"id":"NX-07","title":"抗震宜居农房加固改造及新建技术规程","code":"DB64/T 1875-2023","status":"current","status_label":"现行","source_id":"SRC-NX-ZJT-CATALOG-DB64T1875-2023","source_url":"https://jst.nx.gov.cn/zwfw/gsgg/202303/t20230316_3997800.html"},
+        {"id":"NX-08","title":"农村住房抗震性能评估导则","code":"DB64/T 1876-2023","status":"current","status_label":"现行","source_id":"SRC-NX-ZJT-CATALOG-DB64T1876-2023","source_url":"https://jst.nx.gov.cn/zwfw/gsgg/202303/t20230316_3997800.html"},
+        {"id":"NX-09","title":"装配式混凝土结构技术规程","code":"DB64/T 1914-2023","status":"current","status_label":"现行","source_id":"SRC-NX-ZJT-ANNOUNCE-DB64T1914-2023","source_url":"https://jst.nx.gov.cn/zwgk/zcwjk/gcjsbz/202505/P020231031378746596965.pdf"},
+        {"id":"NX-10","title":"房屋结构安全风险排查技术规程","code":"DB64/T 2153-2025","status":"current","status_label":"现行","source_id":"SRC-NX-ZJT-CATALOG-DB64T2153-2025","source_url":"https://jst.nx.gov.cn/zwgk/zcwjk/gcjsbz/202505/t20250529_4920847.html"},
+        {"id":"NX-11","title":"复合保温板结构一体化系统应用技术规程","code":"DB64/T 1539-2020","status":"current","status_label":"现行","source_id":"SRC-NX-ZJT-CATALOG-DB64T1539-2020","source_url":"https://jst.nx.gov.cn/zwgk/zcwjk/gcjsbz/202505/t20250529_4920847.html"},
+        {"id":"NX-12","title":"复合保温板结构一体化系统应用技术规程","code":"DB64/T 1539-2018","status":"non_current","status_label":"已替代","status_date":"2020-08-18","status_replacement":"→ DB64/T 1539-2020《复合保温板结构一体化系统应用技术规程》","replacement_codes":["DB64/T 1539-2020"],"source_id":"SRC-NX-ZJT-CATALOG-DB64T1539-2018-REPLACE","source_url":"https://jst.nx.gov.cn/zwgk/zcwjk/gcjsbz/202505/t20250529_4920847.html"}
+      ]
+    },
+    "新疆维吾尔自治区": {
+      "aliases": ["新疆", "新疆维吾尔自治区", "乌鲁木齐", "乌鲁木齐市"],
+      "records": [
+        {"id":"XJ-01","title":"建筑地基基础工程施工工艺标准","code":"XJJ016-2005","status":"pending","status_label":"列入2024复审","status_date":"复审结论待公布","source_id":"SRC-XJ-ZJT-2024-REVIEW-XJJ016","source_url":"https://zjt.xinjiang.gov.cn/xjzjt/c113175/202410/3baafacf3360478eb675dd87145137ab.shtml"},
+        {"id":"XJ-02","title":"新疆维吾尔自治区实施国家2010（建筑结构）系列规范细则","code":"XJJ012-2016","status":"pending","status_label":"体系框架标为现行","status_date":"同时标注拟修编","source_id":"SRC-XJ-ZJT-SYSTEM-XJJ012","source_url":"https://zjt.xinjiang.gov.cn/xjzjt/c114248/202312/b86ed50a759d4d95891f4a5f2f77affe/files/%E3%80%8A%E4%BD%8F%E6%88%BF%E5%92%8C%E5%9F%8E%E4%B9%A1%E5%BB%BA%E8%AE%BE%E6%A0%87%E5%87%86%E4%BD%93%E7%B3%BB%E6%A1%86%E6%9E%B6%E3%80%8B%E4%BF%AE%E8%AE%A2%E7%89%88%E5%BE%81%E6%B1%82%E6%84%8F%E8%A7%81%E7%A8%BF.pdf"},
+        {"id":"XJ-03","title":"新疆维吾尔自治区实施国家2001—2004系列岩土工程规范细则","code":"XJJ035-2006","status":"pending","status_label":"自治区目录待核","status_date":"已收录原始目录","source_id":"SRC-XJ-IMA-XJJ035-2006","source_url":"https://zjt.xinjiang.gov.cn/xjzjt/c113537/zwgk_list.shtml"},
+        {"id":"XJ-04","title":"建筑消能减震应用技术规程","code":"XJJ075-2016","status":"pending","status_label":"列入2024复审","status_date":"复审结论待公布","source_id":"SRC-XJ-ZJT-2024-REVIEW-XJJ075","source_url":"https://zjt.xinjiang.gov.cn/xjzjt/c113175/202410/3baafacf3360478eb675dd87145137ab.shtml"},
+        {"id":"XJ-05","title":"住宅设计标准","code":"XJJ131-2021","status":"pending","status_label":"官网已发布","status_date":"现行状态待核","source_id":"SRC-XJ-ZJT-XJJ131-2021","source_url":"https://zjt.xinjiang.gov.cn/xjzjt/c113175/202105/080a7cc4b851496bb8f5d982c6a73d01.shtml"},
+        {"id":"XJ-06","title":"地下工程补偿收缩混凝土防腐阻锈防水抗裂技术标准","code":"XJJ125-2020","status":"pending","status_label":"官网已发布施行","status_date":"现行状态待核","source_id":"SRC-XJ-ZJT-XJJ125-2020","source_url":"https://zjt.xinjiang.gov.cn/xjzjt/uploads/202212021604243i3trxxhdli.pdf"},
+        {"id":"XJ-07","title":"高性能混凝土应用技术规程","code":"XJJ077-2017","status":"pending","status_label":"列入2024复审","status_date":"复审结论待公布","source_id":"SRC-XJ-ZJT-2024-REVIEW-XJJ077","source_url":"https://zjt.xinjiang.gov.cn/xjzjt/c113175/202410/3baafacf3360478eb675dd87145137ab.shtml"},
+        {"id":"XJ-08","title":"装配式混凝土结构工程检测技术标准","code":"XJJ130-2021","status":"pending","status_label":"官网已发布","status_date":"现行状态待核","source_id":"SRC-XJ-ZJT-XJJ130-2021","source_url":"https://zjt.xinjiang.gov.cn/xjzjt/c113175/202105/60396fc061454e4188a03f07a5bf9dfe.shtml"},
+        {"id":"XJ-09","title":"住宅工程质量通病控制标准","code":"XJJ129-2020","status":"pending","status_label":"官网标准公告收录","status_date":"现行状态待核","source_id":"SRC-XJ-ZJT-XJJ129-2020","source_url":"https://zjt.xinjiang.gov.cn/xjzjt/c113537/zwgk_list_7.shtml"}
+      ]
+    },
+    "内蒙古自治区": {
+      "aliases": ["内蒙古", "内蒙古自治区", "呼和浩特", "呼和浩特市"],
+      "records": [
+        {"id":"NMG-01","title":"居住建筑节能设计标准","code":"DBJ03-35-2019","status":"pending","status_label":"后续官网文件引用","status_date":"现行目录待核","source_id":"SRC-NMG-ZJT-CITED-DBJ03-35-2019","source_url":"https://zjt.nmg.gov.cn/IGI/upload/file/2022/07/15/202207150901519347kG.pdf"},
+        {"id":"NMG-02","title":"公共建筑节能设计标准","code":"DBJ03-27-2017","status":"pending","status_label":"后续官网文件引用","status_date":"现行目录待核","source_id":"SRC-NMG-ZJT-CITED-DBJ03-27-2017","source_url":"https://zjt.nmg.gov.cn/IGI/upload/file/2022/07/15/202207150901519347kG.pdf"},
+        {"id":"NMG-03","title":"建筑装配式混凝土结构工程施工及质量验收规程","code":"DBJ/T03-103-2018","status":"pending","status_label":"官网后续文件称现行","status_date":"现行目录待核","source_id":"SRC-NMG-ZJT-CITED-DBJT03-103-2018","source_url":"https://zjt.nmg.gov.cn/IGI/upload/file/2022/01/14/20220114052032200KAx.pdf"},
+        {"id":"NMG-04","title":"房屋建筑和市政工程施工危险性较大的分部分项工程安全管理规程","code":"DBJ03-107-2019","status":"pending","status_label":"后续官网文件引用","status_date":"现行目录待核","source_id":"SRC-NMG-ZJT-CITED-DBJ03-107-2019","source_url":"https://zjt.nmg.gov.cn/IGI/upload/file/2021/09/28/20210928051254481Rb2.pdf"}
+      ]
+    }
+  }
+}

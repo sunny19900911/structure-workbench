@@ -1,0 +1,4 @@
+submission_external_id,building_external_id,material_scope,space_scope,floor_from,floor_to,component_l1_code,component_l2_code,mass_t,calculation_method,quantity_source_id,notes
+DEMO-SUB-001,DEMO-BLD-A1,rebar,foundation,B2,B2,FND,raft,254.2,quantity_takeoff,DEMO-SRC-QTY-001,演示行：正式导入前请删除
+DEMO-SUB-001,DEMO-BLD-A1,rebar,above_ground,1F,RF,VER,shear_wall,583.5,model_export,DEMO-SRC-QTY-001,演示行：正式导入前请删除
+

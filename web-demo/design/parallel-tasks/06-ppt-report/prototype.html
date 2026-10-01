@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>扩初 PPT 汇报｜工作草案</title>
+  <link rel="stylesheet" href="./prototype.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <strong>结构与技术措施 · 一体化工作台</strong>
+        <span>扩初 PPT 汇报</span>
+      </div>
+    </div>
+    <div class="project-context" aria-label="当前项目">
+      <label>
+        <span>项目</span>
+        <input id="project-name" value="" placeholder="连接统一技术措施" readonly />
+      </label>
+      <label>
+        <span>代表单体</span>
+        <select id="unit-name" aria-label="PPT代表单体"><option value="">连接项目后选择单体</option></select>
+      </label>
+    </div>
+    <div class="header-actions">
+      <button id="measure-link-btn" class="secondary" type="button">连接技术措施</button>
+      <button id="image-manager-btn" class="secondary" type="button" aria-expanded="false">图片集中上传</button>
+      <button id="confirm-btn" class="secondary" type="button">人工确认</button>
+      <button id="generate-btn" class="primary" type="button">下载 PPT 草稿</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <aside class="page-rail" aria-label="PPT分页">
+      <div class="rail-heading">
+        <strong>汇报分页</strong>
+        <span id="page-count">16页</span>
+      </div>
+      <nav id="page-list" class="page-list"></nav>
+    </aside>
+
+    <section class="workspace" aria-label="当前幻灯片">
+      <div class="workspace-heading">
+        <div>
+          <span id="current-number">01</span>
+          <strong id="current-title">封面</strong>
+        </div>
+        <div class="pager">
+          <button id="prev-btn" type="button" aria-label="上一页">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+          <span id="pager-label">1 / 16</span>
+          <button id="next-btn" type="button" aria-label="下一页">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <article id="slide-canvas" class="slide-canvas" aria-live="polite"></article>
+      </div>
+
+      <p id="link-status" class="link-status" role="status">尚未连接统一技术措施。公共参数待读取。</p>
+      <p class="edit-hint">蓝色引用来自①资料与参数、②确认模型、⑩确认判断，修改请回来源模块。文字与图片按当前项目和单体保存；上游变化后需重新核对，截图仍需人工更新。</p>
+      <section class="ai-editor" aria-label="DeepSeek 智能改写">
+        <div class="ai-toolbar"><strong>DeepSeek 智能改写</strong><select id="rewrite-style" aria-label="改写方式"><option>精简为汇报要点</option><option>突出设计依据与待核事项</option><option>改为口头汇报表达</option></select><button id="rewrite-btn" type="button">改写本页说明</button><button id="rewrite-apply" type="button" disabled>采纳建议</button><button id="rewrite-undo" type="button" disabled>撤销采纳</button></div>
+        <p>点击改写将本页文字与所引用参数发送给已配置的 DeepSeek；建议经你采纳后才替换。表格与联动参数保持原值。</p>
+        <div id="rewrite-status" role="status">选择有说明文字的页面开始；可先在页面中补充设计判断。</div>
+        <div id="rewrite-preview"></div>
+      </section>
+    </section>
+  </main>
+
+  <div id="image-manager-backdrop" class="image-manager-backdrop" aria-hidden="true"></div>
+  <aside id="image-manager" class="image-manager" aria-label="图片集中上传" aria-hidden="true">
+    <div class="image-manager-heading">
+      <div>
+        <strong>图片集中上传</strong>
+        <span id="image-progress">0 / 0</span>
+      </div>
+      <button id="image-manager-close" type="button">关闭</button>
+    </div>
+    <div class="image-list-head" aria-hidden="true">
+      <span>题目</span><span>图名</span><span>上传</span>
+    </div>
+    <div id="image-upload-list" class="image-upload-list"></div>
+  </aside>
+
+  <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="./prototype.js"></script>
+</body>
+</html>

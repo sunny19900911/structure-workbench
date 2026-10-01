@@ -1,0 +1,22 @@
+{
+  "name": "structural-ai-workbench-demo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "generate:regulations": "node scripts/generateRegulationData.mjs",
+    "generate:word-sample": "node scripts/buildWorkBuddyWordSample.mjs",
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "docx": "^9.7.1",
+    "lucide-react": "latest",
+    "pptxgenjs": "4.0.1",
+    "react": "latest",
+    "react-dom": "latest",
+    "vite": "latest"
+  }
+}

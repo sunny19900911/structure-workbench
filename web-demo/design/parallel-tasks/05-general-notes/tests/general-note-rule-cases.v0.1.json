@@ -1,0 +1,63 @@
+{
+  "suite_id": "GN-TEST-0.1",
+  "status": "draft",
+  "rulesets": ["GNR-604-FEATURE-0.1-DRAFT", "GNR-604-CLEANING-0.1-DRAFT"],
+  "cases": [
+    {
+      "case_id": "T-001-normal-rc",
+      "description": "普通现浇混凝土项目，无地下室、桩基、钢结构、隔震、减震、装配式、既有建筑",
+      "features": {"has_basement":false,"has_pile":false,"has_steel":false,"has_iso":false,"has_damp":false,"has_precast":false,"has_existing":false,"has_slope":"unknown"},
+      "expected": {"suggest_exclude":["feature:basement_only","feature:pile_only","component:steel","component:isolation","component:damping","component:precast","component:existing_retrofit"],"require_review":["feature:building_slope"],"silent_delete":false}
+    },
+    {
+      "case_id": "T-002-jnu-like",
+      "description": "江南大学案例型：多单体、部分地下室和桩基、无减隔震、超长混凝土，钢结构未知",
+      "features": {"has_basement":true,"has_pile":true,"has_iso":false,"has_damp":false,"has_superlong":true,"has_precast":false,"has_steel":"unknown"},
+      "expected": {"suggest_include":["feature:basement_only","feature:pile_only","feature:superlong_only"],"suggest_exclude":["component:isolation","component:damping","component:precast"],"require_review":["component:steel"],"silent_delete":false}
+    },
+    {
+      "case_id": "T-003-xiongan-like",
+      "description": "雄安案例型：地下室、桩基、钢结构；减隔震只有标准引用，保持未知",
+      "features": {"has_basement":true,"has_pile":true,"has_steel":true,"has_iso":"unknown","has_damp":"unknown","has_human_def":true},
+      "expected": {"suggest_include":["feature:basement_only","feature:pile_only","component:steel","feature:civil_defense_only"],"require_review":["component:isolation","component:damping"],"silent_delete":false}
+    },
+    {
+      "case_id": "T-004-existing-retrofit",
+      "description": "既有建筑改造",
+      "features": {"has_existing":true,"has_steel":"unknown"},
+      "expected": {"suggest_include":["component:existing_retrofit"],"require_review":["component:steel"],"silent_delete":false}
+    },
+    {
+      "case_id": "T-005-all-unknown",
+      "description": "未完成项目特征采集",
+      "features": {},
+      "expected": {"all_unset_features":"require_review","suggest_exclude":[],"silent_delete":false}
+    },
+    {
+      "case_id": "T-006-conflict-pile",
+      "description": "参数写无桩，但基础结构化数据含桩型",
+      "features": {"has_pile":false},
+      "structured_data": {"foundation_designs":[{"pile_type":"灌注桩"}]},
+      "expected": {"block_signoff":true,"conflict_rule":"GN-F-004","silent_delete":false}
+    },
+    {
+      "case_id": "T-007-placeholder-block",
+      "description": "正文仍含XXX/待协",
+      "clauses": [{"clause_id":"C1","source_id":"SRC-TEST","text":"混凝土强度等级同XXX"},{"clause_id":"C2","source_id":"SRC-TEST","text":"【待协】专项范围"}],
+      "expected": {"block_export":true,"rules":["GN-C-006","GN-C-007"]}
+    },
+    {
+      "case_id": "T-008-stable-numbering",
+      "description": "删除中间条款后只重排显示编号",
+      "clauses": [{"clause_id":"C1","decision":"include"},{"clause_id":"C2","decision":"exclude"},{"clause_id":"C3","decision":"include"}],
+      "expected": {"visible_clause_ids":["C1","C3"],"numbering_map":{"C1":"1","C3":"2"},"stable_clause_ids":true}
+    },
+    {
+      "case_id": "T-009-snapshot-source",
+      "description": "网页和Word必须共享快照",
+      "web_snapshot_id":"OUT-001",
+      "word_snapshot_id":"OUT-002",
+      "expected": {"block_issue":true,"reason":"snapshot_mismatch"}
+    }
+  ]
+}

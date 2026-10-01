@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>任务一｜接入现有工作台评审 Demo</title>
+<style>
+  :root{
+    --ink:#232933;--muted:#69727f;--line:#dde2e9;--line-strong:#c6ced8;
+    --paper:#fff;--canvas:#eceff3;--nav:#1f2937;--nav-soft:#374151;
+    --blue:#2563eb;--blue-dark:#1d4ed8;--blue-soft:#eef2fb;
+    --green:#12603a;--green-soft:#eefaf3;--amber:#8a5a00;--amber-soft:#fdf6e3;
+    --red:#a3132a;--red-soft:#fdeef1;--radius:10px;--shadow:0 2px 10px rgba(20,30,50,.07);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--canvas);color:var(--ink);font-family:"Microsoft YaHei","PingFang SC","Source Han Sans SC",sans-serif;line-height:1.55}
+  button,select,a{font:inherit}
+  button{cursor:pointer}
+  .topbar{position:sticky;top:0;z-index:20;min-height:56px;padding:9px 18px;background:var(--nav);color:#fff;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(15,23,42,.18)}
+  .topbar h1{font-size:15.5px;margin:0;font-weight:650;letter-spacing:.1px;white-space:nowrap}
+  .review-mark{padding:3px 9px;border:1px solid #64748b;border-radius:12px;color:#dbeafe;font-size:11px;white-space:nowrap}
+  .topbar .spacer{flex:1}
+  .topbar label{font-size:11px;color:#aeb8c6;margin-right:4px}
+  .topbar select{background:var(--nav-soft);border:1px solid #4b5563;color:#f3f4f6;padding:5px 8px;border-radius:6px;font-size:12px}
+  .topbar a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:var(--blue);border:1px solid var(--blue);color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600}
+  .topbar a:hover{filter:brightness(1.08)}
+  .shell{display:grid;grid-template-columns:224px minmax(520px,1fr) 292px;min-height:calc(100vh - 56px)}
+  .left,.right{background:#fff;border-color:var(--line);padding:18px 14px;position:sticky;top:56px;height:calc(100vh - 56px);overflow:auto}
+  .left{border-right:1px solid var(--line)}
+  .right{border-left:1px solid var(--line)}
+  .left h2,.right h2{font-size:11px;letter-spacing:.12em;color:#7b8794;margin:0 6px 10px;text-transform:uppercase}
+  .module-nav{display:flex;flex-direction:column;gap:4px}
+  .module-nav button{display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:8px;text-align:left;border:1px solid transparent;background:transparent;color:#415066;padding:8px 9px;border-radius:8px;font-size:12.5px}
+  .module-nav button:hover{background:#f5f8fc}
+  .module-nav button.active{background:var(--blue-soft);border-color:#c9d6ea;color:var(--blue-dark);font-weight:650}
+  .num{width:28px;height:28px;border-radius:7px;background:#e8edf3;color:#334155;display:grid;place-items:center;font-size:13px;font-weight:700}
+  .module-nav button.active .num{background:var(--blue);color:#fff}
+  .nav-dot{width:7px;height:7px;border-radius:50%;background:#9ca3af}
+  .nav-dot.now{background:var(--blue)}
+  .nav-dot.next{background:#d69e2e}
+  .left-note{margin-top:18px;padding:11px;background:#f5f8fc;border:1px solid #dde6f0;border-radius:8px;font-size:11.5px;color:#5b6472;line-height:1.7}
+  .left-note strong{color:#1b3a63}
+  main{min-width:0;padding:24px clamp(18px,3vw,36px) 64px}
+  .warning{display:flex;gap:11px;align-items:flex-start;background:var(--amber-soft);border:1px solid #e7d6aa;color:#73520a;padding:10px 13px;border-radius:8px;font-size:12px;margin:0 auto 16px;max-width:1080px}
+  .warning svg{flex:none;margin-top:1px}
+  .hero{max-width:1080px;margin:0 auto 18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:end}
+  .hero h2{margin:0 0 6px;font-size:25px;line-height:1.25;color:#1c2739;letter-spacing:-.02em}
+  .hero p{margin:0;color:var(--muted);font-size:13px;max-width:720px}
+  .hero-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .btn{border:1px solid var(--line-strong);background:#fff;color:#334155;padding:7px 12px;border-radius:7px;font-size:12px;font-weight:600;display:inline-flex;gap:7px;align-items:center}
+  .btn:hover{background:#f5f8fc}
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn.primary:hover{background:var(--blue-dark)}
+  .segmented{max-width:1080px;margin:0 auto 14px;display:flex;gap:4px;padding:4px;background:#dde3eb;border-radius:8px;width:max-content;max-width:100%}
+  .segmented button{border:0;background:transparent;color:#64748b;padding:6px 13px;border-radius:6px;font-size:12px;font-weight:600}
+  .segmented button.active{background:#fff;color:#1d4ed8;box-shadow:0 1px 3px rgba(15,23,42,.12)}
+  .route{max-width:1080px;margin:0 auto 16px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+  .route-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .route-title strong{font-size:13px;color:#253246}
+  .route-title span{font-size:11px;color:#7b8794}
+  .route-rail{display:grid;grid-template-columns:repeat(7,auto);align-items:center;justify-content:start;gap:9px;overflow:auto;padding-bottom:2px}
+  .route-step{border:1px solid #c9d6ea;background:#fff;color:#334155;border-radius:8px;padding:7px 11px;font-size:12px;white-space:nowrap}
+  .route-step.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700}
+  .route-arrow{color:#9aa5b1;display:grid;place-items:center}
+  .content{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(250px,.7fr);gap:16px;align-items:start}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .detail-head{padding:18px 20px 14px;border-bottom:1px solid #e7ebf0;display:flex;gap:14px;align-items:flex-start}
+  .detail-num{width:44px;height:44px;border-radius:10px;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:20px;font-weight:800;flex:none}
+  .detail-head h3{font-size:18px;margin:0 0 3px;color:#1b3a63}
+  .detail-head p{font-size:12px;margin:0;color:#7b8794}
+  .detail-head .state{margin-left:auto;white-space:nowrap;font-size:11px;padding:3px 9px;border-radius:12px;background:var(--amber-soft);color:var(--amber);font-weight:700}
+  .detail-body{padding:18px 20px 20px}
+  .compare{display:grid;grid-template-columns:1fr 38px 1fr;gap:10px;align-items:stretch;margin-bottom:18px}
+  .compare-box{padding:13px;border:1px solid var(--line);border-radius:8px;background:#fbfcfe}
+  .compare-box.after{background:#f5f8fd;border-color:#c9d6ea}
+  .compare-label{font-size:10.5px;letter-spacing:.09em;color:#7b8794;margin-bottom:6px;text-transform:uppercase}
+  .compare-box strong{display:block;color:#253246;font-size:13px;margin-bottom:4px}
+  .compare-box p{margin:0;font-size:11.5px;color:#64748b}
+  .compare-arrow{display:grid;place-items:center;color:var(--blue)}
+  .section-title{font-size:11px;letter-spacing:.08em;color:#7b8794;margin:17px 0 8px;text-transform:uppercase}
+  .change-list,.guard-list,.bg-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:7px}
+  .change-list li,.guard-list li,.bg-list li{position:relative;padding:8px 10px 8px 31px;border:1px solid #e4e9ef;border-radius:7px;font-size:12px;color:#415066;background:#fff}
+  .change-list li:before,.guard-list li:before,.bg-list li:before{position:absolute;left:10px;top:8px;font-weight:800}
+  .change-list li:before{content:"+";color:var(--blue)}
+  .guard-list li:before{content:"!";color:var(--red)}
+  .bg-list li:before{content:"·";color:var(--green);font-size:18px;top:4px}
+  .source{margin-top:16px;padding-top:11px;border-top:1px dashed #dfe5ec;font-size:10.5px;color:#8a93a0;font-family:Consolas,"Courier New",monospace}
+  .mini-panel{padding:16px}
+  .mini-panel + .mini-panel{margin-top:14px}
+  .mini-panel h3{font-size:13px;margin:0 0 10px;color:#253246}
+  .truth-flow{display:grid;grid-template-columns:1fr auto 1fr;gap:7px;align-items:center}
+  .truth-node{border-radius:8px;padding:10px;border:1px solid var(--line);background:#fbfcfe;text-align:center;font-size:11px;color:#64748b}
+  .truth-node strong{display:block;font-size:13px;color:#1d4ed8;margin-bottom:2px}
+  .truth-arrow{color:#9aa5b1}
+  .lock-note{margin-top:10px;background:var(--green-soft);border:1px solid #cfe8db;color:var(--green);padding:8px 10px;border-radius:7px;font-size:11px}
+  .state-machine{display:flex;align-items:center;gap:4px;overflow:auto}
+  .state-machine span{font-size:10.5px;padding:5px 7px;border-radius:6px;white-space:nowrap;background:#f1f3f6;color:#6b7280}
+  .state-machine span:nth-child(3){background:var(--amber-soft);color:var(--amber)}
+  .state-machine span:nth-child(5){background:var(--blue-soft);color:var(--blue-dark)}
+  .state-machine span:nth-child(7){background:var(--green-soft);color:var(--green)}
+  .state-machine i{font-style:normal;color:#9aa5b1}
+  .impact{margin-top:10px;font-size:11.5px;color:#64748b;line-height:1.75}
+  .module-grid{display:none;max-width:1080px;margin:0 auto;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .module-grid.show{display:grid}
+  .overview-card{background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px;text-align:left;color:#334155;box-shadow:0 1px 3px rgba(20,30,50,.04)}
+  .overview-card:hover,.overview-card.active{border-color:#93b6f0;background:#f7faff}
+  .overview-card .oc-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:7px}
+  .overview-card strong{font-size:13px;color:#1b3a63}
+  .overview-card p{font-size:11.5px;color:#69727f;margin:0}
+  .overview-card small{font-size:10px;color:#8a93a0}
+  .global-view{display:none;max-width:1080px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;box-shadow:var(--shadow)}
+  .global-view.show{display:block}
+  .global-view h3{font-size:16px;margin:0 0 4px;color:#1b3a63}
+  .global-view>p{font-size:12px;color:#69727f;margin:0 0 15px}
+  .rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;counter-reset:rule}
+  .rule{counter-increment:rule;display:flex;gap:10px;padding:10px;border:1px solid #e4e9ef;border-radius:7px;font-size:11.5px;color:#415066}
+  .rule:before{content:counter(rule);width:20px;height:20px;border-radius:6px;background:#e8edf3;color:#415066;display:grid;place-items:center;font-size:10px;font-weight:700;flex:none}
+  .footer-note{max-width:1080px;margin:18px auto 0;font-size:10.5px;color:#8a93a0;text-align:center}
+  .pulse{animation:pulse .8s ease both}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(37,99,235,.32)}100%{box-shadow:0 0 0 16px rgba(37,99,235,0)}}
+  @media (max-width:1120px){
+    .shell{grid-template-columns:190px minmax(0,1fr)}
+    .right{display:none}
+    .content{grid-template-columns:1fr}
+    .content-side{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .mini-panel + .mini-panel{margin-top:0}
+  }
+  @media (max-width:760px){
+    .topbar{position:relative;align-items:flex-start;flex-wrap:wrap;padding:11px 13px}
+    .topbar .spacer{display:none}
+    .topbar .controls{order:3;width:100%;display:flex;gap:8px;align-items:center}
+    .topbar a{margin-left:auto}
+    .shell{display:block}
+    .left{position:relative;top:0;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px 12px}
+    .left h2,.left-note{display:none}
+    .module-nav{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+    .module-nav button{display:block;text-align:center;padding:6px 3px;font-size:10px}
+    .module-nav button .num{margin:0 auto 3px}
+    .nav-dot{display:none}
+    main{padding:16px 12px 42px}
+    .hero{display:block}
+    .hero h2{font-size:21px}
+    .hero-actions{justify-content:flex-start;margin-top:13px}
+    .content-side{grid-template-columns:1fr}
+    .compare{grid-template-columns:1fr}
+    .compare-arrow{transform:rotate(90deg);height:20px}
+    .detail-head{padding:15px}
+    .detail-body{padding:15px}
+    .module-grid{grid-template-columns:1fr}
+    .rules{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <h1>结构与技术措施 · 一体化工作台</h1>
+  <span class="review-mark">任务一增量接入评审 Demo · 非正式入口</span>
+  <span class="spacer"></span>
+  <div class="controls">
+    <label for="role">角色</label>
+    <select id="role"><option>设计人员</option><option>专业负责人</option><option>全院总控</option></select>
+    <label for="stage">阶段</label>
+    <select id="stage"><option>扩初</option><option>施工图</option></select>
+  </div>
+  <a href="../../../workbuddy-integrated-studio.html" target="_blank" rel="noopener">
+    打开正式工作台
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 5h5v5M19 5l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </a>
+</header>
+
+<div class="shell">
+  <aside class="left">
+    <h2>既有模块 · 编号不变</h2>
+    <nav class="module-nav" id="moduleNav" aria-label="工作台模块"></nav>
+    <div class="left-note"><strong>修订原则</strong><br>所有新能力只能进入既有模块或后台服务。独立原型仅用于验证，不形成第二套首页、导航和参数真源。</div>
+  </aside>
+
+  <main>
+    <div class="warning">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 4.6 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.6a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>这不是新工作台，而是“规划落位”评审页。正式交付入口、①—⑧卡片、角色、阶段、状态机与参数真源均保持不变。</span>
+    </div>
+
+    <section class="hero">
+      <div>
+        <h2>不是重做产品，而是把能力接回现有骨架</h2>
+        <p>点击模块查看本轮规划如何增量接入，以及每张卡必须守住的边界。领导演示只走既有主线：①参数真源 → ②成果生成 → ④差异校核 → ⑥管理快照。</p>
+      </div>
+      <div class="hero-actions">
+        <button class="btn" id="resetBtn">恢复评审初始态</button>
+        <button class="btn primary" id="tourBtn">
+          播放领导演示路线
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <div class="segmented" role="tablist" aria-label="评审视图">
+      <button class="active" data-view="detail" role="tab" aria-selected="true">模块接入</button>
+      <button data-view="overview" role="tab" aria-selected="false">八卡总览</button>
+      <button data-view="global" role="tab" aria-selected="false">全局不可破坏项</button>
+    </div>
+
+    <section class="route" id="routePanel">
+      <div class="route-title"><strong>下一次领导展示主线</strong><span id="routeCaption">从①开始，证明参数只有一个真源</span></div>
+      <div class="route-rail" id="routeRail"></div>
+    </section>
+
+    <section class="content" id="detailView">
+      <article class="panel" aria-live="polite">
+        <div class="detail-head">
+          <div class="detail-num" id="detailNum">①</div>
+          <div><h3 id="detailTitle">统一技术措施</h3><p id="detailPosition"></p></div>
+          <span class="state" id="detailState">本轮核心</span>
+        </div>
+        <div class="detail-body">
+          <div class="compare">
+            <div class="compare-box"><div class="compare-label">既有骨架</div><strong id="beforeTitle"></strong><p id="beforeText"></p></div>
+            <div class="compare-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="compare-box after"><div class="compare-label">本次修订后的增量</div><strong id="afterTitle"></strong><p id="afterText"></p></div>
+          </div>
+          <div class="section-title">接入内容</div>
+          <ul class="change-list" id="changeList"></ul>
+          <div class="section-title">不能破坏</div>
+          <ul class="guard-list" id="guardList"></ul>
+          <div class="source" id="sourceLine"></div>
+        </div>
+      </article>
+
+      <aside class="content-side">
+        <section class="panel mini-panel">
+          <h3>参数流向 · 仍然只有一个真源</h3>
+          <div class="truth-flow">
+            <div class="truth-node"><strong>①</strong>唯一可编辑</div>
+            <div class="truth-arrow">→</div>
+            <div class="truth-node"><strong>② / ④ / ⑦</strong>继承或比对</div>
+          </div>
+          <div class="lock-note">禁止在②④⑦复制一套公共参数输入。</div>
+        </section>
+        <section class="panel mini-panel">
+          <h3>本卡依赖的后台能力</h3>
+          <ul class="bg-list" id="backgroundList"></ul>
+        </section>
+      </aside>
+    </section>
+
+    <section class="module-grid" id="overviewView" aria-label="八卡接入总览"></section>
+
+    <section class="global-view" id="globalView">
+      <h3>全局不可破坏项</h3>
+      <p>任何开发项只有守住这些边界，才算“接入完成”。</p>
+      <div class="rules" id="rules"></div>
+    </section>
+
+    <p class="footer-note">评审依据：工作台骨架与增量开发边界、WorkBuddy主任务总览、网站设计总纲｜规划详情见 07-integration-revision.md</p>
+  </main>
+
+  <aside class="right">
+    <h2>全局骨架 · 保持不变</h2>
+    <section class="panel mini-panel">
+      <h3>角色</h3>
+      <div class="impact" id="roleImpact">设计人员：录入参数、生成成果、提交待审。</div>
+    </section>
+    <section class="panel mini-panel">
+      <h3>阶段</h3>
+      <div class="impact" id="stageImpact">扩初：主路径使用①②③④⑤⑥⑧，⑦保留既有卡位。</div>
+    </section>
+    <section class="panel mini-panel">
+      <h3>四态状态机</h3>
+      <div class="state-machine"><span>未开始</span><i>→</i><span>进行中</span><i>→</i><span>待审</span><i>→</i><span>已签发</span></div>
+      <div class="lock-note">已签发后按模块锁定，不改变锁定粒度。</div>
+    </section>
+    <section class="panel mini-panel">
+      <h3>后台不是新模块</h3>
+      <div class="impact">601/603/604接口、解析器、导出、目录扫描、QA与日志，只由既有卡片触发和消费。</div>
+    </section>
+  </aside>
+</div>
+
+<script>
+const modules = [
+  {id:1,num:'①',name:'统一技术措施',position:'公共项目参数唯一可编辑真源',level:'本轮核心',phase:'now',beforeTitle:'已有参数面板与技术措施正文',beforeText:'承担项目公共参数录入，并向其他模块提供基础值。',afterTitle:'在卡内补足来源与人工确认',afterText:'不另建参数中心；把验证过的交互拆解接入①。',changes:['两级章卡与小节子卡','结构特征显式开关','来源下钻与候选参数对比','人工确认记录与影响范围提示'],guards:['①始终是公共参数唯一可编辑真源','同一 data-k 只出现一次，派生键保持同算法','冲突来源全部保留，AI不能直接确认','网页与Word/PPT消费同一参数快照'],background:['601确认规范依据查询','603参数版本与人工决定','来源索引和派生参数计算'],source:'SRC-P01-014 / 015 / 016'},
+  {id:2,num:'②',name:'结构扩初说明',position:'继承①并生成扩初成果',level:'本轮核心',phase:'now',beforeTitle:'已有继承参数、资料导入与正文',beforeText:'从①读取公共参数，并接收建筑、地勘、模型资料。',afterTitle:'让章节可见性与输出完全一致',afterText:'补齐条件章节和可见集快照，验证网页与导出不分叉。',changes:['①参数只读继承','建筑/地勘/模型专属输入','条件章节显隐与恢复','网页、Word、PPT同一可见集'],guards:['不得出现第二套公共参数输入','隐藏章节不删除数据','H2、目录、概览条与导出章节数一致','原始资料保持只读'],background:['建筑与地勘资料解析','模型总信息解析','可见章节快照与文档导出'],source:'SRC-P01-014 / 016'},
+  {id:3,num:'③',name:'整理地方规范',position:'地点映射、规范查询与候选确认',level:'国庆接入',phase:'next',beforeTitle:'已有地方规范整理卡位',beforeText:'承接项目地点与规范条目整理需求。',afterTitle:'接入601查询和候选流程',afterText:'联网发现只能进入候选区，人工确认后才可回流①。',changes:['读取①项目地点','查询601现行库与候选库','展示有效状态和来源','人工确认后把采用值回流①/603'],guards:['联网结果不能直接成为正式规范','不交付独立规范查询网站','每条结论保留 source_id','多来源冲突不得静默覆盖'],background:['601规范库查询','联网候选发现服务','有效性复核与来源登记'],source:'SRC-P01-014 / 015'},
+  {id:4,num:'④',name:'反校核',position:'约定值与模型实际值的差异闭环',level:'本轮核心',phase:'now',beforeTitle:'已有模型与措施比对流程',beforeText:'读取①约定值和模型实际值，形成差异清单。',afterTitle:'固定黄金样例与处置状态',afterText:'领导演示只展示差异、回改、复核，不自动采用模型值。',changes:['固定YJK黄金样例','标示参数影响范围','差异处置状态与复核记录','差异报告进入603留痕'],guards:['只报差异，不自动修改①或模型','不得因章节隐藏漏校参数','采用/忽略必须由人确认','复核前后结果可追溯'],background:['YJK输出解析','差异计算','603处置记录与版本'],source:'SRC-P01-014 / 016'},
+  {id:5,num:'⑤',name:'用钢量统计',position:'形成统一口径的项目工程量快照',level:'国庆接入',phase:'next',beforeTitle:'已有工程量录入与统计卡位',beforeText:'统计单体用钢量、含钢量并形成项目数据。',afterTitle:'补齐真实输入兼容和口径说明',afterText:'产出供⑥读取的项目快照，不形成独立统计站点。',changes:['真实项目输入兼容','统计口径和异常提示','单体统计明细','输出项目快照供⑥汇总'],guards:['原始输入只读','不同统计口径不得静默混算','快照字段固定且可校验','不另建统计首页'],background:['工程量文件解析','口径校验与统计','项目快照生成'],source:'SRC-P01-014 / 016'},
+  {id:6,num:'⑥',name:'全院总览',position:'只读汇总项目快照与阶段风险',level:'演示收束',phase:'now',beforeTitle:'已有项目快照和横向汇总',beforeText:'导入多个项目快照，形成全院只读视图。',afterTitle:'把试点指标接入既有总览',afterText:'展示阶段、风险和指标，不回写项目、不做粗暴排名。',changes:['试点项目快照汇总','阶段状态与风险摘要','负责人可读的审核摘要','领导展示收束页'],guards:['数据只出不进，不回写项目','不脱离项目条件比较用钢量','不做个人绩效排名','不另建管理驾驶舱'],background:['快照字段校验','聚合计算','后台试点计量'],source:'SRC-P01-014 / 015 / 016'},
+  {id:7,num:'⑦',name:'施工图总说明',position:'基于603/604生成并审签总说明',level:'后续路线',phase:'next',beforeTitle:'既有施工图总说明卡位',beforeText:'保留施工图阶段入口和既有模块编号。',afterTitle:'接入604条款树与人工覆盖',afterText:'沿用可见性、差异和审签机制，不做独立总说明工具。',changes:['604母版与条款树','保留/删除建议与人工覆盖','项目级差异和审签','自动编号与输出版本'],guards:['AI不能直接删除条款','人工覆盖优先并留痕','读取603当前项目参数','不得新建独立工具'],background:['604母版/条款/删减规则','603项目决定和版本','自动编号与文档输出'],source:'SRC-P01-014 / 016'},
+  {id:8,num:'⑧',name:'提资台账',position:'扫描目录并形成收发与漏项台账',level:'国庆接入',phase:'next',beforeTitle:'已有提资台账卡位',beforeText:'记录收到、发出和处理状态，支持导出留档。',afterTitle:'把目录扫描作为后台能力接入',afterText:'扫描器只辅助发现文件，不把“已收到”冒充“已办完”。',changes:['授权目录扫描','收到/发出/状态登记','漏项自检','台账JSON/CSV导出留档'],guards:['不读取CAD内容','扫描只能判断“有没有到”','目录扫描器不是新模块卡','台账不反向修改项目文件'],background:['可选本地目录扫描器','台账导出','备份与恢复'],source:'SRC-P01-014 / 015'}
+];
+
+const globalRules = [
+  '正式入口路径和①—⑧模块编号不变','设计人员、专业负责人、全院总控三角色不变','扩初/施工图两阶段不变','四态状态机及签发后模块级锁定不变',
+  '①是公共参数唯一可编辑真源','结构特征必须显式开关，不做静默规则推导','隐藏章节不删除数据，恢复后内容完整','网页与Word/PPT使用同一快照和可见章节集',
+  '原始资料只读，多来源冲突全部保留','AI、联网和模型导入只给候选或差异','⑥和⑧数据只出不进，不回写项目文件','正式结论可追溯到 source_id 和人工决定'
+];
+const route = [1,2,4,6];
+let selected = 1;
+let tourTimer = null;
+
+const nav = document.getElementById('moduleNav');
+const overview = document.getElementById('overviewView');
+const routeRail = document.getElementById('routeRail');
+
+function makeNav(){
+  nav.innerHTML = modules.map(m => `<button type="button" data-id="${m.id}" aria-label="${m.num} ${m.name}"><span class="num">${m.num}</span><span>${m.name}</span><span class="nav-dot ${m.phase}"></span></button>`).join('');
+  overview.innerHTML = modules.map(m => `<button type="button" class="overview-card" data-id="${m.id}"><span class="oc-head"><strong>${m.num} ${m.name}</strong><small>${m.level}</small></span><p>${m.afterTitle}</p></button>`).join('');
+  routeRail.innerHTML = route.map((id,index) => {
+    const m=modules[id-1];
+    const step=`<button class="route-step" data-id="${id}">${m.num} ${m.name}</button>`;
+    const arrow=index<route.length-1?'<span class="route-arrow"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>':'';
+    return step+arrow;
+  }).join('');
+  document.getElementById('rules').innerHTML=globalRules.map(r=>`<div class="rule">${r}</div>`).join('');
+}
+
+function listHtml(items){return items.map(v=>`<li>${v}</li>`).join('')}
+function selectModule(id,scroll=false){
+  selected=id;
+  const m=modules.find(x=>x.id===id);
+  document.getElementById('detailNum').textContent=m.num;
+  document.getElementById('detailTitle').textContent=m.name;
+  document.getElementById('detailPosition').textContent=m.position;
+  document.getElementById('detailState').textContent=m.level;
+  document.getElementById('beforeTitle').textContent=m.beforeTitle;
+  document.getElementById('beforeText').textContent=m.beforeText;
+  document.getElementById('afterTitle').textContent=m.afterTitle;
+  document.getElementById('afterText').textContent=m.afterText;
+  document.getElementById('changeList').innerHTML=listHtml(m.changes);
+  document.getElementById('guardList').innerHTML=listHtml(m.guards);
+  document.getElementById('backgroundList').innerHTML=listHtml(m.background);
+  document.getElementById('sourceLine').textContent='依据：'+m.source+'｜规划性质：增量接入，不新增正式入口';
+  document.querySelectorAll('[data-id]').forEach(el=>el.classList.toggle('active',Number(el.dataset.id)===id));
+  const routeIndex=route.indexOf(id);
+  document.getElementById('routeCaption').textContent=routeIndex>=0?['从①开始，证明参数只有一个真源','②只继承①，成果与可见章节一致','④只报差异，是否采用由人决定','⑥只读收束，不回写项目'][routeIndex]:'当前查看扩展模块，正式演示主线仍为①→②→④→⑥';
+  const panel=document.querySelector('.detail-num');panel.classList.remove('pulse');void panel.offsetWidth;panel.classList.add('pulse');
+  if(scroll) document.getElementById('detailView').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function setView(view){
+  document.querySelectorAll('.segmented button').forEach(b=>{const on=b.dataset.view===view;b.classList.toggle('active',on);b.setAttribute('aria-selected',String(on));});
+  document.getElementById('detailView').style.display=view==='detail'?'grid':'none';
+  overview.classList.toggle('show',view==='overview');
+  document.getElementById('globalView').classList.toggle('show',view==='global');
+  document.getElementById('routePanel').style.display=view==='global'?'none':'block';
+}
+
+function stopTour(){if(tourTimer){clearInterval(tourTimer);tourTimer=null}document.getElementById('tourBtn').firstChild.textContent='播放领导演示路线 '}
+function startTour(){
+  stopTour();setView('detail');let i=0;selectModule(route[i],true);document.getElementById('tourBtn').firstChild.textContent='演示进行中 ';
+  tourTimer=setInterval(()=>{i++;if(i>=route.length){stopTour();return}selectModule(route[i],true)},1400);
+}
+
+makeNav();selectModule(1);
+document.addEventListener('click',e=>{const target=e.target.closest('[data-id]');if(target){setView('detail');selectModule(Number(target.dataset.id),true)}});
+document.querySelectorAll('.segmented button').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+document.getElementById('tourBtn').addEventListener('click',startTour);
+document.getElementById('resetBtn').addEventListener('click',()=>{stopTour();setView('detail');selectModule(1,true)});
+document.getElementById('role').addEventListener('change',e=>{document.getElementById('roleImpact').textContent={
+  '设计人员':'设计人员：录入参数、生成成果、提交待审。','专业负责人':'专业负责人：查看差异和变更、退回或签发。','全院总控':'全院总控：只读查看项目快照、阶段与风险。'}[e.target.value]});
+document.getElementById('stage').addEventListener('change',e=>{document.getElementById('stageImpact').textContent=e.target.value==='扩初'?'扩初：主路径使用①②③④⑤⑥⑧，⑦保留既有卡位。':'施工图：①继续作为真源，⑦读取603/604生成总说明，其余卡位不重排。'});
+</script>
+</body>
+</html>

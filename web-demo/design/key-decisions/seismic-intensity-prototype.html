@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>抗震设防烈度索引｜结构设计 AI 工作台</title>
+  <style>
+    :root {
+      --chrome: #647b8c;
+      --chrome-deep: #586f80;
+      --primary: #7394ab;
+      --primary-strong: #5d829c;
+      --primary-soft: #eaf1f5;
+      --jade: #6f9d86;
+      --jade-soft: #edf6f1;
+      --ink: #263747;
+      --muted: #73808c;
+      --line: #dce4e9;
+      --line-strong: #cbd6dd;
+      --bg: #f1f4f5;
+      --surface: #fff;
+      --soft: #f7f9fa;
+      --warn: #a56f37;
+      --warn-soft: #fff7ea;
+      --shadow: 0 14px 34px rgba(54, 73, 87, .08);
+      color-scheme: light;
+      font-family: "Microsoft YaHei UI", "PingFang SC", "Source Han Sans SC", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: var(--bg); }
+    body { margin: 0; color: var(--ink); background: var(--bg); font-size: 14px; }
+    button { font: inherit; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      min-height: 62px;
+      padding: 0 22px;
+      color: #fff;
+      background: linear-gradient(105deg, var(--chrome-deep), var(--chrome));
+      box-shadow: 0 8px 24px rgba(53, 72, 87, .14);
+    }
+
+    .brand {
+      position: relative;
+      margin-right: auto;
+      padding-left: 31px;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: .03em;
+      white-space: nowrap;
+    }
+
+    .brand::before {
+      content: "";
+      position: absolute;
+      left: 2px;
+      top: 50%;
+      width: 15px;
+      height: 15px;
+      border: 1.5px solid rgba(255, 255, 255, .92);
+      border-radius: 3px;
+      transform: translateY(-50%) rotate(45deg);
+      box-shadow: 6px -6px 0 -4px rgba(255, 255, 255, .44);
+    }
+
+    .context { display: flex; align-items: center; gap: 9px; }
+    .context span { color: rgba(255, 255, 255, .66); font-size: 12px; }
+    .context b {
+      padding: 7px 11px;
+      border: 1px solid rgba(255, 255, 255, .22);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .1);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 9px 18px 8px;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, .98);
+    }
+
+    .tabs button {
+      flex: none;
+      padding: 7px 14px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: #64727e;
+      background: transparent;
+      font-size: 12.5px;
+    }
+
+    .tabs .on {
+      border-color: #cbdbe5;
+      color: #fff;
+      background: var(--primary);
+      box-shadow: 0 4px 12px rgba(80, 112, 135, .15);
+      font-weight: 700;
+    }
+
+    .workspace { display: grid; grid-template-columns: 238px minmax(0, 1fr); min-height: calc(100vh - 113px); }
+    .side { padding: 22px 14px; border-right: 1px solid var(--line); background: rgba(250, 252, 252, .96); }
+    .side h2 { margin: 0 8px 14px; color: #89949c; font-size: 11.5px; letter-spacing: .09em; }
+    .side a {
+      display: block;
+      margin: 3px 0;
+      padding: 9px 11px;
+      border-radius: 7px;
+      color: #596873;
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .side a.active { color: var(--primary-strong); background: var(--primary-soft); font-weight: 700; }
+
+    .main {
+      min-width: 0;
+      padding: 32px 38px 72px;
+      background: radial-gradient(circle at 86% 6%, rgba(115, 148, 171, .08), transparent 25rem), var(--bg);
+    }
+
+    .page { width: min(1060px, 100%); margin: 0 auto; }
+    .heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+    h1 { margin: 0; font-size: 25px; line-height: 1.3; letter-spacing: .01em; }
+    .heading p { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+    .project { color: #536675; font-size: 12.5px; white-space: nowrap; }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .parameter-strip {
+      display: grid;
+      grid-template-columns: 1fr 1.55fr auto;
+      align-items: stretch;
+      border-bottom: 1px solid var(--line);
+      background: var(--soft);
+    }
+
+    .parameter { min-width: 0; padding: 15px 16px; border-right: 1px solid var(--line); }
+    .parameter span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 11px; }
+    .parameter strong { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+
+    .year-control { display: flex; align-items: center; gap: 6px; padding: 0 15px; }
+    .year-control span { margin-right: 3px; color: var(--muted); font-size: 11px; }
+    .year-button {
+      min-width: 62px;
+      padding: 7px 11px;
+      border: 1px solid var(--line-strong);
+      border-radius: 7px;
+      color: #5e6f7b;
+      background: #fff;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .year-button.active { border-color: var(--primary); color: #fff; background: var(--primary); font-weight: 700; }
+
+    .result-wrap { padding: 25px 26px 0; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+    th {
+      padding: 10px 13px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line-strong);
+      background: var(--primary-soft);
+      color: #506676;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: left;
+    }
+    th:first-child { border-left: 1px solid var(--line); border-top-left-radius: 8px; }
+    th:last-child { border-right: 1px solid var(--line); border-top-right-radius: 8px; }
+    td {
+      padding: 15px 13px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      color: #435462;
+      font-size: 13px;
+      line-height: 1.55;
+      vertical-align: middle;
+    }
+    td:first-child { border-left: 1px solid var(--line); color: var(--ink); font-weight: 700; }
+    td:last-child { border-right: 1px solid var(--line); }
+    tbody tr:last-child td:first-child { border-bottom-left-radius: 8px; }
+    tbody tr:last-child td:last-child { border-bottom-right-radius: 8px; }
+    .value { color: var(--primary-strong); font-size: 17px; font-weight: 800; }
+    .status { display: inline-block; margin-bottom: 3px; color: #526572; font-weight: 700; }
+    .status.expired { color: var(--muted); }
+    .basis { color: var(--muted); font-size: 11.5px; }
+
+    .conclusion {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      margin-top: 24px;
+      padding: 18px 20px;
+      border: 1px solid #cee1d6;
+      border-radius: 9px;
+      background: var(--jade-soft);
+    }
+    .conclusion.historic { border-color: #ead9bc; background: var(--warn-soft); }
+    .conclusion span { color: #64806f; font-size: 12px; }
+    .conclusion strong { display: block; margin-top: 4px; color: #315c47; font-size: 20px; }
+    .conclusion.historic span { color: #8b7356; }
+    .conclusion.historic strong { color: #855c30; }
+    .conclusion-note { max-width: 410px; color: #708078; font-size: 12px; line-height: 1.55; text-align: right; }
+
+    .actions { display: flex; justify-content: flex-end; gap: 10px; padding: 22px 26px 25px; }
+    .btn {
+      min-height: 38px;
+      padding: 0 17px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      color: #526572;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn.primary { border-color: var(--primary); color: #fff; background: var(--primary); }
+    .btn.confirmed { border-color: var(--jade); background: var(--jade); cursor: default; }
+    .demo-note { margin: 13px 2px 0; color: #909aa1; font-size: 11px; }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 30px;
+      z-index: 20;
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: #fff;
+      background: #304553;
+      box-shadow: 0 10px 26px rgba(38, 55, 71, .22);
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 12px);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns: 1fr; }
+      .side { display: none; }
+      .main { padding: 26px 20px 56px; }
+    }
+
+    @media (max-width: 680px) {
+      .topbar { min-height: 56px; padding: 0 16px; }
+      .brand { font-size: 14px; }
+      .context { display: none; }
+      .tabs { padding-inline: 10px; }
+      .main { padding: 21px 13px 48px; }
+      .heading { align-items: start; flex-direction: column; gap: 8px; }
+      h1 { font-size: 21px; }
+      .project { white-space: normal; }
+      .parameter-strip { grid-template-columns: 1fr; }
+      .parameter { border-right: 0; border-bottom: 1px solid var(--line); }
+      .year-control { min-height: 58px; }
+      .result-wrap { padding: 17px 14px 0; }
+      table { display: block; width: 100%; table-layout: auto; }
+      colgroup, thead { display: none; }
+      tbody { display: grid; width: 100%; gap: 12px; }
+      tbody tr { display: grid; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; }
+      td, td:first-child, td:last-child { display: grid; grid-template-columns: 88px 1fr; gap: 8px; padding: 11px 12px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
+      td:last-child { border-bottom: 0; }
+      td::before { content: attr(data-label); color: var(--muted); font-size: 10.5px; font-weight: 500; }
+      .conclusion { align-items: start; flex-direction: column; margin: 18px 14px 0; }
+      .conclusion-note { text-align: left; }
+      .actions { padding: 18px 14px 20px; }
+      .btn { flex: 1; }
+      .demo-note { margin-inline: 14px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">结构与技术措施 · 一体化工作台</div>
+    <div class="context"><span>角色</span><b>设计人员</b><span>阶段</span><b>扩初阶段</b></div>
+  </header>
+
+  <nav class="tabs" aria-label="一级模块">
+    <button type="button">首页</button>
+    <button type="button" class="on">① 统一技术措施</button>
+    <button type="button">② 扩初说明</button>
+    <button type="button">③ 整理地方规范</button>
+    <button type="button">④ 反校核</button>
+  </nav>
+
+  <div class="workspace">
+    <aside class="side">
+      <h2>统一技术措施</h2>
+      <a href="#">项目前处理</a>
+      <a href="#">参数总表</a>
+      <a href="seismic-grade-prototype.html">抗震等级索引</a>
+      <a href="#" class="active" aria-current="page">抗震设防烈度索引</a>
+    </aside>
+
+    <main class="main">
+      <div class="page">
+        <div class="heading">
+          <div>
+            <h1>抗震设防烈度索引</h1>
+            <p>按查询年份，先查国家规范，再核对天津地方规定。</p>
+          </div>
+          <div class="project">天津市 · 河东区</div>
+        </div>
+
+        <section class="panel" aria-labelledby="result-title">
+          <div class="parameter-strip" aria-label="本次判断参数">
+            <div class="parameter"><span>项目所在地</span><strong>天津市 · 河东区</strong></div>
+            <div class="parameter"><span>项目类型</span><strong>学校、医院等人员密集场所（示例）</strong></div>
+            <div class="year-control" aria-label="查询年份">
+              <span>查询年份</span>
+              <button class="year-button active" type="button" data-year="2026">2026</button>
+              <button class="year-button" type="button" data-year="2012">2012</button>
+            </div>
+          </div>
+
+          <div class="result-wrap">
+            <table>
+              <colgroup><col style="width: 16%"><col style="width: 28%"><col style="width: 24%"><col style="width: 32%"></colgroup>
+              <thead><tr><th>判断层级</th><th>当年有效规则</th><th>判断结果</th><th>说明</th></tr></thead>
+              <tbody id="resultRows"></tbody>
+            </table>
+
+            <div class="conclusion" id="result-title">
+              <div><span>最终采用</span><strong id="finalValue">0.30g</strong></div>
+              <div class="conclusion-note" id="finalNote">地域基准为 8 度（0.20g）；旧通知不再引用，但现行规则仍要求人员密集场所提高一档。</div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn" id="backButton">返回修改参数</button>
+            <button type="button" class="btn primary" id="confirmButton">确认采用</button>
+          </div>
+        </section>
+
+        <p class="demo-note">当前为年份有效性判断示例；正式结果仍需专业负责人确认。</p>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const results = {
+      2026: {
+        rows: [
+          ['国家规范', '《中国地震动参数区划图》GB 18306—2015', '8度（0.20g）', '河东区对应基本地震动峰值加速度 0.20g。'],
+          ['天津地方规定', '《天津市防震减灾条例》第24条', '提高一档', '津建设〔2016〕256号已废止，不引用；现行条例仍需执行。'],
+          ['最终采用', '国家基准 + 现行地方规定', '0.30g', '抗震措施按 9 度；承载力及设防、罕遇地震作用采用 0.30g。']
+        ],
+        final: '0.30g',
+        note: '地域基准为 8 度（0.20g）；旧通知不再引用，但现行规则仍要求人员密集场所提高一档。',
+        historic: false
+      },
+      2012: {
+        rows: [
+          ['国家规范', '《建筑抗震设计规范》GB 50011—2010 附录A', '8度（0.20g）', '河东区的国家设防基准为 8 度、0.20g。'],
+          ['天津地方规定', '《天津市防震减灾条例》第24条 + 建设〔2011〕1469号', '提高至 0.30g', '2012 年旧通知处于有效期，人员密集场所按当年规定提高。'],
+          ['最终采用', '国家基准 + 当年地方规定', '0.30g', '地域基准仍为 8 度（0.20g）；项目地震作用按地方规定提高。']
+        ],
+        final: '0.30g',
+        note: '地域基准为 8 度（0.20g）；抗震措施按 9 度，承载力及设防、罕遇地震作用采用 0.30g。',
+        historic: true
+      }
+    };
+
+    const rows = document.getElementById('resultRows');
+    const conclusion = document.getElementById('result-title');
+    const finalValue = document.getElementById('finalValue');
+    const finalNote = document.getElementById('finalNote');
+    const toast = document.getElementById('toast');
+    const confirmButton = document.getElementById('confirmButton');
+    let currentYear = '2026';
+    let timer;
+
+    function render(year) {
+      currentYear = year;
+      const data = results[year];
+      rows.innerHTML = data.rows.map((row, index) => `
+        <tr>
+          <td data-label="判断层级">${row[0]}</td>
+          <td data-label="当年有效规则"><span class="status">${row[1]}</span></td>
+          <td data-label="判断结果"><span class="value">${row[2]}</span></td>
+          <td data-label="说明" class="basis">${row[3]}</td>
+        </tr>`).join('');
+      finalValue.textContent = data.final;
+      finalNote.textContent = data.note;
+      conclusion.classList.toggle('historic', data.historic);
+      document.querySelectorAll('.year-button').forEach(button => {
+        const active = button.dataset.year === year;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      confirmButton.disabled = false;
+      confirmButton.classList.remove('confirmed');
+      confirmButton.textContent = '确认采用';
+    }
+
+    function notify(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(timer);
+      timer = setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    document.querySelectorAll('.year-button').forEach(button => button.addEventListener('click', () => render(button.dataset.year)));
+    document.getElementById('backButton').addEventListener('click', () => notify('正式接入时将返回前处理参数位置'));
+    confirmButton.addEventListener('click', () => {
+      confirmButton.textContent = '已确认采用';
+      confirmButton.classList.add('confirmed');
+      confirmButton.disabled = true;
+      notify(`已确认 ${currentYear} 年结果：${results[currentYear].final}`);
+    });
+
+    render('2026');
+  </script>
+</body>
+</html>

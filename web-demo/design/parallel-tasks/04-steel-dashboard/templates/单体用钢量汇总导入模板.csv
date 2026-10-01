@@ -1,0 +1,3 @@
+submission_external_id,project_external_id,building_external_id,building_name,building_use_code,region_code,structure_system_code,design_stage,above_floors,below_floors,building_height_m,fortification_intensity,seismic_category,gfa_total_m2,gfa_above_m2,gfa_below_m2,area_basis_code,area_source_id,material_scope,total_mass_t,above_mass_t,below_mass_t,quantity_source_id,data_cutoff_date,source_file_name,source_file_hash,scope_rule_version,notes,prepared_by
+DEMO-SUB-001,DEMO-PRJ-001,DEMO-BLD-A1,A1#住宅,residential,HZ,shear_wall,construction_doc,33,2,99.8,7,standard,28640,24120,4520,architect_schedule,DEMO-SRC-AREA-001,rebar,1790.0,1375.0,415.0,DEMO-SRC-QTY-001,2026-09-20,demo_quantity.xlsx,,steel-usage-v1,演示行：正式导入前请删除,DEMO-USER-01
+

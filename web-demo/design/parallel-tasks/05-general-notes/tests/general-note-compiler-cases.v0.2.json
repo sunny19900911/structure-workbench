@@ -1,0 +1,85 @@
+{
+  "ruleset_id": "GNC-604-01-0.2",
+  "scope": "01 通用说明",
+  "status": "workbench_preview",
+  "master_source_id": "SRC-604-GN-202609-001",
+  "reference_source_ids": [
+    "SRC-602-JNU-GN-20260529-001",
+    "SRC-602-XA-GN-202404-001"
+  ],
+  "truth_sources": {
+    "project_parameters": "①统一技术措施/603项目参数",
+    "geotechnical_facts": "当前项目地勘摘录",
+    "master_text_and_word_styles": "604通用说明母版"
+  },
+  "compile_rules": [
+    {
+      "rule_id": "GN-CMP-001",
+      "target": "1.1 总则",
+      "action": "replace_template_scope_with_project_scope",
+      "result": "本项目设计范围见建筑设计总说明。"
+    },
+    {
+      "rule_id": "GN-CMP-002",
+      "target": "1.2.2 术语、缩略语",
+      "action": "retain_core_terms",
+      "retain": ["工程建设法规", "工程建设标准"],
+      "omit_unless_explicitly_used": ["建筑非结构构件及后续备用术语"]
+    },
+    {
+      "rule_id": "GN-CMP-003",
+      "target": "总说明目录框架",
+      "action": "compile_from_confirmed_project_features",
+      "unknown_policy": "do_not_silently_include"
+    },
+    {
+      "rule_id": "GN-CMP-004",
+      "target": "表1.3.5 项目工程概况",
+      "action": "compile_finished_project_schema",
+      "columns": ["子项编号", "子项名称", "层数（地上/地下）", "结构高度（m）", "结构体系", "抗震等级", "基础形式"],
+      "row_key": "bldg_units.stable_unit_id"
+    },
+    {
+      "rule_id": "GN-CMP-005",
+      "target": "表1.8.9 钢筋混凝土房屋的抗震等级",
+      "action": "generate_from_stage_1",
+      "columns": ["子项编号", "抗震设防类别", "房屋高度", "结构类型", "抗震等级"]
+    },
+    {
+      "rule_id": "GN-CMP-006",
+      "target": "1.10 填充墙",
+      "action": "select_exactly_one_material_branch",
+      "branches": {
+        "no_basement": "母版表索引28",
+        "partial_basement": "母版表索引29",
+        "full_basement": "母版表索引30"
+      },
+      "connection_rule": "混凝土主体仅保留刚性连接分支",
+      "unknown_policy": "require_review"
+    }
+  ],
+  "current_project_case": {
+    "case_id": "GNC-CASE-YNLV-001",
+    "features": {
+      "structure": "混凝土框架结构",
+      "basement_topology": "partial",
+      "has_pile": true,
+      "has_isolation": true,
+      "has_existing_retrofit": true
+    },
+    "expected": {
+      "overview_table_columns": 7,
+      "seismic_grade_table_columns": 5,
+      "fill_wall_material_branch_count": 1,
+      "fill_wall_connection_branch": "rigid_concrete",
+      "editorial_marker_leaks": 0,
+      "docx_section_count": 1,
+      "reader_guide_indent_consistent": true
+    },
+    "assumptions_requiring_professional_confirmation": [
+      "按单体表中地下层数自动判为非满堂/部分地下室",
+      "各单体当前共用①中的框架抗震等级",
+      "基础形式暂显示为按各单体基础图"
+    ]
+  }
+}

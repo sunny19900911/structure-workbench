@@ -1,0 +1,143 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const demoRoot = path.resolve(here, '..');
+const sourceRoot = path.resolve(demoRoot, '..', '1000-未归档');
+const outputFile = path.resolve(demoRoot, 'src', 'data', 'regulationData.js');
+
+const sourceFiles = fs.readdirSync(sourceRoot).filter((name) => name.endsWith('.md')).sort();
+const byPrefix = (prefix) => {
+  const name = sourceFiles.find((item) => item.startsWith(prefix));
+  if (!name) throw new Error(`Missing source file with prefix ${prefix}`);
+  return { name, text: fs.readFileSync(path.join(sourceRoot, name), 'utf8').replace(/^\uFEFF/, '') };
+};
+
+const splitRow = (line) => line.trim().replace(/^\||\|$/g, '').split('|').map((cell) => cell.trim());
+const isSeparator = (cells) => cells.every((cell) => /^:?-+:?$/.test(cell));
+const normalizeSearch = (...values) => values.join(' ').replace(/[省市区县自治州旗]/g, '').replace(/\s+/g, '').toLowerCase();
+
+function parseWindSnow() {
+  const { name, text } = byPrefix('01-');
+  let province = '';
+  const records = [];
+  for (const [index, line] of text.split(/\r?\n/).entries()) {
+    if (line.startsWith('## ')) province = line.slice(3).trim();
+    if (!line.startsWith('|')) continue;
+    const cells = splitRow(line);
+    if (cells.length !== 4 || isSeparator(cells) || cells[0] === '站点') continue;
+    records.push({
+      id: `WS-${String(records.length + 1).padStart(4, '0')}`,
+      province,
+      station: cells[0],
+      basicWind: cells[1],
+      basicSnow: cells[2],
+      snowZone: cells[3],
+      searchKey: normalizeSearch(province, cells[0]),
+      source_id: 'SRC-20260917-002',
+      locator: `${province}表／${cells[0]}行（Markdown第${index + 1}行）`,
+      verification: 'pending_official_verification',
+    });
+  }
+  if (records.length !== 667) throw new Error(`Wind/snow row count mismatch: ${records.length}`);
+  return { name, records };
+}
+
+function parseSeismic() {
+  const { name, text } = byPrefix('02-');
+  let province = '';
+  const records = [];
+  for (const [index, line] of text.split(/\r?\n/).entries()) {
+    if (line.startsWith('## ')) province = line.slice(3).trim();
+    if (!line.startsWith('|')) continue;
+    const cells = splitRow(line);
+    if (cells.length !== 5 || isSeparator(cells) || cells[0] === '区县') continue;
+    records.push({
+      id: `EQ-${String(records.length + 1).padStart(4, '0')}`,
+      province,
+      district: cells[0],
+      city: cells[1],
+      intensity: cells[2],
+      pga: cells[3],
+      designGroup: cells[4],
+      searchKey: normalizeSearch(province, cells[1], cells[0]),
+      source_id: 'SRC-20260917-003',
+      locator: `${province}表／${cells[1]}／${cells[0]}行（Markdown第${index + 1}行）`,
+      verification: 'pending_official_verification',
+    });
+  }
+  if (records.length !== 2885) throw new Error(`Seismic row count mismatch: ${records.length}`);
+  return { name, records };
+}
+
+function parseLiveLoads() {
+  const { name, text } = byPrefix('03-');
+  let section = '';
+  let inheritedItem = '';
+  const floor = [];
+  const roof = [];
+  for (const [index, line] of text.split(/\r?\n/).entries()) {
+    if (line.startsWith('## ')) {
+      section = line.slice(3).trim();
+      inheritedItem = '';
+    }
+    if (!line.startsWith('|') || (!section.startsWith('表 A.1') && !section.startsWith('表 A.2'))) continue;
+    const cells = splitRow(line);
+    if (cells.length !== 6 || isSeparator(cells) || cells[0] === '项次') continue;
+    inheritedItem = cells[0] || inheritedItem;
+    const target = section.startsWith('表 A.1') ? floor : roof;
+    target.push({
+      id: `${section.startsWith('表 A.1') ? 'FL' : 'RL'}-${String(target.length + 1).padStart(3, '0')}`,
+      item: inheritedItem,
+      category: cells[1],
+      standardValue: cells[2],
+      combinationFactor: cells[3],
+      frequentFactor: cells[4],
+      quasiPermanentFactor: cells[5],
+      searchKey: normalizeSearch(cells[1]),
+      source_id: 'SRC-20260917-004',
+      locator: `${section}／项次${inheritedItem}（Markdown第${index + 1}行）`,
+      verification: 'pending_official_verification',
+    });
+  }
+  if (floor.length !== 26 || roof.length !== 4) throw new Error(`Live-load row count mismatch: floor=${floor.length}, roof=${roof.length}`);
+  return { name, floor, roof };
+}
+
+const windSnow = parseWindSnow();
+const seismic = parseSeismic();
+const liveLoads = parseLiveLoads();
+
+const duplicateMap = new Map();
+for (const row of seismic.records) {
+  const key = `${row.province}|${row.city}|${row.district}`;
+  duplicateMap.set(key, [...(duplicateMap.get(key) || []), row]);
+}
+const duplicateSeismicKeys = [...duplicateMap.entries()]
+  .filter(([, rows]) => rows.length > 1)
+  .map(([key, rows]) => ({ key, recordIds: rows.map((row) => row.id), values: rows.map((row) => `${row.intensity}/${row.pga}/${row.designGroup}`) }));
+
+const banner = `// Generated by scripts/generateRegulationData.mjs from read-only Markdown sources.\n// Do not hand-edit. Re-run pnpm generate:regulations after authorized source updates.\n`;
+const body = `${banner}
+export const regulationDatasetMeta = ${JSON.stringify({
+  generatedOn: '2026-09-17',
+  sourceRoot: '1000-未归档（已同步归档至 E:/103-YC工作知识库/raw/项目文件/规范摘录/结构计算统一措施规范数据）',
+  sourceFiles: [windSnow.name, seismic.name, liveLoads.name],
+  sourceIds: ['SRC-20260917-002', 'SRC-20260917-003', 'SRC-20260917-004'],
+  counts: { windSnow: windSnow.records.length, seismic: seismic.records.length, floorLiveLoad: liveLoads.floor.length, roofLiveLoad: liveLoads.roof.length },
+  verification: 'AI 整理摘录，待与正式出版物及地方规定复核',
+  duplicateSeismicKeys,
+}, null, 2)};
+
+export const windSnowRecords = ${JSON.stringify(windSnow.records, null, 2)};
+
+export const seismicRecords = ${JSON.stringify(seismic.records, null, 2)};
+
+export const floorLiveLoadRecords = ${JSON.stringify(liveLoads.floor, null, 2)};
+
+export const roofLiveLoadRecords = ${JSON.stringify(liveLoads.roof, null, 2)};
+`;
+
+fs.writeFileSync(outputFile, body, 'utf8');
+console.log(JSON.stringify({ outputFile, counts: { windSnow: windSnow.records.length, seismic: seismic.records.length, floor: liveLoads.floor.length, roof: liveLoads.roof.length }, duplicateSeismicKeys }, null, 2));

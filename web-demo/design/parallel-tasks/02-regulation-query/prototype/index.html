@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>③ 整理地方规范｜联网核查</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="workspace">
+    <header class="module-head">
+      <div>
+        <p>结构设计 AI 工作台 · 模块③</p>
+        <h1>整理地方规范</h1>
+      </div>
+      <div class="province-control">
+        <label for="province-filter">重点省份</label>
+        <select id="province-filter">
+          <option value="tianjin">天津</option>
+          <option value="shanghai">上海</option>
+          <option value="beijing">北京</option>
+          <option value="guangdong">广东</option>
+          <option value="jiangsu">江苏</option>
+          <option value="zhejiang">浙江</option>
+          <option value="yunnan">云南</option>
+        </select>
+      </div>
+    </header>
+
+    <section class="query-shell">
+      <aside class="location-panel">
+        <h2>查询地区</h2>
+        <form id="resolve-form">
+          <label for="place-query">输入省份或城市名称</label>
+          <div class="search-row">
+            <input id="place-query" autocomplete="off" value="天津市">
+            <button type="submit">确认</button>
+          </div>
+        </form>
+        <div id="resolution" aria-live="polite"></div>
+        <button type="button" id="discover-online" disabled>联网查询</button>
+        <p id="network-status" class="network-status">正在检查联网服务</p>
+      </aside>
+
+      <section class="results-panel">
+        <header class="section-head"><h2>地方规范（含历史版本）</h2></header>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>适用层级</th>
+                <th>规范名称及编号</th>
+                <th>有效状态（发布 / 执行）</th>
+                <th>权威原始网页</th>
+              </tr>
+            </thead>
+            <tbody id="result-body"></tbody>
+          </table>
+        </div>
+        <div id="result-empty" class="empty-state"></div>
+      </section>
+    </section>
+
+    <section class="workflow-panel">
+      <header><span>③-C</span><div><h2>候选资料进入 601 的可信流程</h2><p>网页检索只负责发现，不能直接成为正式结论</p></div></header>
+      <ol>
+        <li class="discovery"><i>1</i><b>联网发现</b><span>URL / 获取时间 / 摘要</span></li>
+        <li class="discovery"><i>2</i><b>601 候选</b><span>原件 / 哈希 / 发布机构</span></li>
+        <li><i>3</i><b>内容核验</b><span>日期 / 范围 / 条款定位</span></li>
+        <li><i>4</i><b>负责人确认</b><span>角色 / 意见 / 审计事件</span></li>
+        <li class="formal"><i>5</i><b>601 正式库</b><span>版本化 / 可追溯 / 可查询</span></li>
+      </ol>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script defer src="./generated/app.bundle.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "tested_at": "2026-09-25T20:47:00+08:00",
+  "scope": "01 通用说明",
+  "entry": "C:\\Users\\mj528\\Documents\\004 工作\\web-demo\\workbuddy-integrated-studio.html",
+  "docx": "C:\\Users\\mj528\\Documents\\004 工作\\web-demo\\outputs\\general-note\\云南旅游职业学院龙泉路校区提升改造项目（一期）_01通用说明_参数联动版.docx",
+  "docx_sha256": "E67A27B7A10CB722BFEB20EEF1513420E4AA607C0366629892BA8530E22180EE",
+  "checks": {
+    "word_opened_readonly": true,
+    "word_paragraph_count": 3934,
+    "word_table_count": 33,
+    "styles_xml_matches_master": true,
+    "numbering_xml_matches_master": true,
+    "annotation_marker_count": 0,
+    "visible_stage7_panels": 1,
+    "hidden_legacy_stage7_panels": 5,
+    "preview_overflow": "visible",
+    "preview_continuous_page_scroll": true,
+    "browser_docx_generation": "passed",
+    "browser_console_errors": 0,
+    "seismic_values": ["0.20g", "0.65s/0.70s", "Ⅲ类", "第三组", "0.16/0.45/0.90"],
+    "office_live_load": "2.5",
+    "geotechnical_extract_visible": true
+  },
+  "known_limit": "LibreOffice 未安装；Microsoft Word 的 PDF 转换在本机异常卡顿，因此未形成最终逐页PDF渲染。已完成Word原生打开、OOXML哈希和浏览器连续预览三类校验。"
+}

@@ -1,0 +1,346 @@
+{
+  "schema_version": "0.3",
+  "generated_at": "2026-09-28T00:00:00+08:00",
+  "purpose": "联网发现来源注册表；所有发现只进入601候选/人工确认流程",
+  "current_snapshot_source_id": "SRC-T2-PILOT-31PROVINCES-M9-20260928",
+  "current_audit_source_id": "SRC-T2-COVERAGE-AUDIT-M9-20260928",
+  "coverage_profile_semantics": "coverage_profiles保留各批次形成时的历史统计，不作为当前总量真源；当前数量与缺口以只读快照及coverage-audit.mjs为准。",
+  "status_policy": {
+    "official_catalog": "可形成高可信候选，但仍需检查替代、复审和废止公告",
+    "release_notice": "可证明发布和实施安排，历史发布公告不能单独证明截至今日仍现行",
+    "review_or_repeal_notice": "可作为继续有效、修订或废止的直接状态证据",
+    "supplementary_site": "只用于发现线索，不单独形成正式状态结论",
+    "no_hit": "未命中或待核实，不得推断为废止"
+  },
+  "sources": [
+    {
+      "source_id": "TJ-OFF-STD-001",
+      "jurisdiction": "天津市",
+      "authority": "天津市住房和城乡建设委员会",
+      "source_type": "official_current_catalog",
+      "name": "现行标准规范",
+      "url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgf/",
+      "capabilities": ["标准编号", "标准名称", "实施日期", "发布文号", "备案号", "官网PDF"],
+      "verification": "verified"
+    },
+    {
+      "source_id": "TJ-OFF-DESIGN-001",
+      "jurisdiction": "天津市",
+      "authority": "天津市住房和城乡建设委员会",
+      "source_type": "official_standard_design_catalog",
+      "name": "工程建设标准设计",
+      "url": "https://zfcxjs.tj.gov.cn/ztzl_70/bzgf/xxbz/xxbzgfsj/",
+      "capabilities": ["审查要点", "标准设计", "批准文号", "官网PDF"],
+      "verification": "verified"
+    },
+    {
+      "source_id": "TJ-OFF-CLEAN-001",
+      "jurisdiction": "天津市",
+      "authority": "天津市住房和城乡建设委员会",
+      "source_type": "official_repeal_notice",
+      "name": "市住房城乡建设委关于公布废止部分行政规范性文件的公告",
+      "url": "https://zfcxjs.tj.gov.cn/sylm/gabsycs/tzgggh/202212/t20221229_6063704.html",
+      "capabilities": ["废止文号", "废止文件名称", "公告日期"],
+      "verification": "verified"
+    },
+    {
+      "source_id": "BJ-OFF-RELEASE-001",
+      "jurisdiction": "北京市",
+      "authority": "北京市住房和城乡建设委员会",
+      "source_type": "official_release_catalog",
+      "name": "标准发布公告",
+      "url": "https://zjw.beijing.gov.cn/bjjs/bzgl17/bzxx/fbgg/index.shtml",
+      "capabilities": ["发布公告", "标准编号", "被修订标准", "批准日期", "实施日期"],
+      "verification": "verified"
+    },
+    {
+      "source_id": "SH-OFF-CURRENT-001",
+      "jurisdiction": "上海市",
+      "authority": "上海市住房和城乡建设管理委员会",
+      "source_type": "official_current_catalog",
+      "name": "现行标准",
+      "url": "https://zjw.sh.gov.cn/xxbz/",
+      "capabilities": ["标准编号", "名称", "批准日期", "实施日期", "备案号", "标准文本"],
+      "verification": "verified"
+    },
+    {
+      "source_id": "JS-OFF-REVIEW-001",
+      "jurisdiction": "江苏省",
+      "authority": "江苏省住房和城乡建设厅",
+      "source_type": "official_review_notice",
+      "name": "2024年度省工程建设地方标准复审和修订申报",
+      "url": "https://jsszfhcxjst.jiangsu.gov.cn/art/2024/7/24/art_49384_11304931.html",
+      "capabilities": ["复审范围", "复审附件", "修订申报"],
+      "verification": "verified"
+    },
+    {
+      "source_id": "JS-OFF-REPEAL-001",
+      "jurisdiction": "江苏省",
+      "authority": "江苏省住房和城乡建设厅",
+      "source_type": "official_repeal_notice",
+      "name": "2025年度废止工程建设地方标准公告",
+      "url": "https://jsszfhcxjst.jiangsu.gov.cn/art/2025/7/21/art_49384_11604977.html",
+      "capabilities": ["废止标准编号", "废止标准名称", "废止日期"],
+      "verification": "verified"
+    },
+    {
+      "source_id": "ZJ-OFF-REVIEW-001",
+      "jurisdiction": "浙江省",
+      "authority": "浙江省住房和城乡建设厅",
+      "source_type": "official_review_result",
+      "name": "浙江省工程建设标准复审结果",
+      "url": "https://jst.zj.gov.cn/module/download/downfile.jsp?classid=0&filename=3576ac8f96644975ab1879c049fb7094.pdf",
+      "capabilities": ["标准编号", "名称", "备案号", "发布日期", "实施日期", "复审结果"],
+      "verification": "verified"
+    },
+    {
+      "source_id": "SC-OFF-SYSTEM-001",
+      "jurisdiction": "四川省",
+      "authority": "四川省住房和城乡建设厅",
+      "source_type": "official_standard_system",
+      "name": "四川省工程建设标准体系（勘察测量与地基基础部分）",
+      "url": "https://jst.sc.gov.cn/scjst/gongshitg/2025/4/15/e03795f7202742268c3da43ac03c0c64/files/%E4%B8%80%E3%80%81%E5%B7%A5%E7%A8%8B%E5%8B%98%E5%AF%9F%E6%B5%8B%E9%87%8F%E4%B8%8E%E5%BB%BA%E7%AD%91%E5%9C%B0%E5%9F%BA%E5%9F%BA%E7%A1%80%E9%83%A8%E5%88%86%EF%BC%88%E4%B8%BB%E7%BC%96%E5%8D%95%E4%BD%8D%EF%BC%9A%E4%B8%AD%E5%9B%BD%E5%BB%BA%E7%AD%91%E8%A5%BF%E5%8D%97%E5%8B%98%E5%AF%9F%E8%AE%BE%E8%AE%A1%E7%A0%94%E7%A9%B6%E9%99%A2%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8%EF%BC%89.pdf",
+      "capabilities": ["标准体系", "专业分类", "标准编号", "适用范围"],
+      "verification": "partial",
+      "note": "体系文件不是现行效力清单，需另查发布、复审和废止公告"
+    },
+    {
+      "source_id": "YN-OFF-TOPIC-001",
+      "jurisdiction": "云南省",
+      "authority": "云南省住房和城乡建设厅",
+      "source_type": "official_standard_topic",
+      "name": "云南省工程建设地方标准",
+      "url": "https://zfcxjst.yn.gov.cn/ztzl/ynsgcjsdfbz/index_1.html",
+      "capabilities": ["标准正文", "发布通知", "宣贯", "目录"],
+      "verification": "verified"
+    },
+    {
+      "source_id": "GD-OFF-RELEASE-001",
+      "jurisdiction": "广东省",
+      "authority": "广东省住房和城乡建设厅",
+      "source_type": "official_release_notice",
+      "name": "工程建设地方标准单项发布公告",
+      "url": "https://zfcxjst.gd.gov.cn/gkmlpt/content/3/3222/post_3222044.html",
+      "capabilities": ["标准名称", "标准编号", "发布公告"],
+      "verification": "partial",
+      "note": "已验证单项发布，统一现行目录尚待定位"
+    },
+    {
+      "source_id": "GD-SUP-GDCIC-001",
+      "jurisdiction": "广东省",
+      "authority": "广东省建设信息中心（转载广东省住房和城乡建设厅公告）",
+      "source_type": "supplementary_official_mirror",
+      "name": "广东省工程建设标准发布公告镜像",
+      "url": "https://www.gdcic.net/ShowNews?KeyId=b38700aba4b1420bb213098322c29269",
+      "capabilities": ["发布文号", "标准编号", "实施日期", "原标准废止说明"],
+      "verification": "verified_mirror",
+      "note": "可作官网迁移或不可达时的公告核对；进入601前仍应优先回查省住建厅原文。"
+    },
+    {
+      "source_id": "GZ-OFF-PORTAL-001",
+      "jurisdiction": "贵州省",
+      "authority": "贵州省住房和城乡建设厅",
+      "source_type": "official_portal",
+      "name": "贵州省住房和城乡建设厅",
+      "url": "https://zfcxjst.guizhou.gov.cn/",
+      "capabilities": ["标准公告候选", "通知公告候选"],
+      "verification": "partial",
+      "note": "本轮未定位可检索的现行工程建设标准总目录"
+    },
+    {
+      "source_id": "SN-OFF-STANDARD-001",
+      "jurisdiction": "陕西省",
+      "authority": "陕西省住房和城乡建设厅",
+      "source_type": "official_standard_column",
+      "name": "工程建设标准",
+      "url": "https://js.shaanxi.gov.cn/sy/yw/gcjsbz/",
+      "capabilities": ["标准公告", "标准计划", "标准正文候选"],
+      "verification": "partial",
+      "note": "现行与废止总目录待定位"
+    },
+    {
+      "source_id": "GS-OFF-REVIEW-001",
+      "jurisdiction": "甘肃省",
+      "authority": "甘肃省住房和城乡建设厅",
+      "source_type": "official_review_result",
+      "name": "2021年工程建设地方标准复审结论",
+      "url": "https://zjt.gansu.gov.cn/zjt/c108286/202105/f6552841791b478ea72d0e1499606031/files/10187929d8474b9a9d1000f665541a88.pdf",
+      "capabilities": ["标准编号", "标准名称", "复审结论"],
+      "verification": "verified",
+      "note": "只能证明2021年复审时点，2026年状态需继续核查"
+    },
+    {
+      "source_id": "NX-OFF-CATALOG-001",
+      "jurisdiction": "宁夏回族自治区",
+      "authority": "宁夏回族自治区住房和城乡建设厅",
+      "source_type": "official_current_and_repeal_catalog",
+      "name": "工程建设地方标准目录",
+      "url": "https://jst.nx.gov.cn/zwgk/zcwjk/gcjsbz/202505/t20250529_4920847.html",
+      "capabilities": ["现行有效目录", "废止目录", "替代关系", "实施日期"],
+      "verification": "verified"
+    },
+    {
+      "source_id": "XJ-OFF-REVIEW-001",
+      "jurisdiction": "新疆维吾尔自治区",
+      "authority": "新疆维吾尔自治区住房和城乡建设厅",
+      "source_type": "official_review_catalog",
+      "name": "2024年自治区工程建设标准复审目录",
+      "url": "https://zjt.xinjiang.gov.cn/xjzjt/c113175/202410/3baafacf3360478eb675dd87145137ab.shtml",
+      "capabilities": ["待复审标准编号", "标准名称", "备案号"],
+      "verification": "verified",
+      "note": "复审目录不是复审结论，不能据此判废或判现行"
+    },
+    {
+      "source_id": "NMG-OFF-REFERENCE-001",
+      "jurisdiction": "内蒙古自治区",
+      "authority": "内蒙古自治区住房和城乡建设厅",
+      "source_type": "official_followup_reference",
+      "name": "后续工程建设标准文件中的地方标准引用",
+      "url": "https://zjt.nmg.gov.cn/IGI/upload/file/2022/07/15/202207150901519347kG.pdf",
+      "capabilities": ["标准编号发现", "标准名称发现", "后续引用"],
+      "verification": "partial",
+      "note": "命中载体含征求意见稿，仅作发现证据"
+    },
+    {
+      "source_id": "CN-SAMR-STD-001",
+      "jurisdiction": "全国",
+      "authority": "国家市场监督管理总局 / 国家标准化管理委员会",
+      "source_type": "national_standard_backstop",
+      "name": "全国标准信息公共服务平台",
+      "url": "https://std.samr.gov.cn/",
+      "capabilities": ["地方标准身份", "标准状态", "标准编号", "发布日期", "实施日期"],
+      "verification": "verified",
+      "note": "作为交叉核验；不能替代省级住建主管部门的工程建设标准正文和专项规定"
+    }
+  ],
+  "coverage_method": {
+    "version": "0.3",
+    "required_source_lanes": [
+      "current_catalog",
+      "release_and_replacement_notice",
+      "review_repeal_cleanup",
+      "standard_design_and_review_guidance",
+      "regulation_and_policy_repository"
+    ],
+    "rules": [
+      "项目原生资料先形成seed_manifest并逐项闭环",
+      "新版和旧版同时保留并建立替代关系",
+      "官网URL迁移不得导致候选被删除或自动判废",
+      "没有覆盖分母时不得声称全省已查全",
+      "普通搜索结果只作发现线索",
+      "目录覆盖率与状态确认率分别统计",
+      "低覆盖省份不得用无关专业标准凑数",
+      "复审目录不等于复审结论"
+    ]
+  },
+  "coverage_profiles": [
+    {
+      "jurisdiction": "天津市",
+      "seed_total": 14,
+      "seed_covered": 14,
+      "repealed_candidates": 1,
+      "unresolved_candidates": 1,
+      "status": "seed_closed",
+      "lanes": ["current_catalog", "release_and_replacement_notice", "review_repeal_cleanup", "standard_design_and_review_guidance", "regulation_and_policy_repository"]
+    },
+    {
+      "jurisdiction": "上海市",
+      "candidate_count": 8,
+      "repealed_candidates": 2,
+      "status": "method_applied_no_complete_seed"
+    },
+    {
+      "jurisdiction": "北京市",
+      "candidate_count": 5,
+      "repealed_candidates": 2,
+      "status": "method_applied_no_complete_seed"
+    },
+    {
+      "jurisdiction": "广东省",
+      "candidate_count": 3,
+      "repealed_candidates": 1,
+      "status": "method_applied_official_link_migration_pending"
+    },
+    {
+      "jurisdiction": "江苏省",
+      "candidate_count": 8,
+      "repealed_candidates": 6,
+      "status": "method_applied_no_complete_seed"
+    },
+    {
+      "jurisdiction": "浙江省",
+      "candidate_count": 5,
+      "repealed_candidates": 2,
+      "status": "method_applied_review_attachment_moved"
+    },
+    {
+      "jurisdiction": "云南省",
+      "candidate_count": 4,
+      "repealed_candidates": 1,
+      "status": "method_applied_no_complete_seed"
+    },
+    {
+      "jurisdiction": "四川省",
+      "candidate_count": 9,
+      "confirmed_current": 5,
+      "confirmed_non_current": 1,
+      "status": "m7_partial_status_confirmed"
+    },
+    {
+      "jurisdiction": "贵州省",
+      "candidate_count": 7,
+      "confirmed_current": 1,
+      "confirmed_non_current": 0,
+      "status": "m7_low_status_confirmation"
+    },
+    {
+      "jurisdiction": "西藏自治区",
+      "candidate_count": 1,
+      "confirmed_current": 1,
+      "confirmed_non_current": 0,
+      "status": "m7_low_coverage"
+    },
+    {
+      "jurisdiction": "陕西省",
+      "candidate_count": 3,
+      "confirmed_current": 0,
+      "confirmed_non_current": 0,
+      "status": "m7_candidate_only"
+    },
+    {
+      "jurisdiction": "甘肃省",
+      "candidate_count": 10,
+      "confirmed_current": 1,
+      "confirmed_non_current": 1,
+      "status": "m7_review_date_stale"
+    },
+    {
+      "jurisdiction": "青海省",
+      "candidate_count": 4,
+      "confirmed_current": 0,
+      "confirmed_non_current": 4,
+      "status": "m7_no_current_confirmed"
+    },
+    {
+      "jurisdiction": "宁夏回族自治区",
+      "candidate_count": 12,
+      "confirmed_current": 9,
+      "confirmed_non_current": 3,
+      "status": "m7_catalog_confirmed"
+    },
+    {
+      "jurisdiction": "新疆维吾尔自治区",
+      "candidate_count": 9,
+      "confirmed_current": 0,
+      "confirmed_non_current": 0,
+      "status": "m7_review_pending"
+    },
+    {
+      "jurisdiction": "内蒙古自治区",
+      "candidate_count": 4,
+      "confirmed_current": 0,
+      "confirmed_non_current": 0,
+      "status": "m7_followup_reference_only"
+    }
+  ]
+}

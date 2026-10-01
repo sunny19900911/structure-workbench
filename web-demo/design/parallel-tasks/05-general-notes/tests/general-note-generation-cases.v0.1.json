@@ -1,0 +1,119 @@
+{
+  "suite_id": "GN-GENERATION-0.1",
+  "status": "draft",
+  "rulesets": [
+    "GNR-604-COMPONENT-0.1-DRAFT",
+    "GNR-604-CLEANING-0.1-DRAFT"
+  ],
+  "catalog": {
+    "asset": "web-demo/data/general-note-masters.v1.js",
+    "component_count": 10,
+    "block_count": 6751,
+    "editorial_note_block_count": 2551,
+    "master_package_version": "PACK-2026-09-01"
+  },
+  "cases": [
+    {
+      "case_id": "G-001-current-stage1-defaults",
+      "features": {
+        "has_concrete": true,
+        "has_steel": "unknown",
+        "has_masonry": false,
+        "has_green_building": "unknown",
+        "has_precast": false,
+        "has_iso": true,
+        "has_damp": false,
+        "has_health_monitoring": false,
+        "has_special_design_scope": "unknown",
+        "has_existing": true
+      },
+      "expected": {
+        "include": ["01", "02", "03", "08", "10"],
+        "exclude_from_draft": ["05", "07"],
+        "require_review": ["04", "06", "09"],
+        "removed_editorial_note_blocks_in_included_components": 1572,
+        "manual_review_blocks_in_included_components": 993,
+        "withheld_mixed_annotation_blocks": 9,
+        "annotation_marker_leaks": 0
+      }
+    },
+    {
+      "case_id": "G-002-basic-concrete-only",
+      "features": {
+        "has_concrete": true,
+        "has_steel": false,
+        "has_masonry": false,
+        "has_green_building": false,
+        "has_precast": false,
+        "has_iso": false,
+        "has_damp": false,
+        "has_health_monitoring": false,
+        "has_special_design_scope": false,
+        "has_existing": false
+      },
+      "expected": {
+        "include": ["01", "02", "03"],
+        "exclude_from_draft": ["04", "05", "06", "07", "08", "09", "10"],
+        "require_review": [],
+        "unknown_is_false": false
+      }
+    },
+    {
+      "case_id": "G-003-combined-special-volume",
+      "features": {
+        "has_concrete": true,
+        "has_steel": true,
+        "has_masonry": false,
+        "has_green_building": true,
+        "has_precast": true,
+        "has_iso": false,
+        "has_damp": true,
+        "has_health_monitoring": "unknown",
+        "has_special_design_scope": true,
+        "has_existing": false
+      },
+      "expected": {
+        "include": ["01", "02", "03", "04", "06", "07", "08", "09"],
+        "exclude_from_draft": ["05", "10"],
+        "require_review": [],
+        "component_08_reason": "any_true"
+      }
+    },
+    {
+      "case_id": "G-004-unknown-safety",
+      "features": {},
+      "expected": {
+        "include": ["01", "02"],
+        "exclude_from_draft": [],
+        "require_review": ["03", "04", "05", "06", "07", "08", "09", "10"],
+        "silent_delete": false
+      }
+    },
+    {
+      "case_id": "G-005-cleaning-boundary",
+      "input_roles": [
+        "editorial_note",
+        "formal_text",
+        "designer_prompt",
+        "coordination_item",
+        "optional_clause",
+        "example_text",
+        "project_placeholder"
+      ],
+      "expected": {
+        "auto_omit": ["editorial_note"],
+        "withhold_for_manual_split": ["mixed_annotation"],
+        "retain": [
+          "formal_text",
+          "designer_prompt",
+          "coordination_item",
+          "optional_clause",
+          "example_text",
+          "project_placeholder"
+        ],
+        "original_master_modified": false,
+        "audit_source_id_preserved": true
+      }
+    }
+  ]
+}

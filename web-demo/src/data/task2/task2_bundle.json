@@ -1,0 +1,2874 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-09-17T19:30:00+08:00",
+  "project": "云南旅游职业学院龙泉路校区提升改造项目（一期）",
+  "target_building": "2#学生食堂",
+  "policy": {
+    "raw_sources_read_only": true,
+    "formal_parameter_rule": "usable_as_formal=true 且 confirmation_status=已人工确认",
+    "conflict_rule": "保留全部候选，不自动覆盖",
+    "seismic_grade_rule": "只收集输入条件，不自动输出最终抗震等级"
+  },
+  "sources": [
+    {
+      "source_id": "SRC-04-GEO",
+      "category": "原始资料",
+      "domain": "地勘",
+      "file_name": "云南旅游职业学院龙泉路校区提升改造项目（一期）_岩土工程详细勘察报告_文字部分.docx",
+      "relative_path": "04_地勘资料/云南旅游职业学院龙泉路校区提升改造项目（一期）_岩土工程详细勘察报告_文字部分.docx",
+      "sha256": "BD80B28CCE5DC08F2785D72E6A604456924B6EBB9B1AAE5CDA9F909517FF2EA5",
+      "size_bytes": 6340660,
+      "modified_at": "2026-09-16T19:01:23+08:00",
+      "read_only_policy": true,
+      "parseability": "可解析：正文、标题、表格、图片清单；无可靠分页标记",
+      "locator_policy": "章节 + P段落序号 / T表序号R行号",
+      "usage_boundary": "项目地勘事实来源；图件未做OCR，不据图自动判定单体所属场地分区"
+    },
+    {
+      "source_id": "SRC-05-ARCH",
+      "category": "原始资料",
+      "domain": "建筑",
+      "file_name": "云南旅游职业学院龙泉路校区提升改造项目（一期）_建筑专业输入_初步设计说明总体_V01.docx",
+      "relative_path": "05_建筑专业输入资料/云南旅游职业学院龙泉路校区提升改造项目（一期）_建筑专业输入_初步设计说明总体_V01.docx",
+      "sha256": "5AB416257450F93E5F7E75EC6A3058BBC8BC800CDA151D27C9D68BFAF4358404",
+      "size_bytes": 7695991,
+      "modified_at": "2026-09-16T19:01:27+08:00",
+      "read_only_policy": true,
+      "parseability": "可解析：正文、标题、表格、图片清单；无可靠分页标记",
+      "locator_policy": "章节 + P段落序号 / T表序号R行号",
+      "usage_boundary": "项目建筑输入事实来源；表格内多单体与多口径数据不得静默合并"
+    },
+    {
+      "source_id": "REF-STRUCT-NARRATIVE-TEMPLATE",
+      "category": "参考资料",
+      "domain": "字段映射",
+      "file_name": "结构初步设计说明-文章骨架模板 .docx",
+      "relative_path": "E:\\11-工作\\001-workbuddy space\\001-workbuddy space\\103-结构扩初说明\\结构初步设计说明-文章骨架模板 .docx",
+      "sha256": "F423EAA20C45A54BC35FD79A4B1F7035C7D3D0B4AB084E881DFEC5A330556443",
+      "size_bytes": 39889,
+      "modified_at": "",
+      "read_only_policy": true,
+      "parseability": "可解析：用于确定扩初说明所需字段，不作为项目事实来源",
+      "locator_policy": "章节标题 + P段落序号",
+      "usage_boundary": "仅定义输出结构，不提供本项目参数"
+    },
+    {
+      "source_id": "REF-SEISMIC-GRADE-INPUTS",
+      "category": "参考资料",
+      "domain": "抗震等级输入字段",
+      "file_name": "与抗震等级相关的规范汇总（详细条文）.md",
+      "relative_path": "E:\\11-工作\\001-workbuddy space\\001-workbuddy space\\102-规范重点数据库\\与抗震等级相关的规范汇总（详细条文）.md",
+      "sha256": "C831C96AA0707E7A874EBED6210C9FFF4B37FCED680E3816F88C658898C1C6B1",
+      "size_bytes": 19578,
+      "modified_at": "",
+      "read_only_policy": true,
+      "parseability": "可解析：用于列出决定抗震等级的输入条件，不自动给出抗震等级",
+      "locator_policy": "Markdown标题 + 行号",
+      "usage_boundary": "规范参考，不替代人工判定和负责人复核"
+    },
+    {
+      "source_id": "SRC-USER-DECISION-20260916",
+      "category": "人工确认",
+      "domain": "人为确定",
+      "file_name": "既有用户确认记录",
+      "relative_path": "SOURCE_REGISTRY.md",
+      "sha256": "",
+      "size_bytes": 0,
+      "modified_at": "2026-09-16T00:00:00+08:00",
+      "read_only_policy": false,
+      "parseability": "结构化录入",
+      "locator_policy": "confirmation_id",
+      "usage_boundary": "人工确认优先，但保留被覆盖候选与适用范围"
+    }
+  ],
+  "candidates": [
+    {
+      "candidate_id": "ARCH-001",
+      "domain": "建筑",
+      "field_id": "project.name",
+      "field_name": "项目名称",
+      "scope": "全项目",
+      "raw_value": "云南旅游职业学院龙泉路校区提升改造项目（一期）",
+      "normalized_value": "云南旅游职业学院龙泉路校区提升改造项目（一期）",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "封面/P0001",
+      "evidence": "云南旅游职业学院龙泉路校区提升改造项目（一期）",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-002",
+      "domain": "建筑",
+      "field_id": "building.name",
+      "field_name": "单体名称",
+      "scope": "目标单体",
+      "raw_value": "2#学生食堂",
+      "normalized_value": "2#学生食堂",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/表T20R4",
+      "evidence": "食堂 | 2#学生食堂 | 4/1 | 37.7 | 27.8 | 18.6 | 8.1 | 3.65m | 1F：4.8m 2~4F：4.5m 出屋面：3.85m | 多层",
+      "status": "冲突未解决",
+      "conflict_group": "CONFLICT-BUILDING-NAME-4AFFA2",
+      "note": "正文和设备表另有“2#食堂”简称。"
+    },
+    {
+      "candidate_id": "ARCH-003",
+      "domain": "建筑",
+      "field_id": "building.name",
+      "field_name": "单体名称",
+      "scope": "目标单体",
+      "raw_value": "2#食堂",
+      "normalized_value": "2#食堂",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第十三章/表T19R0",
+      "evidence": "2#食堂 | 自动扶梯 | 提升角度 AA | 提升高度（mm） | 速度（m/s） | 宽度（mm） | 底坑深度（mm）",
+      "status": "冲突未解决",
+      "conflict_group": "CONFLICT-BUILDING-NAME-4AFFA2",
+      "note": "简称候选，与2#学生食堂需统一。"
+    },
+    {
+      "candidate_id": "ARCH-004",
+      "domain": "建筑",
+      "field_id": "building.function",
+      "field_name": "建筑功能",
+      "scope": "2#学生食堂",
+      "raw_value": "食堂（与3#学生宿舍组合）",
+      "normalized_value": "食堂",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第三章/P0313",
+      "evidence": "一期项目内共有5栋地上建筑及一层地下室，地上部分为1栋高层教学楼、1栋高层宿舍楼、2栋多层宿舍楼、2栋多层学校食堂（共5栋建筑）及连廊组成，其中3#学生宿舍及2#学生食堂为一栋建筑；地下部分为地下机动车库及设备用房。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-005",
+      "domain": "建筑",
+      "field_id": "building.floors",
+      "field_name": "层数",
+      "scope": "2#学生食堂",
+      "raw_value": "4/1",
+      "normalized_value": {
+        "above_ground": 4,
+        "underground": 1
+      },
+      "unit": "层",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/表T20R4",
+      "evidence": "食堂 | 2#学生食堂 | 4/1 | 37.7 | 27.8 | 18.6 | 8.1 | 3.65m | 1F：4.8m 2~4F：4.5m 出屋面：3.85m | 多层",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-006",
+      "domain": "建筑",
+      "field_id": "building.height",
+      "field_name": "建筑高度",
+      "scope": "2#学生食堂",
+      "raw_value": "20.3（规划）/18.8（消防）",
+      "normalized_value": {
+        "planning": 20.3,
+        "fire": 18.8
+      },
+      "unit": "m",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第一章/P0176-P0177",
+      "evidence": "1.8建筑高度：1#教学楼36.15m（35.25m）、1#学生食堂15.7m（14.2m）、2#学生食堂20.3m（18.8m）、1#宿舍楼24.1m（22.6m）、2#宿舍楼23.6m（22.1m）、3#宿舍楼49.6m（47.6m）。 注：建筑高度括号外为建筑规划高度，括号内为建筑消防高度。",
+      "status": "冲突未解决",
+      "conflict_group": "CONFLICT-BUILDING-HEIGHT-20A142",
+      "note": "同一文件表T20R4另记18.6m。"
+    },
+    {
+      "candidate_id": "ARCH-007",
+      "domain": "建筑",
+      "field_id": "building.height",
+      "field_name": "建筑高度",
+      "scope": "2#学生食堂",
+      "raw_value": "18.6",
+      "normalized_value": 18.6,
+      "unit": "m",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/表T20R4",
+      "evidence": "食堂 | 2#学生食堂 | 4/1 | 37.7 | 27.8 | 18.6 | 8.1 | 3.65m | 1F：4.8m 2~4F：4.5m 出屋面：3.85m | 多层",
+      "status": "冲突未解决",
+      "conflict_group": "CONFLICT-BUILDING-HEIGHT-20A142",
+      "note": "高度口径未说明，与正文规划/消防高度不同。"
+    },
+    {
+      "candidate_id": "ARCH-008",
+      "domain": "建筑",
+      "field_id": "building.area",
+      "field_name": "建筑面积",
+      "scope": "2#学生食堂",
+      "raw_value": "4389.62",
+      "normalized_value": 4389.62,
+      "unit": "㎡",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第一章/表T1R12",
+      "evidence": "其中 | 3#学生宿舍楼（2#学生食堂） | 19180.95 | ㎡ | 其中2#食堂4389.62㎡",
+      "status": "冲突未解决",
+      "conflict_group": "CONFLICT-BUILDING-AREA-20A142",
+      "note": "技术经济指标的2#食堂面积。"
+    },
+    {
+      "candidate_id": "ARCH-009",
+      "domain": "建筑",
+      "field_id": "building.area",
+      "field_name": "建筑面积",
+      "scope": "3#宿舍与2#食堂合建体",
+      "raw_value": "19180.95",
+      "normalized_value": 19180.95,
+      "unit": "㎡",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第一章/表T1R12",
+      "evidence": "其中 | 3#学生宿舍楼（2#学生食堂） | 19180.95 | ㎡ | 其中2#食堂4389.62㎡",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": "合建体总面积，不应直接作为食堂单体面积。"
+    },
+    {
+      "candidate_id": "ARCH-010",
+      "domain": "建筑",
+      "field_id": "building.basement",
+      "field_name": "地下室关系",
+      "scope": "2#学生食堂",
+      "raw_value": "与2#、3#学生宿舍及1#教学实训楼等共用一层整体地下室",
+      "normalized_value": "共用一层整体地下室",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/P0898",
+      "evidence": "本工程地上建筑包括教学楼、宿舍、食堂和连接各单体的连廊。其中2#学生宿舍、3#学生宿舍、2#学生食堂、1#教学实训楼、连廊2共用一层地下室，地下室作为上部建筑的嵌固端，不设缝，为整体地下室，兼做人防工程（常六级乙类二等人员掩蔽所）。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-011",
+      "domain": "建筑",
+      "field_id": "building.joint",
+      "field_name": "结构缝/抗震缝",
+      "scope": "2#学生食堂",
+      "raw_value": "与3#学生宿舍采用抗震缝断开",
+      "normalized_value": "抗震缝断开",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/P0899",
+      "evidence": "2#3#学生宿舍局部无地下室，位于整体地下室外，其隔震层底板与整体地下室顶板连成整体。连廊1和连廊2均采用抗震缝与其他单体断开，2#学生食堂与3#学生宿舍采用抗震缝断开。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-012",
+      "domain": "建筑",
+      "field_id": "building.fire_class",
+      "field_name": "建筑防火分类",
+      "scope": "学生食堂",
+      "raw_value": "多层公共建筑",
+      "normalized_value": "多层公共建筑",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第一章/P0182",
+      "evidence": "2.3 根据《建筑设计防火规范》GB50016-2014（2018年版），本项目1#教学楼为二类高层公共建筑，耐火等级一级、学生食堂为多层公共建筑，耐火等级二级、1#及2#宿舍楼为多层居住建筑，耐火等级二级、3#学生宿舍楼为二类高层居住建筑，耐火等级为一级、地下室，耐火等级为一级。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-013",
+      "domain": "建筑",
+      "field_id": "building.fire_resistance",
+      "field_name": "耐火等级",
+      "scope": "学生食堂",
+      "raw_value": "二级",
+      "normalized_value": "二级",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第三章/P0383",
+      "evidence": "2.2耐火等级：本项目1#教学楼为二类高层公共建筑，耐火等级一级、学生食堂为多层公共建筑，耐火等级二级、1#及2#宿舍楼为多层居住建筑，耐火等级二级、3#学生宿舍楼为二类高层居住建筑，耐火等级为一级、地下室，耐火等级为一级。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-014",
+      "domain": "建筑",
+      "field_id": "building.waterproof.roof",
+      "field_name": "屋面防水等级",
+      "scope": "全项目",
+      "raw_value": "一级；三道设防；合理使用年限25年",
+      "normalized_value": {
+        "grade": "一级",
+        "layers": 3,
+        "design_life_years": 25
+      },
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第三章/P0328-P0329",
+      "evidence": "屋面防水等级:上人平屋面为一级，防水层合理使用年限为25年。 本工程防水层次为三道设防，普通屋面采用一道柔性防水卷材和一道防水涂料，再加一道刚性细石砼保护层，屋面工程符合《建筑与市政工程防水通用规范》GB55030-2022三道防水层的要求（不含钢筋混凝土面板）。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-015",
+      "domain": "建筑",
+      "field_id": "building.waterproof.basement",
+      "field_name": "地下室防水等级",
+      "scope": "全项目地下室",
+      "raw_value": "一级；三道设防",
+      "normalized_value": {
+        "grade": "一级",
+        "layers": 3
+      },
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "建筑用料/P0607",
+      "evidence": "地下防水等级按一级设防(工程防水类别：甲类；工程防水使用环境类别：地下工程为 I类），防水设计工作年限不应低于工程结构设计工作年限，采用三道防水设防。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-016",
+      "domain": "建筑",
+      "field_id": "building.roof_assembly",
+      "field_name": "屋面做法",
+      "scope": "平屋面",
+      "raw_value": "三道防水；轻混凝土2%找坡；挤塑聚苯板保温",
+      "normalized_value": "三道防水+轻混凝土2%找坡+挤塑聚苯板保温",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第三章/P0430",
+      "evidence": "3.2 平屋面构造做法：屋面防水等级为一级，1.5mm 厚高强水性橡胶沥青防水涂料、1.5mm 厚纤维增强型高分子膜基自粘沥青防水卷材加2mm厚非固化橡胶沥青防水涂料共三道防水 ；屋面工程符合《建筑与市政工程防水通用规范》GB55030-2022的要求。找坡层起始处1m内0～20厚采用1:6水泥砂浆找坡，１m以外最薄处20厚采用轻混凝土找2%坡；保温层采用挤塑聚苯板。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-017",
+      "domain": "建筑",
+      "field_id": "building.floor_finish.dining",
+      "field_name": "餐厅楼面做法",
+      "scope": "餐厅",
+      "raw_value": "防滑地砖，A级",
+      "normalized_value": "防滑地砖",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第十一章/表T17R8",
+      "evidence": "公共部分 | 餐厅 | 防滑地砖 | A 级 | 乳胶漆 墙面 | B1级 | 墙砖墙裙 | A 级 | 铝格栅 | A 级 | /",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-018",
+      "domain": "建筑",
+      "field_id": "building.floor_finish.kitchen",
+      "field_name": "厨房楼面做法",
+      "scope": "厨房及配套用房",
+      "raw_value": "防滑地砖（带防水），A级",
+      "normalized_value": "防滑地砖（带防水）",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第十一章/表T17R9",
+      "evidence": "公共部分 | 厨房及厨房配套用房 | 防滑地砖（带防水） | A 级 | 乳胶漆 墙面 | B1级 | 墙砖墙裙 | A 级 | 铝扣板 | A 级 | /",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-019",
+      "domain": "建筑",
+      "field_id": "building.wall.external",
+      "field_name": "外墙材料与厚度",
+      "scope": "地上外墙",
+      "raw_value": "200厚B06蒸压加气混凝土砌块",
+      "normalized_value": {
+        "material": "B06蒸压加气混凝土砌块",
+        "thickness": 200
+      },
+      "unit": "mm",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第十一章/P0585",
+      "evidence": "2） 地上采用现浇框架-剪力墙结构结构体系，正负零以上外墙采用 200 厚 B06 蒸压加气混凝",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-020",
+      "domain": "建筑",
+      "field_id": "building.wall.internal",
+      "field_name": "内墙材料与厚度",
+      "scope": "地上内墙",
+      "raw_value": "100或200厚B06蒸压加气混凝土砌块",
+      "normalized_value": {
+        "material": "B06蒸压加气混凝土砌块",
+        "thickness": [
+          100,
+          200
+        ]
+      },
+      "unit": "mm",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第十一章/P0587",
+      "evidence": "3）内墙采用 100 或 200 厚 B06 蒸压加气混凝土砌块，密度等级 900,强",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": "具体房间厚度需按图纸确认。"
+    },
+    {
+      "candidate_id": "ARCH-021",
+      "domain": "建筑",
+      "field_id": "building.wall.wet_room",
+      "field_name": "卫生间隔墙材料",
+      "scope": "卫生间",
+      "raw_value": "蒸压粉煤灰实心砖MU15",
+      "normalized_value": "蒸压粉煤灰实心砖MU15",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/P1049",
+      "evidence": "本项目中卫生间隔墙采用蒸压粉煤灰实心砖MU15。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-022",
+      "domain": "建筑",
+      "field_id": "building.curtain_wall",
+      "field_name": "幕墙",
+      "scope": "全项目",
+      "raw_value": "外墙包含铝板幕墙和涂料墙",
+      "normalized_value": [
+        "铝板幕墙",
+        "涂料墙"
+      ],
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第十一章/P0586、P0703",
+      "evidence": "土砌块，强度等级 A5.0，外墙无机保温砂浆外保温，外墙为幕墙和涂料墙。 外墙 4（铝板幕墙）",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": "需确认2#学生食堂具体立面范围。"
+    },
+    {
+      "candidate_id": "ARCH-023",
+      "domain": "建筑",
+      "field_id": "building.equipment_room",
+      "field_name": "设备房",
+      "scope": "全项目",
+      "raw_value": "地下设备用房；食堂独立低压配电间；管井、配电间门槛>150",
+      "normalized_value": [
+        "地下设备用房",
+        "低压配电间",
+        "设备管井"
+      ],
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第三章/P0313；第六章/P1639；P0442",
+      "evidence": "一期项目内共有5栋地上建筑及一层地下室，地上部分为1栋高层教学楼、1栋高层宿舍楼、2栋多层宿舍楼、2栋多层学校食堂（共5栋建筑）及连廊组成，其中3#学生宿舍及2#学生食堂为一栋建筑；地下部分为地下机动车库及设备用房。 根据校园总体电力规划，1~3#宿舍，1#食堂，2#食堂分别设置独立的低压配电间，配电间内按需设置低压配电柜，供本楼各项设备用电。 4.6 疏散防火门及防火墙上的防火门应加设单向闭门器。管井、配电间等设备房应设＞150高门槛。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-024",
+      "domain": "建筑",
+      "field_id": "building.special_space",
+      "field_name": "特殊大空间",
+      "scope": "2#学生食堂",
+      "raw_value": "主要跨度8.1m；餐厅及厨房大开间",
+      "normalized_value": {
+        "main_span": 8.1,
+        "spaces": [
+          "餐厅",
+          "厨房"
+        ]
+      },
+      "unit": "m",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/表T20R4",
+      "evidence": "食堂 | 2#学生食堂 | 4/1 | 37.7 | 27.8 | 18.6 | 8.1 | 3.65m | 1F：4.8m 2~4F：4.5m 出屋面：3.85m | 多层",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": "是否属于结构特殊大空间需结合平面与结构布置确认。"
+    },
+    {
+      "candidate_id": "ARCH-025",
+      "domain": "建筑",
+      "field_id": "building.adjacency",
+      "field_name": "相邻关系",
+      "scope": "2#学生食堂",
+      "raw_value": "与3#学生宿舍合建但以抗震缝断开；共用整体地下室",
+      "normalized_value": "地上抗震缝断开、地下室整体",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/P0898-P0899",
+      "evidence": "本工程地上建筑包括教学楼、宿舍、食堂和连接各单体的连廊。其中2#学生宿舍、3#学生宿舍、2#学生食堂、1#教学实训楼、连廊2共用一层地下室，地下室作为上部建筑的嵌固端，不设缝，为整体地下室，兼做人防工程（常六级乙类二等人员掩蔽所）。 2#3#学生宿舍局部无地下室，位于整体地下室外，其隔震层底板与整体地下室顶板连成整体。连廊1和连廊2均采用抗震缝与其他单体断开，2#学生食堂与3#学生宿舍采用抗震缝断开。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-026",
+      "domain": "建筑",
+      "field_id": "seismic.category",
+      "field_name": "抗震设防类别",
+      "scope": "全项目",
+      "raw_value": "重点设防类（乙类）",
+      "normalized_value": "乙类",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/表T23R9",
+      "evidence": "抗震设防类别 | 重点设防类（乙类） | 《建筑工程抗震设防分类标准》GB 50223",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-027",
+      "domain": "建筑",
+      "field_id": "seismic.intensity",
+      "field_name": "抗震设防烈度",
+      "scope": "全项目",
+      "raw_value": "8度",
+      "normalized_value": 8,
+      "unit": "度",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/表T25R1",
+      "evidence": "抗震设防烈度 | 8度",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-028",
+      "domain": "建筑",
+      "field_id": "seismic.acceleration",
+      "field_name": "设计基本地震加速度",
+      "scope": "全项目",
+      "raw_value": "0.2g",
+      "normalized_value": 0.2,
+      "unit": "g",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/表T25R2",
+      "evidence": "基本地震加速度 | 0.2g",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-029",
+      "domain": "建筑",
+      "field_id": "seismic.group",
+      "field_name": "设计地震分组",
+      "scope": "全项目",
+      "raw_value": "第三组",
+      "normalized_value": "第三组",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/表T25R3",
+      "evidence": "设计地震分组 | 第三组",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-030",
+      "domain": "建筑",
+      "field_id": "seismic.site_class",
+      "field_name": "场地类别",
+      "scope": "设计采用",
+      "raw_value": "Ⅲ类",
+      "normalized_value": "Ⅲ类",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/表T25R4",
+      "evidence": "场地类别 | Ⅲ类",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": "地勘原文同时存在Ⅱ、Ⅲ类，需结合单体区域确认。"
+    },
+    {
+      "candidate_id": "ARCH-031",
+      "domain": "建筑",
+      "field_id": "structure.system",
+      "field_name": "结构体系",
+      "scope": "2#学生食堂",
+      "raw_value": "混凝土框架",
+      "normalized_value": "钢筋混凝土框架",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/表T28R4",
+      "evidence": "食堂 | 2#学生食堂 | 混凝土框架 | 二级 | \\",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-032",
+      "domain": "建筑",
+      "field_id": "structure.large_span",
+      "field_name": "大跨度框架条件",
+      "scope": "2#学生食堂",
+      "raw_value": "主要跨度8.1m",
+      "normalized_value": {
+        "max_main_span": 8.1,
+        "meets_18m_threshold": false
+      },
+      "unit": "m",
+      "claim_type": "AI推断",
+      "confidence": 0.82,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/表T20R4",
+      "evidence": "食堂 | 2#学生食堂 | 4/1 | 37.7 | 27.8 | 18.6 | 8.1 | 3.65m | 1F：4.8m 2~4F：4.5m 出屋面：3.85m | 多层",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": "仅由主要跨度表推断；不自动形成抗震等级结论。"
+    },
+    {
+      "candidate_id": "ARCH-033",
+      "domain": "建筑",
+      "field_id": "structure.transfer",
+      "field_name": "转换构件条件",
+      "scope": "2#学生食堂",
+      "raw_value": "文中存在首层托墙转换梁，单体适用范围待确认",
+      "normalized_value": "待确认",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/表T27R3",
+      "evidence": "主体结构 | 关键构件 | 首层托墙转换梁 | 抗剪、抗弯弹性 （模型中定义为托墙转换梁） | 抗剪不屈服 抗弯不屈服",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": "性能目标表未明确逐单体适用范围。"
+    },
+    {
+      "candidate_id": "ARCH-034",
+      "domain": "建筑",
+      "field_id": "structure.embedment",
+      "field_name": "嵌固端",
+      "scope": "地下室范围单体",
+      "raw_value": "地下室顶板",
+      "normalized_value": "地下室顶板",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/P0898；表T38R18",
+      "evidence": "本工程地上建筑包括教学楼、宿舍、食堂和连接各单体的连廊。其中2#学生宿舍、3#学生宿舍、2#学生食堂、1#教学实训楼、连廊2共用一层地下室，地下室作为上部建筑的嵌固端，不设缝，为整体地下室，兼做人防工程（常六级乙类二等人员掩蔽所）。 嵌固端 | 地下室顶板",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "ARCH-035",
+      "domain": "建筑",
+      "field_id": "structure.podium_relation",
+      "field_name": "裙房/主楼关系",
+      "scope": "2#学生食堂与3#学生宿舍",
+      "raw_value": "未明确是否按裙房关系处理；地上以抗震缝断开",
+      "normalized_value": "待确认",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-05-ARCH",
+      "locator": "第四章/P0899",
+      "evidence": "2#3#学生宿舍局部无地下室，位于整体地下室外，其隔震层底板与整体地下室顶板连成整体。连廊1和连廊2均采用抗震缝与其他单体断开，2#学生食堂与3#学生宿舍采用抗震缝断开。",
+      "status": "资料缺失",
+      "conflict_group": null,
+      "note": "抗震等级输入条件，须由结构负责人确认。"
+    },
+    {
+      "candidate_id": "GEO-001",
+      "domain": "地勘",
+      "field_id": "site.topography",
+      "field_name": "地形地貌",
+      "scope": "全场地",
+      "raw_value": "昆明滇池断陷盆地西北侧，丘陵缓坡地貌；地形平坦开阔，高差约4.69m",
+      "normalized_value": "丘陵缓坡地貌；场地较平坦",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第三章/P0159",
+      "evidence": "拟建场地地处云南旅游职业学院内部，地形平坦开阔，高差不大。拟建场地处于昆明滇池断陷盆地西北侧，属丘陵缓坡地貌。场地现状地面海拔高程为1906.42m～1911.11m，高差约4.69m，场地范围详见卫星照片详见图3.1-1，现场详见场地照片3.1-2。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-002",
+      "domain": "地勘",
+      "field_id": "site.strata",
+      "field_name": "地层",
+      "scope": "全场地",
+      "raw_value": "素填土、含砾粉质黏土、软塑黏土、残坡积含砾粉质黏土、全/强/中风化泥质砂岩",
+      "normalized_value": [
+        "①素填土",
+        "②含砾粉质黏土",
+        "②1黏土",
+        "③含砾粉质黏土",
+        "④全风化泥质砂岩",
+        "④1强风化泥质砂岩",
+        "④2中风化泥质砂岩"
+      ],
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第三章/P0167-P0178",
+      "evidence": "根据勘察区内完成的岩土工程勘察成果资料，拟建场地地基土主要为第四系人工堆积填土层（Q4ml），往下为第四系冲洪积成因（Q4al+pl）的含砾粉质黏土、黏土，第四系残坡积成因（Q4el+dl）的粉质黏土，基岩为寒武系-下统(∈1q)的泥质砂岩等。现就场地内可能的地层由新（上）到老（下）分述如下：",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-003",
+      "domain": "地勘",
+      "field_id": "site.groundwater_type",
+      "field_name": "地下水类型",
+      "scope": "全场地",
+      "raw_value": "上层滞水、基岩裂隙水",
+      "normalized_value": [
+        "上层滞水",
+        "基岩裂隙水"
+      ],
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第三章/P0192-P0193",
+      "evidence": "1）孔隙水主要以上层滞水形式赋存于第四系松散层孔隙中，以土颗粒间隙、裂隙为存储空间及运移通道，其分布范围相对较大。水量主要受大气降雨控制，雨季期水量相对较大，以下渗为主；旱季水量少或无，以蒸发为主。勘察期为雨季，主要在场地低洼处降雨汇集后分布有少量上层滞水，但排泄及蒸发速度较快，无较大面积的积水潭。 2）基岩裂隙水：场地范围内基岩裂隙水主要赋存于寒武系-下统(∈1q)的泥质砂岩的风化裂隙及层间裂隙中。岩芯多呈碎块状或快状，少量呈土状，层间及垂直层面裂隙发育，地下水多沿层面及风化裂隙赋存，富水性较弱～中等，具就近补给、就近排泄的特点。主要接受大气降水渗透补给，径流途程受构造裂隙、风化裂隙、地形切割等因素控制，向低凹排泄处排泄。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-004",
+      "domain": "地勘",
+      "field_id": "site.groundwater_level",
+      "field_name": "勘察期地下水位",
+      "scope": "全场地",
+      "raw_value": "埋深1.3～5.3m；高程1907.59～1902.02m",
+      "normalized_value": {
+        "depth_min": 1.3,
+        "depth_max": 5.3,
+        "elevation_min": 1902.02,
+        "elevation_max": 1907.59
+      },
+      "unit": "m",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第三章/P0191",
+      "evidence": "本次勘察的钻孔均揭露到地下水，地下水位埋深在现地面下1.3m～5.3m，高程介于1907.59m～1902.02m之间，水位变化差5.57m，野外施工期间为雨季，地下水总体向东南侧排泄，对工程有一定的影响。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-005",
+      "domain": "地勘",
+      "field_id": "site.anti_float_level",
+      "field_name": "抗浮设防水位",
+      "scope": "2#学生食堂",
+      "raw_value": "1907.50",
+      "normalized_value": 1907.5,
+      "unit": "m（绝对高程）",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第七章/表T11R3",
+      "evidence": "3 | 2#学生食堂 | 1908.50 | 4/-1 | 1907.50",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-006",
+      "domain": "地勘",
+      "field_id": "site.site_class",
+      "field_name": "建筑场地类别",
+      "scope": "全场地",
+      "raw_value": "Ⅱ、Ⅲ类",
+      "normalized_value": [
+        "Ⅱ类",
+        "Ⅲ类"
+      ],
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0238-P0239；表T8",
+      "evidence": "拟建场地的场地土类型属中软土，建筑场地类别为Ⅱ、Ⅲ类。 拟建场地勘察阶段查明存在Ⅱ类、Ⅲ类场地，我司依据勘探钻孔分布地层结果完成场地类别区域划分（详见附图1），最终场地分类及相关技术参数以正式设计方案确定内容为准。",
+      "status": "冲突未解决",
+      "conflict_group": null,
+      "note": "需依据附图1确定目标单体所在分区。"
+    },
+    {
+      "candidate_id": "GEO-007",
+      "domain": "地勘",
+      "field_id": "site.site_class",
+      "field_name": "建筑场地类别",
+      "scope": "设计建议",
+      "raw_value": "统一按Ⅲ类场地要求执行",
+      "normalized_value": "Ⅲ类",
+      "unit": "—",
+      "claim_type": "作者观点",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0244",
+      "evidence": "拟建场地为昆明市抗震设防烈度为8度，第三组，Ⅱ类场地的特征周期为0.45，Ⅲ类场地的特征周期为0.65，结合场地同一建筑物跨越Ⅱ类、Ⅲ类场地的实际条件，为最大程度保障建筑物整体稳定性、规避不均匀沉降及抗震安全风险，建议设计阶段统一按Ⅲ类场地相关要求执行。统一按Ⅲ类场地设计可有效覆盖Ⅱ类场地的安全需求，避免因分区设计导致的结构受力不均、变形不协调等问题。",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": "勘察建议，不等于目标单体分区事实。"
+    },
+    {
+      "candidate_id": "GEO-008",
+      "domain": "地勘",
+      "field_id": "seismic.intensity",
+      "field_name": "抗震设防烈度",
+      "scope": "全场地",
+      "raw_value": "8度",
+      "normalized_value": 8,
+      "unit": "度",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0229",
+      "evidence": "根据《中国地震动参数区划图》（GB18306-2015）、《建筑抗震设计规范》GB50011－2010（2016年版），昆明市抗震设防烈度为8度第三组，设计基本地震加速度值为0.20g详见截图5.2-1，结构设计请按规范要求设防。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-009",
+      "domain": "地勘",
+      "field_id": "seismic.acceleration",
+      "field_name": "设计基本地震加速度",
+      "scope": "全场地",
+      "raw_value": "0.20g",
+      "normalized_value": 0.2,
+      "unit": "g",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0229",
+      "evidence": "根据《中国地震动参数区划图》（GB18306-2015）、《建筑抗震设计规范》GB50011－2010（2016年版），昆明市抗震设防烈度为8度第三组，设计基本地震加速度值为0.20g详见截图5.2-1，结构设计请按规范要求设防。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-010",
+      "domain": "地勘",
+      "field_id": "seismic.group",
+      "field_name": "设计地震分组",
+      "scope": "全场地",
+      "raw_value": "第三组",
+      "normalized_value": "第三组",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0229",
+      "evidence": "根据《中国地震动参数区划图》（GB18306-2015）、《建筑抗震设计规范》GB50011－2010（2016年版），昆明市抗震设防烈度为8度第三组，设计基本地震加速度值为0.20g详见截图5.2-1，结构设计请按规范要求设防。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-011",
+      "domain": "地勘",
+      "field_id": "site.liquefaction",
+      "field_name": "液化",
+      "scope": "全场地",
+      "raw_value": "无粉土、粉砂等液化土，不考虑液化",
+      "normalized_value": "不液化",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0247",
+      "evidence": "拟建场地没有粉土、粉砂等液化土，不用考虑液化情况。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-012",
+      "domain": "地勘",
+      "field_id": "site.weak_soil",
+      "field_name": "软弱土",
+      "scope": "局部沟塘附近",
+      "raw_value": "②1软塑黏土，高压缩性，物理力学性质差",
+      "normalized_value": "②1软塑黏土（高压缩性）",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第三章/P0200-P0202",
+      "evidence": "黏土②1：灰色、灰黑色，软塑状态，局部可塑，局部夹有薄层状泥炭土、腐木，根据前期调查显示该层主要分布在沟塘附近揭露。 根据现场标准贯入试验，黏土标准贯入试验最大值为4.0击，最小值仅为3.0击，平均值为3.6，该层高压缩性，物理力学性质差。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-013",
+      "domain": "地勘",
+      "field_id": "site.seismic_subsidence",
+      "field_name": "软土震陷",
+      "scope": "②1黏土分布区",
+      "raw_value": "判定为震陷性软土，需考虑软土震陷影响",
+      "normalized_value": "需考虑",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0249",
+      "evidence": "在8度抗震设防烈度，根据②1黏土承载力特征值fak≦100kPa，判定为震陷性软土，需考虑软土震陷的影响。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-014",
+      "domain": "地勘",
+      "field_id": "site.adverse_geology",
+      "field_name": "不良地质作用",
+      "scope": "全场地",
+      "raw_value": "未发现岩溶、滑坡、危岩、崩塌、泥石流、采空区、地面沉降等",
+      "normalized_value": "未发现",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第三章/P0195",
+      "evidence": "根据现场勘探及地表调查表明：在拟建场地及周边未发现岩溶、滑坡、危岩、崩塌、泥石流、采空区、地面沉降等不良地质作用和地质灾害。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-015",
+      "domain": "地勘",
+      "field_id": "site.corrosion.water",
+      "field_name": "地下水腐蚀性",
+      "scope": "全场地",
+      "raw_value": "对混凝土结构及钢筋混凝土中钢筋具微腐蚀性",
+      "normalized_value": "微腐蚀性",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0261；表T9",
+      "evidence": "按《岩土工程勘察规范(2009年版)》(GB50021-2001)第12章有关条款综合评价，按环境类型为Ⅱ类，地层渗透性A类（地表水直接临水），拟建场地地下水和场地内水塘的地表水对混凝土结构具微腐蚀性，对钢筋混凝土中钢筋具微腐蚀性。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-016",
+      "domain": "地勘",
+      "field_id": "site.corrosion.soil_steel",
+      "field_name": "土对钢结构腐蚀性",
+      "scope": "全场地",
+      "raw_value": "弱腐蚀性",
+      "normalized_value": "弱腐蚀性",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0265",
+      "evidence": "按《岩土工程勘察规范(2009年版)》(GB50021-2001)第12章有关条款综合评价，按环境类型为Ⅱ类，地层渗透性B类（弱透水层），主要土层对混凝土结构具微腐蚀性，对钢筋混凝土结构中钢筋具微腐蚀性，对钢结构具弱腐蚀性。",
+      "status": "冲突未解决",
+      "conflict_group": "CONFLICT-SITE-CORROSION-SOIL_STEEL-00995C",
+      "note": "结论章节P0394写微腐蚀性。"
+    },
+    {
+      "candidate_id": "GEO-017",
+      "domain": "地勘",
+      "field_id": "site.corrosion.soil_steel",
+      "field_name": "土对钢结构腐蚀性",
+      "scope": "全场地",
+      "raw_value": "微腐蚀性",
+      "normalized_value": "微腐蚀性",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第九章/P0394",
+      "evidence": "场区地下水、土体对混凝土结构具有微腐蚀性，对钢筋混凝土结构中的钢筋具微腐蚀性，对钢结构具微腐蚀性。",
+      "status": "冲突未解决",
+      "conflict_group": "CONFLICT-SITE-CORROSION-SOIL_STEEL-00995C",
+      "note": "与P0265弱腐蚀性冲突。"
+    },
+    {
+      "candidate_id": "GEO-018",
+      "domain": "地勘",
+      "field_id": "foundation.type",
+      "field_name": "基础建议",
+      "scope": "1#教学实训楼、学生食堂、2#学生宿舍",
+      "raw_value": "建议选用桩筏基础，摩擦型桩或端承摩擦型",
+      "normalized_value": {
+        "foundation": "桩筏基础",
+        "pile_behavior": [
+          "摩擦型",
+          "端承摩擦型"
+        ]
+      },
+      "unit": "—",
+      "claim_type": "作者观点",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0288",
+      "evidence": "1#教学实训楼、学生食堂、2#学生宿舍：该建筑较敏感，除考虑结构自重外，还需要考虑水平作用力，因此需基础形式需同时考虑抗压和抗拔稳定性，建议选用桩筏基础，桩型考虑采用摩擦型桩或端承摩擦型。同时，由于人工填土、黏土（软塑）在上部荷载作用下会发生固结沉降从而对桩基产生下拉荷载，需考虑人工填土的负摩阻力影响。",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-019",
+      "domain": "地勘",
+      "field_id": "foundation.pile_type",
+      "field_name": "桩型",
+      "scope": "全场地",
+      "raw_value": "钻（冲）孔灌注桩",
+      "normalized_value": "钻（冲）孔灌注桩",
+      "unit": "—",
+      "claim_type": "作者观点",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0292",
+      "evidence": "①可采用钻（冲）孔灌注桩，该桩型适用性强，该桩型适用范围广，能穿越地下水位上下的各类复杂地层，能形成较大的单桩承载力，成桩质量较好，适应各种地质条件和不同规模的建筑物的优点，但造价高，施工期相对较长、施工技术管理要求高、施工产生的余泥较多，对环境会产生一定影响。",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-020",
+      "domain": "地勘",
+      "field_id": "foundation.pile_diameter",
+      "field_name": "桩径",
+      "scope": "2#学生食堂",
+      "raw_value": "资料未给出",
+      "normalized_value": null,
+      "unit": "mm",
+      "claim_type": "待核实",
+      "confidence": 1.0,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0289-P0303",
+      "evidence": "勘察报告仅建议结合岩面坡度合理选择桩型与桩径，未给出目标单体桩径。",
+      "status": "资料缺失",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-021",
+      "domain": "地勘",
+      "field_id": "foundation.pile_length",
+      "field_name": "桩长",
+      "scope": "2#学生食堂",
+      "raw_value": "资料未给出",
+      "normalized_value": null,
+      "unit": "m",
+      "claim_type": "待核实",
+      "confidence": 1.0,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0289",
+      "evidence": "注：因基岩起伏较大，当基础持力层为基岩且基岩面相对高差较大时，施工需围绕“精准控制桩长、保障桩身质量、避免不均匀受力”核心。需根据基岩面高差分段优化桩长设计，控制桩长差异幅度（通常相邻桩长差不宜过大，避免因桩端反力悬殊引发不均匀沉降），同时确保桩端进入稳定基岩的有效深度（需满足规范对嵌岩深度的要求，且需验算倾斜岩面处桩端抗滑移稳定性），应合理选择桩型与桩径，对基岩面坡度较陡（如大于15°）区域，宜采用大直径嵌岩桩并加强桩端局部扩径或设置抗滑键，防止桩体沿岩面滑移，对软硬岩交互段需验算桩身弯矩，适当加密配筋以抵抗应力集中。",
+      "status": "资料缺失",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-022",
+      "domain": "地勘",
+      "field_id": "foundation.bearing_stratum",
+      "field_name": "持力层",
+      "scope": "2#学生食堂",
+      "raw_value": "目标单体未指定；④1强风化、④2中风化泥质砂岩可作为持力层",
+      "normalized_value": [
+        "④1强风化泥质砂岩",
+        "④2中风化泥质砂岩"
+      ],
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0282-P0283",
+      "evidence": "（6）④1强风泥质砂岩：可作为基础持力层。 （7）④2中风化白云岩：可作为基础持力层。",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": "P0283将④2误写为中风化白云岩，与全文泥质砂岩冲突。"
+    },
+    {
+      "candidate_id": "GEO-023",
+      "domain": "地勘",
+      "field_id": "foundation.bearing_capacity",
+      "field_name": "地基承载力特征值",
+      "scope": "岩土分层",
+      "raw_value": "②:150；②1:70；③:160；④:180；④1:300；④2:600",
+      "normalized_value": {
+        "②": 150,
+        "②1": 70,
+        "③": 160,
+        "④": 180,
+        "④1": 300,
+        "④2": 600
+      },
+      "unit": "kPa",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第四章/表T7R7-R12",
+      "evidence": "岩土参数建议值见表4.3-1（T7），设计须按选定持力层取值。",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": "必须与选定持力层绑定。"
+    },
+    {
+      "candidate_id": "GEO-024",
+      "domain": "地勘",
+      "field_id": "foundation.pile_resistance",
+      "field_name": "泥浆护壁桩极限侧/端阻力",
+      "scope": "岩土分层",
+      "raw_value": "②70/1200；②1 40/—；③75/1400；④80/1450；④1 160/1800；④2 200/2500",
+      "normalized_value": {
+        "②": [
+          70,
+          1200
+        ],
+        "②1": [
+          40,
+          null
+        ],
+        "③": [
+          75,
+          1400
+        ],
+        "④": [
+          80,
+          1450
+        ],
+        "④1": [
+          160,
+          1800
+        ],
+        "④2": [
+          200,
+          2500
+        ]
+      },
+      "unit": "kPa",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第四章/表T7R7-R12",
+      "evidence": "泥浆护壁钻（冲）孔桩极限侧阻力/端阻力标准值；最终以试桩结果为准。",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-025",
+      "domain": "地勘",
+      "field_id": "foundation.settlement",
+      "field_name": "沉降控制",
+      "scope": "桩基础",
+      "raw_value": "考虑填土及软塑黏土固结引起的负摩阻力，控制不均匀沉降，桩长分段优化",
+      "normalized_value": "考虑负摩阻力和差异沉降",
+      "unit": "—",
+      "claim_type": "作者观点",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0255、P0288-P0289",
+      "evidence": "填土影响主要表现在以下两方面：①在附加应力作用下，若采用桩基础，由填土引起的沉降在桩侧会引起负摩阻力；②填土物理力学性质差异性大，且工程特性差，在后期沉降固结及压力作用下可能引起不均匀沉降变形，从而引起建（构）筑物稳定。 1#教学实训楼、学生食堂、2#学生宿舍：该建筑较敏感，除考虑结构自重外，还需要考虑水平作用力，因此需基础形式需同时考虑抗压和抗拔稳定性，建议选用桩筏基础，桩型考虑采用摩擦型桩或端承摩擦型。同时，由于人工填土、黏土（软塑）在上部荷载作用下会发生固结沉降从而对桩基产生下拉荷载，需考虑人工填土的负摩阻力影响。 注：因基岩起伏较大，当基础持力层为基岩且基岩面相对高差较大时，施工需围绕“精准控制桩长、保障桩身质量、避免不均匀受力”核心。需根据基岩面高差分段优化桩长设计，控制桩长差异幅度（通常相邻桩长差不宜过大，避免因桩端反力悬殊引发不均匀沉降），同时确保桩端进入稳定基岩的有效深度（需满足规范对嵌岩深度的要求，且需验算倾斜岩面处桩端抗滑移稳定性），应合理选择桩型与桩径，对基岩面坡度较陡（如大于15°）区域，宜采用大直径嵌岩桩并加强桩端局部扩径或设置抗滑键，防止桩体沿岩面滑移，对软硬岩交互段需验算桩身弯矩，适当加密配筋以抵抗应力集中。",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-026",
+      "domain": "地勘",
+      "field_id": "excavation.safety_grade",
+      "field_name": "基坑安全等级",
+      "scope": "整体地下室基坑",
+      "raw_value": "一级",
+      "normalized_value": "一级",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第六章/P0310",
+      "evidence": "拟开挖基坑周边环境详见卫星截图6.1-1，基坑较为复杂，有建筑物及地下管线，破坏后果严重，支护结构失效、土体过大变形对基坑周边环境或主体结构施工安全的影响很严重，根据《建筑基坑支护技术规程》（JGJ120-2012）的规定，确定基坑工程安全等级属一级。",
+      "status": "自动确认候选",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-027",
+      "domain": "地勘",
+      "field_id": "excavation.support",
+      "field_name": "基坑支护建议",
+      "scope": "整体地下室基坑",
+      "raw_value": "不满足放坡挂网喷浆土钉墙时，可采用排桩（桩锚）挡土体系",
+      "normalized_value": "排桩（桩锚）挡土体系候选",
+      "unit": "—",
+      "claim_type": "作者观点",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第六章/P0334-P0335",
+      "evidence": "根据拟建场地工程地质条件，基坑周边均有建筑物，基坑放坡条件受限，且因场地存在软弱土层（软土），为了更安全施工，及基坑破坏可能对工程桩有破坏作用。坑壁土体构成为①素填土、②1黏土（软塑局部可塑），基坑开挖揭露地层，抗剪强度低，坑壁土体工程性能较差，基坑变形或破坏后对周围代建建筑物（构筑物）及地下管线影响较大，如采用放坡挂网喷浆土钉墙进行防护不满足支护要求，可采用排桩（桩锚）形成挡土结构体系。 注：最终支护形式以设计方案为准，满足施工要求。",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-028",
+      "domain": "地勘",
+      "field_id": "excavation.dewatering",
+      "field_name": "基坑止降水建议",
+      "scope": "整体地下室基坑",
+      "raw_value": "地下水埋深浅，需截排水；降水对周边建筑和道路沉降敏感",
+      "normalized_value": "截排水并监测周边沉降",
+      "unit": "—",
+      "claim_type": "作者观点",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第六章/P0316",
+      "evidence": "拟建场地位云南旅游职业学院内西北侧，周边建筑、学校周边道路，对降水引起的地面沉降变形敏感；拟建基坑开挖范围分布地层为强透水层的填土，场区地下水位埋深浅，基坑开挖会产生渗水现象，对坑壁稳定性不利，需采取必要的截排水措施。",
+      "status": "需要人工确认",
+      "conflict_group": null,
+      "note": ""
+    },
+    {
+      "candidate_id": "GEO-029",
+      "domain": "地勘",
+      "field_id": "foundation.bearing_stratum",
+      "field_name": "持力层岩性",
+      "scope": "④2层",
+      "raw_value": "中风化白云岩",
+      "normalized_value": "④2中风化白云岩",
+      "unit": "—",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第五章/P0283",
+      "evidence": "（7）④2中风化白云岩：可作为基础持力层。",
+      "status": "冲突未解决",
+      "conflict_group": null,
+      "note": "与P0178及表T7的中风化泥质砂岩冲突，疑似原文笔误但不得自动改写。"
+    },
+    {
+      "candidate_id": "GEO-030",
+      "domain": "地勘",
+      "field_id": "building.height",
+      "field_name": "建筑高度",
+      "scope": "2#学生食堂",
+      "raw_value": "20.00",
+      "normalized_value": 20.0,
+      "unit": "m",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第一章/表T3R3",
+      "evidence": "3 | 2#学生食堂 | 1908.50 | 4/-1 | 20.00 | 3929.41 | 框架 | 桩基础 | 7.8 | 9600 | 一般",
+      "status": "冲突未解决",
+      "conflict_group": "CONFLICT-BUILDING-HEIGHT-20A142",
+      "note": "勘察任务输入，需与建筑专业最新口径核对。"
+    },
+    {
+      "candidate_id": "GEO-031",
+      "domain": "地勘",
+      "field_id": "building.area",
+      "field_name": "建筑面积",
+      "scope": "2#学生食堂",
+      "raw_value": "3929.41",
+      "normalized_value": 3929.41,
+      "unit": "㎡",
+      "claim_type": "原文事实",
+      "confidence": 0.95,
+      "source_id": "SRC-04-GEO",
+      "locator": "第一章/表T3R3",
+      "evidence": "3 | 2#学生食堂 | 1908.50 | 4/-1 | 20.00 | 3929.41 | 框架 | 桩基础 | 7.8 | 9600 | 一般",
+      "status": "冲突未解决",
+      "conflict_group": "CONFLICT-BUILDING-AREA-20A142",
+      "note": "勘察任务输入，和建筑专业4389.62㎡不一致。"
+    }
+  ],
+  "confirmations": [
+    {
+      "confirmation_id": "CONF-20260916-001",
+      "field_id": "building.name",
+      "field_name": "单体名称",
+      "scope": "目标单体",
+      "original_values": [
+        "2#食堂",
+        "2#学生食堂"
+      ],
+      "confirmed_value": "2#学生食堂",
+      "unit": "—",
+      "reason": "既有用户确认：派生输出统一采用完整单体名称，不回写原始资料。",
+      "status": "已人工确认",
+      "confirmed_by": "用户",
+      "confirmed_at": "2026-09-16T00:00:00+08:00",
+      "source_id": "SRC-USER-DECISION-20260916",
+      "applicable_scope": [
+        "统一技术措施",
+        "结构初步设计说明",
+        "PPT",
+        "领导抽查卡"
+      ]
+    },
+    {
+      "confirmation_id": "CONF-20260916-002",
+      "field_id": "building.height",
+      "field_name": "建筑高度",
+      "scope": "2#学生食堂",
+      "original_values": [
+        "20.3m（规划）",
+        "18.8m（消防）",
+        "18.6m（建筑结构表）",
+        "20.00m（地勘任务输入）"
+      ],
+      "confirmed_value": "17.35",
+      "unit": "m",
+      "reason": "既有用户确认口径；与本轮04/05新增候选冲突，仍按人工确认优先，但建议负责人复核适用口径。",
+      "status": "已人工确认",
+      "confirmed_by": "用户",
+      "confirmed_at": "2026-09-16T00:00:00+08:00",
+      "source_id": "SRC-USER-DECISION-20260916",
+      "applicable_scope": [
+        "统一技术措施",
+        "结构初步设计说明",
+        "PPT",
+        "领导抽查卡"
+      ]
+    }
+  ],
+  "project_parameters": [
+    {
+      "parameter_id": "building.adjacency::2#学生食堂",
+      "field_id": "building.adjacency",
+      "field_name": "相邻关系",
+      "scope": "2#学生食堂",
+      "effective_value": "地上抗震缝断开、地下室整体",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-025"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.area::2#学生食堂",
+      "field_id": "building.area",
+      "field_name": "建筑面积",
+      "scope": "2#学生食堂",
+      "effective_value": null,
+      "unit": "㎡",
+      "confirmation_status": "冲突未解决",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO",
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-008",
+        "GEO-031"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.area::3#宿舍与2#食堂合建体",
+      "field_id": "building.area",
+      "field_name": "建筑面积",
+      "scope": "3#宿舍与2#食堂合建体",
+      "effective_value": 19180.95,
+      "unit": "㎡",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-009"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.basement::2#学生食堂",
+      "field_id": "building.basement",
+      "field_name": "地下室关系",
+      "scope": "2#学生食堂",
+      "effective_value": "共用一层整体地下室",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-010"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.curtain_wall::全项目",
+      "field_id": "building.curtain_wall",
+      "field_name": "幕墙",
+      "scope": "全项目",
+      "effective_value": [
+        "铝板幕墙",
+        "涂料墙"
+      ],
+      "unit": "—",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-022"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.equipment_room::全项目",
+      "field_id": "building.equipment_room",
+      "field_name": "设备房",
+      "scope": "全项目",
+      "effective_value": [
+        "地下设备用房",
+        "低压配电间",
+        "设备管井"
+      ],
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-023"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.fire_class::学生食堂",
+      "field_id": "building.fire_class",
+      "field_name": "建筑防火分类",
+      "scope": "学生食堂",
+      "effective_value": "多层公共建筑",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-012"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.fire_resistance::学生食堂",
+      "field_id": "building.fire_resistance",
+      "field_name": "耐火等级",
+      "scope": "学生食堂",
+      "effective_value": "二级",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-013"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.floor_finish.dining::餐厅",
+      "field_id": "building.floor_finish.dining",
+      "field_name": "餐厅楼面做法",
+      "scope": "餐厅",
+      "effective_value": "防滑地砖",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-017"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.floor_finish.kitchen::厨房及配套用房",
+      "field_id": "building.floor_finish.kitchen",
+      "field_name": "厨房楼面做法",
+      "scope": "厨房及配套用房",
+      "effective_value": "防滑地砖（带防水）",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-018"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.floors::2#学生食堂",
+      "field_id": "building.floors",
+      "field_name": "层数",
+      "scope": "2#学生食堂",
+      "effective_value": {
+        "above_ground": 4,
+        "underground": 1
+      },
+      "unit": "层",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-005"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.function::2#学生食堂",
+      "field_id": "building.function",
+      "field_name": "建筑功能",
+      "scope": "2#学生食堂",
+      "effective_value": "食堂",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-004"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.height::2#学生食堂",
+      "field_id": "building.height",
+      "field_name": "建筑高度",
+      "scope": "2#学生食堂",
+      "effective_value": "17.35",
+      "unit": "m",
+      "confirmation_status": "已人工确认",
+      "usable_as_formal": true,
+      "source_ids": [
+        "SRC-USER-DECISION-20260916"
+      ],
+      "candidate_ids": [
+        "ARCH-006",
+        "ARCH-007",
+        "GEO-030"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.joint::2#学生食堂",
+      "field_id": "building.joint",
+      "field_name": "结构缝/抗震缝",
+      "scope": "2#学生食堂",
+      "effective_value": "抗震缝断开",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-011"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.joint_width::2#学生食堂",
+      "field_id": "building.joint_width",
+      "field_name": "结构缝宽度",
+      "scope": "2#学生食堂",
+      "effective_value": null,
+      "unit": "—",
+      "confirmation_status": "资料缺失",
+      "usable_as_formal": false,
+      "source_ids": [],
+      "candidate_ids": [],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.name::目标单体",
+      "field_id": "building.name",
+      "field_name": "单体名称",
+      "scope": "目标单体",
+      "effective_value": "2#学生食堂",
+      "unit": "—",
+      "confirmation_status": "已人工确认",
+      "usable_as_formal": true,
+      "source_ids": [
+        "SRC-USER-DECISION-20260916"
+      ],
+      "candidate_ids": [
+        "ARCH-002",
+        "ARCH-003"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.roof_assembly::平屋面",
+      "field_id": "building.roof_assembly",
+      "field_name": "屋面做法",
+      "scope": "平屋面",
+      "effective_value": "三道防水+轻混凝土2%找坡+挤塑聚苯板保温",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-016"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.special_space::2#学生食堂",
+      "field_id": "building.special_space",
+      "field_name": "特殊大空间",
+      "scope": "2#学生食堂",
+      "effective_value": {
+        "main_span": 8.1,
+        "spaces": [
+          "餐厅",
+          "厨房"
+        ]
+      },
+      "unit": "m",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-024"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.wall.external::地上外墙",
+      "field_id": "building.wall.external",
+      "field_name": "外墙材料与厚度",
+      "scope": "地上外墙",
+      "effective_value": {
+        "material": "B06蒸压加气混凝土砌块",
+        "thickness": 200
+      },
+      "unit": "mm",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-019"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.wall.internal::地上内墙",
+      "field_id": "building.wall.internal",
+      "field_name": "内墙材料与厚度",
+      "scope": "地上内墙",
+      "effective_value": {
+        "material": "B06蒸压加气混凝土砌块",
+        "thickness": [
+          100,
+          200
+        ]
+      },
+      "unit": "mm",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-020"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.wall.wet_room::卫生间",
+      "field_id": "building.wall.wet_room",
+      "field_name": "卫生间隔墙材料",
+      "scope": "卫生间",
+      "effective_value": "蒸压粉煤灰实心砖MU15",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-021"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.waterproof.basement::全项目地下室",
+      "field_id": "building.waterproof.basement",
+      "field_name": "地下室防水等级",
+      "scope": "全项目地下室",
+      "effective_value": {
+        "grade": "一级",
+        "layers": 3
+      },
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-015"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "building.waterproof.roof::全项目",
+      "field_id": "building.waterproof.roof",
+      "field_name": "屋面防水等级",
+      "scope": "全项目",
+      "effective_value": {
+        "grade": "一级",
+        "layers": 3,
+        "design_life_years": 25
+      },
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-014"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "excavation.dewatering::整体地下室基坑",
+      "field_id": "excavation.dewatering",
+      "field_name": "基坑止降水建议",
+      "scope": "整体地下室基坑",
+      "effective_value": "截排水并监测周边沉降",
+      "unit": "—",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-028"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "excavation.safety_grade::整体地下室基坑",
+      "field_id": "excavation.safety_grade",
+      "field_name": "基坑安全等级",
+      "scope": "整体地下室基坑",
+      "effective_value": "一级",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-026"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "excavation.support::整体地下室基坑",
+      "field_id": "excavation.support",
+      "field_name": "基坑支护建议",
+      "scope": "整体地下室基坑",
+      "effective_value": "排桩（桩锚）挡土体系候选",
+      "unit": "—",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-027"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "foundation.bearing_capacity::岩土分层",
+      "field_id": "foundation.bearing_capacity",
+      "field_name": "地基承载力特征值",
+      "scope": "岩土分层",
+      "effective_value": {
+        "②": 150,
+        "②1": 70,
+        "③": 160,
+        "④": 180,
+        "④1": 300,
+        "④2": 600
+      },
+      "unit": "kPa",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-023"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "foundation.bearing_stratum::2#学生食堂",
+      "field_id": "foundation.bearing_stratum",
+      "field_name": "持力层",
+      "scope": "2#学生食堂",
+      "effective_value": [
+        "④1强风化泥质砂岩",
+        "④2中风化泥质砂岩"
+      ],
+      "unit": "—",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-022"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "foundation.bearing_stratum::④2层",
+      "field_id": "foundation.bearing_stratum",
+      "field_name": "持力层岩性",
+      "scope": "④2层",
+      "effective_value": "④2中风化白云岩",
+      "unit": "—",
+      "confirmation_status": "冲突未解决",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-029"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "foundation.pile_diameter::2#学生食堂",
+      "field_id": "foundation.pile_diameter",
+      "field_name": "桩径",
+      "scope": "2#学生食堂",
+      "effective_value": null,
+      "unit": "mm",
+      "confirmation_status": "资料缺失",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-020"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "foundation.pile_length::2#学生食堂",
+      "field_id": "foundation.pile_length",
+      "field_name": "桩长",
+      "scope": "2#学生食堂",
+      "effective_value": null,
+      "unit": "m",
+      "confirmation_status": "资料缺失",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-021"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "foundation.pile_resistance::岩土分层",
+      "field_id": "foundation.pile_resistance",
+      "field_name": "泥浆护壁桩极限侧/端阻力",
+      "scope": "岩土分层",
+      "effective_value": {
+        "②": [
+          70,
+          1200
+        ],
+        "②1": [
+          40,
+          null
+        ],
+        "③": [
+          75,
+          1400
+        ],
+        "④": [
+          80,
+          1450
+        ],
+        "④1": [
+          160,
+          1800
+        ],
+        "④2": [
+          200,
+          2500
+        ]
+      },
+      "unit": "kPa",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-024"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "foundation.pile_type::全场地",
+      "field_id": "foundation.pile_type",
+      "field_name": "桩型",
+      "scope": "全场地",
+      "effective_value": "钻（冲）孔灌注桩",
+      "unit": "—",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-019"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "foundation.settlement::桩基础",
+      "field_id": "foundation.settlement",
+      "field_name": "沉降控制",
+      "scope": "桩基础",
+      "effective_value": "考虑负摩阻力和差异沉降",
+      "unit": "—",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-025"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "foundation.settlement_limit::2#学生食堂",
+      "field_id": "foundation.settlement_limit",
+      "field_name": "沉降控制限值",
+      "scope": "2#学生食堂",
+      "effective_value": null,
+      "unit": "—",
+      "confirmation_status": "资料缺失",
+      "usable_as_formal": false,
+      "source_ids": [],
+      "candidate_ids": [],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "foundation.type::1#教学实训楼、学生食堂、2#学生宿舍",
+      "field_id": "foundation.type",
+      "field_name": "基础建议",
+      "scope": "1#教学实训楼、学生食堂、2#学生宿舍",
+      "effective_value": {
+        "foundation": "桩筏基础",
+        "pile_behavior": [
+          "摩擦型",
+          "端承摩擦型"
+        ]
+      },
+      "unit": "—",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-018"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "project.name::全项目",
+      "field_id": "project.name",
+      "field_name": "项目名称",
+      "scope": "全项目",
+      "effective_value": "云南旅游职业学院龙泉路校区提升改造项目（一期）",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-001"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "seismic.acceleration::全场地",
+      "field_id": "seismic.acceleration",
+      "field_name": "设计基本地震加速度",
+      "scope": "全场地",
+      "effective_value": 0.2,
+      "unit": "g",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-009"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "seismic.acceleration::全项目",
+      "field_id": "seismic.acceleration",
+      "field_name": "设计基本地震加速度",
+      "scope": "全项目",
+      "effective_value": 0.2,
+      "unit": "g",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-028"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "seismic.category::全项目",
+      "field_id": "seismic.category",
+      "field_name": "抗震设防类别",
+      "scope": "全项目",
+      "effective_value": "乙类",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-026"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "seismic.group::全场地",
+      "field_id": "seismic.group",
+      "field_name": "设计地震分组",
+      "scope": "全场地",
+      "effective_value": "第三组",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-010"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "seismic.group::全项目",
+      "field_id": "seismic.group",
+      "field_name": "设计地震分组",
+      "scope": "全项目",
+      "effective_value": "第三组",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-029"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "seismic.intensity::全场地",
+      "field_id": "seismic.intensity",
+      "field_name": "抗震设防烈度",
+      "scope": "全场地",
+      "effective_value": 8,
+      "unit": "度",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-008"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "seismic.intensity::全项目",
+      "field_id": "seismic.intensity",
+      "field_name": "抗震设防烈度",
+      "scope": "全项目",
+      "effective_value": 8,
+      "unit": "度",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-027"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "seismic.site_class::设计采用",
+      "field_id": "seismic.site_class",
+      "field_name": "场地类别",
+      "scope": "设计采用",
+      "effective_value": "Ⅲ类",
+      "unit": "—",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-030"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "site.adverse_geology::全场地",
+      "field_id": "site.adverse_geology",
+      "field_name": "不良地质作用",
+      "scope": "全场地",
+      "effective_value": "未发现",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-014"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "site.anti_float_level::2#学生食堂",
+      "field_id": "site.anti_float_level",
+      "field_name": "抗浮设防水位",
+      "scope": "2#学生食堂",
+      "effective_value": 1907.5,
+      "unit": "m（绝对高程）",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-005"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "site.corrosion.soil_steel::全场地",
+      "field_id": "site.corrosion.soil_steel",
+      "field_name": "土对钢结构腐蚀性",
+      "scope": "全场地",
+      "effective_value": null,
+      "unit": "—",
+      "confirmation_status": "冲突未解决",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-016",
+        "GEO-017"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "site.corrosion.water::全场地",
+      "field_id": "site.corrosion.water",
+      "field_name": "地下水腐蚀性",
+      "scope": "全场地",
+      "effective_value": "微腐蚀性",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-015"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "site.groundwater_level::全场地",
+      "field_id": "site.groundwater_level",
+      "field_name": "勘察期地下水位",
+      "scope": "全场地",
+      "effective_value": {
+        "depth_min": 1.3,
+        "depth_max": 5.3,
+        "elevation_min": 1902.02,
+        "elevation_max": 1907.59
+      },
+      "unit": "m",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-004"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "site.groundwater_type::全场地",
+      "field_id": "site.groundwater_type",
+      "field_name": "地下水类型",
+      "scope": "全场地",
+      "effective_value": [
+        "上层滞水",
+        "基岩裂隙水"
+      ],
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-003"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "site.liquefaction::全场地",
+      "field_id": "site.liquefaction",
+      "field_name": "液化",
+      "scope": "全场地",
+      "effective_value": "不液化",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-011"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "site.seismic_subsidence::②1黏土分布区",
+      "field_id": "site.seismic_subsidence",
+      "field_name": "软土震陷",
+      "scope": "②1黏土分布区",
+      "effective_value": "需考虑",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-013"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "site.site_class::全场地",
+      "field_id": "site.site_class",
+      "field_name": "建筑场地类别",
+      "scope": "全场地",
+      "effective_value": [
+        "Ⅱ类",
+        "Ⅲ类"
+      ],
+      "unit": "—",
+      "confirmation_status": "冲突未解决",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-006"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "site.site_class::设计建议",
+      "field_id": "site.site_class",
+      "field_name": "建筑场地类别",
+      "scope": "设计建议",
+      "effective_value": "Ⅲ类",
+      "unit": "—",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-007"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "site.strata::全场地",
+      "field_id": "site.strata",
+      "field_name": "地层",
+      "scope": "全场地",
+      "effective_value": [
+        "①素填土",
+        "②含砾粉质黏土",
+        "②1黏土",
+        "③含砾粉质黏土",
+        "④全风化泥质砂岩",
+        "④1强风化泥质砂岩",
+        "④2中风化泥质砂岩"
+      ],
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-002"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "site.topography::全场地",
+      "field_id": "site.topography",
+      "field_name": "地形地貌",
+      "scope": "全场地",
+      "effective_value": "丘陵缓坡地貌；场地较平坦",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-001"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "site.weak_soil::局部沟塘附近",
+      "field_id": "site.weak_soil",
+      "field_name": "软弱土",
+      "scope": "局部沟塘附近",
+      "effective_value": "②1软塑黏土（高压缩性）",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-04-GEO"
+      ],
+      "candidate_ids": [
+        "GEO-012"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "structure.embedment::地下室范围单体",
+      "field_id": "structure.embedment",
+      "field_name": "嵌固端",
+      "scope": "地下室范围单体",
+      "effective_value": "地下室顶板",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-034"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "structure.large_span::2#学生食堂",
+      "field_id": "structure.large_span",
+      "field_name": "大跨度框架条件",
+      "scope": "2#学生食堂",
+      "effective_value": {
+        "max_main_span": 8.1,
+        "meets_18m_threshold": false
+      },
+      "unit": "m",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-032"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "structure.podium_relation::2#学生食堂与3#学生宿舍",
+      "field_id": "structure.podium_relation",
+      "field_name": "裙房/主楼关系",
+      "scope": "2#学生食堂与3#学生宿舍",
+      "effective_value": "待确认",
+      "unit": "—",
+      "confirmation_status": "资料缺失",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-035"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "structure.system::2#学生食堂",
+      "field_id": "structure.system",
+      "field_name": "结构体系",
+      "scope": "2#学生食堂",
+      "effective_value": "钢筋混凝土框架",
+      "unit": "—",
+      "confirmation_status": "自动确认候选",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-031"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    },
+    {
+      "parameter_id": "structure.transfer::2#学生食堂",
+      "field_id": "structure.transfer",
+      "field_name": "转换构件条件",
+      "scope": "2#学生食堂",
+      "effective_value": "待确认",
+      "unit": "—",
+      "confirmation_status": "需要人工确认",
+      "usable_as_formal": false,
+      "source_ids": [
+        "SRC-05-ARCH"
+      ],
+      "candidate_ids": [
+        "ARCH-033"
+      ],
+      "rule": "只有已人工确认记录可作为正式参数；其他值只作为候选或待核实信息。"
+    }
+  ],
+  "issues": [
+    {
+      "issue_id": "ISSUE-001",
+      "priority": "high",
+      "title": "建筑高度多口径且与既有人工确认冲突",
+      "field_id": "building.height",
+      "scope": "2#学生食堂",
+      "status": "待确认",
+      "required_action": "需结构负责人确认17.35m是否仍适用于本版建筑输入，并明确规划/消防/结构计算分别采用的口径。",
+      "source_ids": [
+        "SRC-04-GEO",
+        "SRC-05-ARCH"
+      ]
+    },
+    {
+      "issue_id": "ISSUE-002",
+      "priority": "high",
+      "title": "场地类别为Ⅱ、Ⅲ类，目标单体分区未从附图确认",
+      "field_id": "seismic.site_class",
+      "scope": "2#学生食堂",
+      "status": "待确认",
+      "required_action": "结合地勘附图1与单体定位人工确认；不得仅用统一按Ⅲ类的建议替代事实。",
+      "source_ids": [
+        "SRC-05-ARCH"
+      ]
+    },
+    {
+      "issue_id": "ISSUE-003",
+      "priority": "high",
+      "title": "桩径与桩长缺失",
+      "field_id": "foundation.pile_diameter",
+      "scope": "2#学生食堂",
+      "status": "待确认",
+      "required_action": "由基础设计/试桩结果补充桩径、桩长、桩端进入持力层深度。",
+      "source_ids": [
+        "SRC-04-GEO"
+      ]
+    },
+    {
+      "issue_id": "ISSUE-004",
+      "priority": "high",
+      "title": "抗震等级输入尚未完整确认",
+      "field_id": "seismic.grade_inputs",
+      "scope": "2#学生食堂",
+      "status": "待确认",
+      "required_action": "确认建筑高度口径、场地分区、转换适用范围、裙房/主楼关系；本任务不自动给最终抗震等级。",
+      "source_ids": [
+        "SRC-04-GEO",
+        "SRC-05-ARCH"
+      ]
+    },
+    {
+      "issue_id": "ISSUE-005",
+      "priority": "medium",
+      "title": "单体建筑面积在建筑与地勘资料不一致",
+      "field_id": "building.area",
+      "scope": "2#学生食堂",
+      "status": "待确认",
+      "required_action": "建筑专业4389.62㎡；地勘任务输入3929.41㎡。确认最新建筑口径。",
+      "source_ids": [
+        "SRC-04-GEO",
+        "SRC-05-ARCH"
+      ]
+    },
+    {
+      "issue_id": "ISSUE-006",
+      "priority": "medium",
+      "title": "④2层岩性原文冲突",
+      "field_id": "foundation.bearing_stratum",
+      "scope": "④2层",
+      "status": "待确认",
+      "required_action": "正文大部分与表格为中风化泥质砂岩，P0283写中风化白云岩；要求勘察单位澄清。",
+      "source_ids": [
+        "SRC-04-GEO"
+      ]
+    },
+    {
+      "issue_id": "ISSUE-007",
+      "priority": "medium",
+      "title": "土对钢结构腐蚀性结论冲突",
+      "field_id": "site.corrosion.soil_steel",
+      "scope": "全场地",
+      "status": "待确认",
+      "required_action": "P0265为弱腐蚀性，结论P0394及表T10为微腐蚀性，需勘察单位确认正式结论。",
+      "source_ids": [
+        "SRC-04-GEO"
+      ]
+    },
+    {
+      "issue_id": "ISSUE-008",
+      "priority": "medium",
+      "title": "基础形式、持力层和桩阻参数尚未形成单体确认值",
+      "field_id": "foundation.type",
+      "scope": "2#学生食堂",
+      "status": "待确认",
+      "required_action": "结合结构荷载、试桩与单体钻孔剖面人工确认。",
+      "source_ids": [
+        "SRC-04-GEO"
+      ]
+    },
+    {
+      "issue_id": "ISSUE-009",
+      "priority": "medium",
+      "title": "转换构件适用范围不清",
+      "field_id": "structure.transfer",
+      "scope": "2#学生食堂",
+      "status": "待确认",
+      "required_action": "性能目标表出现首层托墙转换梁，但未明确2#学生食堂是否适用。",
+      "source_ids": [
+        "SRC-05-ARCH"
+      ]
+    },
+    {
+      "issue_id": "ISSUE-010",
+      "priority": "low",
+      "title": "幕墙范围与墙厚需按单体图纸确认",
+      "field_id": "building.curtain_wall",
+      "scope": "2#学生食堂",
+      "status": "待确认",
+      "required_action": "当前仅有总体说明，缺少目标单体立面范围与节点定位。",
+      "source_ids": [
+        "SRC-05-ARCH"
+      ]
+    }
+  ],
+  "field_mapping": [
+    {
+      "target_section": "一、工程概况",
+      "target_field": "项目/单体名称、功能、层数、高度、面积、地下室与相邻关系",
+      "field_ids": [
+        "project.name",
+        "building.name",
+        "building.function",
+        "building.floors",
+        "building.height",
+        "building.area",
+        "building.basement",
+        "building.adjacency"
+      ],
+      "required_status": "已人工确认优先；无确认时标注待确认"
+    },
+    {
+      "target_section": "三、建筑结构分类等级与设计控制标准",
+      "target_field": "设防类别、烈度、加速度、分组、场地类别",
+      "field_ids": [
+        "seismic.category",
+        "seismic.intensity",
+        "seismic.acceleration",
+        "seismic.group",
+        "seismic.site_class"
+      ],
+      "required_status": "场地类别必须人工确认目标单体分区"
+    },
+    {
+      "target_section": "五、地基基础",
+      "target_field": "地层、水位、抗浮、腐蚀性、持力层、基础及桩基建议",
+      "field_ids": [
+        "site.strata",
+        "site.groundwater_type",
+        "site.groundwater_level",
+        "site.anti_float_level",
+        "site.corrosion.water",
+        "site.corrosion.soil_steel",
+        "foundation.type",
+        "foundation.bearing_stratum",
+        "foundation.pile_type",
+        "foundation.pile_diameter",
+        "foundation.pile_length",
+        "foundation.pile_resistance",
+        "foundation.settlement"
+      ],
+      "required_status": "持力层、桩型、桩径、桩长须人工确认"
+    },
+    {
+      "target_section": "六、上部及地下室结构设计",
+      "target_field": "结构缝、体系、转换、大跨度、嵌固端、裙房/主楼关系",
+      "field_ids": [
+        "building.joint",
+        "building.joint_width",
+        "structure.system",
+        "structure.transfer",
+        "structure.large_span",
+        "structure.embedment",
+        "structure.podium_relation"
+      ],
+      "required_status": "仅提供抗震等级输入条件，不自动形成最终等级"
+    },
+    {
+      "target_section": "建筑做法/统一技术措施",
+      "target_field": "防火、防水、屋楼面、墙体、幕墙、设备房",
+      "field_ids": [
+        "building.fire_class",
+        "building.fire_resistance",
+        "building.waterproof.roof",
+        "building.waterproof.basement",
+        "building.roof_assembly",
+        "building.floor_finish.dining",
+        "building.floor_finish.kitchen",
+        "building.wall.external",
+        "building.wall.internal",
+        "building.wall.wet_room",
+        "building.curtain_wall",
+        "building.equipment_room"
+      ],
+      "required_status": "单体适用范围不清时进入人工确认"
+    }
+  ],
+  "seismic_input_queue": [
+    {
+      "field_id": "seismic.category",
+      "label": "设防类别",
+      "scope": "全项目",
+      "status": "自动确认候选",
+      "note": "重点设防类（乙类）候选"
+    },
+    {
+      "field_id": "seismic.intensity",
+      "label": "烈度",
+      "scope": "全项目",
+      "status": "自动确认候选",
+      "note": "8度候选"
+    },
+    {
+      "field_id": "seismic.acceleration",
+      "label": "加速度",
+      "scope": "全项目",
+      "status": "自动确认候选",
+      "note": "0.20g候选"
+    },
+    {
+      "field_id": "seismic.group",
+      "label": "分组",
+      "scope": "全项目",
+      "status": "自动确认候选",
+      "note": "第三组候选"
+    },
+    {
+      "field_id": "seismic.site_class",
+      "label": "场地类别",
+      "scope": "设计采用",
+      "status": "需要人工确认",
+      "note": "地勘Ⅱ/Ⅲ类，需定位单体分区"
+    },
+    {
+      "field_id": "structure.system",
+      "label": "结构体系",
+      "scope": "2#学生食堂",
+      "status": "自动确认候选",
+      "note": "钢筋混凝土框架候选"
+    },
+    {
+      "field_id": "building.height",
+      "label": "建筑高度",
+      "scope": "2#学生食堂",
+      "status": "已人工确认",
+      "note": "人工确认17.35m，但与04/05冲突，建议复核"
+    },
+    {
+      "field_id": "structure.large_span",
+      "label": "大跨度",
+      "scope": "2#学生食堂",
+      "status": "需要人工确认",
+      "note": "主要跨度8.1m，不自动判断抗震等级"
+    },
+    {
+      "field_id": "structure.transfer",
+      "label": "转换",
+      "scope": "2#学生食堂",
+      "status": "需要人工确认",
+      "note": "适用范围待确认"
+    },
+    {
+      "field_id": "structure.embedment",
+      "label": "嵌固端",
+      "scope": "地下室范围单体",
+      "status": "自动确认候选",
+      "note": "地下室顶板候选"
+    },
+    {
+      "field_id": "structure.podium_relation",
+      "label": "裙房/主楼关系",
+      "scope": "2#学生食堂与3#学生宿舍",
+      "status": "资料缺失",
+      "note": "资料未明确"
+    }
+  ]
+}

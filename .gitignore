@@ -1,0 +1,46 @@
+# Local inputs and independent experiments (keep on disk)
+/01_标准扩初项目样本/
+/02_统一技术措施样本/
+/03_盈建科参数导出样本/
+/04_地勘资料/
+/05_建筑专业输入资料/
+/1000-未归档/
+/design/
+/tools/
+
+# Dependencies, builds, local databases and generated documents
+node_modules/
+node_modules_backup*/
+dist/
+__pycache__/
+*.pyc
+*.log
+*.tmp
+~$*
+.DS_Store
+Thumbs.db
+/web-demo/qa/
+/web-demo/outputs/
+/web-demo/tmp/
+/web-demo/.tmp/
+/web-demo/.codex-*/
+/web-demo/design/**/backup-*/
+/web-demo/design/**/baseline-*/
+/web-demo/design/**/_work/
+/web-demo/design/**/test-output/
+/web-demo/design/**/build-check/
+/web-demo/design/**/source-trace-working/
+/web-demo/demo-*.png
+
+# Credentials stay local; only a blank configuration example may be shared
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+credentials.*.json
+.credentials/
+.secrets/

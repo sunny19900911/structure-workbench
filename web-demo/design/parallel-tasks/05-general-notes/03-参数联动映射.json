@@ -1,0 +1,100 @@
+{
+  "schema_version": "0.1-draft",
+  "project_truth": "603",
+  "master_truth": "604",
+  "unknown_semantics": "unknown_never_equals_false",
+  "mappings": [
+    {
+      "source_keys": ["project_name", "project_code", "discipline"],
+      "targets": ["cover", "general.1.1", "general.1.3"],
+      "mode": "direct",
+      "missing_policy": "block_export"
+    },
+    {
+      "source_keys": ["intensity", "pga", "eq_group", "site_class", "tg", "alpha_max"],
+      "targets": ["general.1.7", "general.1.8", "general.1.9"],
+      "mode": "direct_with_crosscheck_003_004",
+      "missing_policy": "require_review"
+    },
+    {
+      "source_keys": ["wind", "snow", "snow_zone", "wind_shape", "wind_rough"],
+      "targets": ["general.1.7.actions"],
+      "mode": "direct",
+      "missing_policy": "block_export"
+    },
+    {
+      "source_keys": ["temp_low", "temp_high", "frost"],
+      "targets": ["general.actions.temperature", "foundation.frost"],
+      "mode": "conditional",
+      "missing_policy": "require_review"
+    },
+    {
+      "source_keys": ["seismic_cat", "safety", "normal_use", "fire", "waterproof"],
+      "targets": ["general.1.6", "concrete.durability", "steel.fireproofing"],
+      "mode": "direct",
+      "missing_policy": "block_export"
+    },
+    {
+      "source_keys": ["foundation", "pile", "anti_float", "water_depth", "foundation_note"],
+      "targets": ["foundation.*"],
+      "mode": "direct_and_feature_signal",
+      "missing_policy": "require_review",
+      "note": "free_text foundation_note cannot drive automatic exclusion"
+    },
+    {
+      "source_keys": ["struct_sys", "seismic_up", "iso_reduce"],
+      "targets": ["general.1.3", "general.1.8", "general.1.9"],
+      "mode": "direct",
+      "missing_policy": "require_review"
+    },
+    {
+      "source_keys": ["damping", "period_reduce", "fixed_end", "ecc_ratio", "bidir_eq", "vert_eq", "skew_angle", "modal_combo", "stiff_amp", "mass_participation"],
+      "targets": ["general.1.9.analysis"],
+      "mode": "direct",
+      "missing_policy": "require_review"
+    },
+    {
+      "source_keys": ["g_frame", "g_frame_m", "g_frame_base_m", "g_bigspan", "g_key", "g_pure", "g_corridor", "g_extend", "g_cantilever", "g_wall"],
+      "targets": ["concrete.1.6", "concrete.1.7"],
+      "mode": "direct_from_approved_measure",
+      "missing_policy": "require_review"
+    },
+    {
+      "source_keys": ["bldg_units"],
+      "targets": ["general.project_overview_table"],
+      "mode": "table_by_stable_unit_id",
+      "missing_policy": "block_export"
+    },
+    {
+      "source_keys": ["geo_soil", "geo_bore"],
+      "targets": ["foundation.geotechnical_reference", "foundation.bearing_layer", "foundation.groundwater"],
+      "mode": "source_linked_table",
+      "missing_policy": "require_review"
+    },
+    {
+      "source_keys": ["yjk_summary", "software", "mode_count", "shear_floor", "mass_g"],
+      "targets": ["general.1.9.analysis"],
+      "mode": "versioned_snapshot",
+      "missing_policy": "require_review"
+    },
+    {
+      "source_keys": ["approved_norm_ids"],
+      "targets": ["general.1.4", "foundation.1.3", "concrete.1.3", "steel.design_basis"],
+      "mode": "reference_only_confirmed_003",
+      "missing_policy": "block_signoff"
+    }
+  ],
+  "shared_feature_keys_in_stage_1": [
+    "has_concrete", "has_steel", "has_masonry", "has_green_building", "has_precast",
+    "has_iso", "has_damp", "has_health_monitoring", "has_special_design_scope",
+    "has_existing", "has_basement", "has_pile", "has_slope", "has_human_def",
+    "has_superlong", "has_posttension", "has_recycled_concrete", "has_ground_treatment"
+  ],
+  "current_storage": "stage_1_dom_local_live_snapshot",
+  "target_storage": "603_versioned_project_profile",
+  "stage_7_editable_copy": false,
+  "new_structured_fields": [
+    "foundation_type", "design_life", "environment_exposure", "foundation_designs",
+    "approved_norm_ids"
+  ]
+}

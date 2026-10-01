@@ -1,0 +1,68 @@
+{
+  "ruleset_id": "GNC-604-01-0.3",
+  "scope": "01 通用说明",
+  "status": "workbench_preview",
+  "master_source_id": "SRC-604-GN-202609-001",
+  "reference_source_ids": [
+    "SRC-602-JNU-GN-20260529-001",
+    "SRC-602-XA-GN-202404-001"
+  ],
+  "truth_sources": {
+    "project_parameters": "①统一技术措施/603项目参数",
+    "geotechnical_facts": "当前项目地勘摘录",
+    "master_text_and_word_styles": "604通用说明母版"
+  },
+  "compiler_semantics": {
+    "editorial_colors": ["00B0F0", "00B050", "0070C0", "002060", "808080", "C00000", "FF00FF", "FF3399", "FF66FF", "4C94D8"],
+    "outside_selected_tables": "remove_colored_editorial_paragraph",
+    "inside_selected_tables": "retain_formal_cell_text_and_remove_editorial_style_paragraph",
+    "unknown_policy": "do_not_fabricate_project_decision"
+  },
+  "compile_rules": [
+    {
+      "rule_id": "GN-CMP-001",
+      "target": "1.1 总则",
+      "action": "replace_template_scope_with_project_scope"
+    },
+    {
+      "rule_id": "GN-CMP-004",
+      "target": "表1.3.5 项目工程概况",
+      "action": "generate_from_bldg_units",
+      "columns": 7
+    },
+    {
+      "rule_id": "GN-CMP-007",
+      "target": "母版颜色语义",
+      "action": "remove_points_examples_backups_and_editor_notes"
+    },
+    {
+      "rule_id": "GN-CMP-008",
+      "target": "删减后的普通条目",
+      "action": "materialize_continuous_numbering_per_subsection"
+    },
+    {
+      "rule_id": "GN-CMP-009",
+      "target": "1.15.2 危大工程",
+      "action": "collapse_candidate_matrix_to_neutral_formal_statement",
+      "reason": "①无施工方法与专项方案参数，不能虚构是/否"
+    }
+  ],
+  "current_project_case": {
+    "case_id": "GNC-CASE-YNLV-001",
+    "expected": {
+      "docx_sections": 1,
+      "docx_body_paragraphs": 231,
+      "formal_table_shapes": [[2, 5], [9, 7], [8, 7], [8, 7], [14, 5], [43, 4], [3, 4], [9, 5], [3, 4], [5, 7]],
+      "rendered_pages": 9,
+      "reader_guide_indent_twips": {"left": 0, "first_line": 261},
+      "editorial_marker_leaks": 0,
+      "risk_candidate_table_present": false,
+      "web_preview_overflow_y": "visible"
+    },
+    "assumptions_requiring_professional_confirmation": [
+      "按单体表中地下层数自动判为部分地下室",
+      "各单体当前共用①中的框架抗震等级",
+      "基础形式暂显示为按各单体基础图"
+    ]
+  }
+}
