@@ -336,7 +336,6 @@ td.stg{font-size:11.5px;color:#7b8794}
     <label>阶段</label>
     <select id="pstage-sel" onchange="setProjStage(this.value)"></select>
   </div>
-  <a href="./design/method-lab/index.html" target="_blank" rel="noopener" style="color:inherit;font-size:12px;text-decoration:none;white-space:nowrap">方法实验室 ↗</a>
   <button class="act" onclick="if(window.WordDocumentView&amp;&amp;(curStage===1||curStage===2)){window.WordDocumentView.export(curStage===1?'measures':'expansion','pdf')}else{window.print()}">打印 / 存 PDF</button>
   <button class="act" onclick="copyDoc()">复制全文</button>
   <button class="act" onclick="wbOpenPptReport()">汇报 PPT</button>
@@ -442,19 +441,7 @@ td.stg{font-size:11.5px;color:#7b8794}
 <a class="l2" href="#s2ch10_2">10.2  装置选型及布置</a>
 <a class="l2" href="#s2ch10_3">10.3  各工况计算分析</a>
   </div>
-  <div id="toc5" hidden>
-    <h3>⑤ 用钢量统计 · 查什么</h3>
-    <ol class="toc4">
-      <li><b>第一步</b> 导入三份资料
-        <span class="t4s">上部结构工程量 .txt · 基础混凝土用量 .txt · 各层钢筋用量表</span></li>
-      <li><b>第二步</b> 按楼层钢筋用量
-        <span class="t4s">纵筋 / 箍筋 / 基础插筋 · HRB400 / HRB500 · 含钢量 kg/m²</span></li>
-      <li><b>第三步</b> 按楼层混凝土用量
-        <span class="t4s">墙 / 梁 / 柱 / 楼板 / 悬挑板 · 单方 m³/m²</span></li>
-      <li><b>第四步</b> 基础混凝土 + 标段分摊</li>
-      <li><b>第五步</b> 汇总指标（放大系数可改）+ 导出 Excel</li>
-    </ol>
-  </div>
+  <div id="toc5" hidden></div>
   <div id="toc6" hidden>
     <h3>⑥ 全院总览 · 怎么用</h3>
     <ol class="toc4">
@@ -1384,7 +1371,7 @@ const CARDS=[
   {id:'c5', n:5, tab:'⑤ 用钢量统计', name:'用钢量统计', sec:'stage5',
    stage:['扩初','施工图'], roles:{d:'填',m:'审',a:'看'},
    altname:{'施工图':'用钢量复核（以扩初提量为基准做偏差对比）'},
-   desc:'按单体导入钢筋、上部混凝土与基础工程量，核对面积口径；负责人审核后进入⑥。'},
+   desc:'导入材料用量，查看钢筋、混凝土与基础单方指标。'},
   {id:'c6', n:6, tab:'⑥ 全院总览', name:'全院总览与项目快照', sec:'stage6',
    stage:['扩初','施工图'], roles:{d:'—',m:'填',a:'看'},
    desc:'读取本项目与项目库已审核的单体用量，保留统计范围和复核状态；旧快照工具仍可查阅。'},

@@ -131,7 +131,13 @@ export function materialSummary(input={}){
   if(rebar.length&&concrete.length&&floors.some(f=>f.kg===null||f.volume===null))warnings.push('钢筋与混凝土资料楼层范围不同');
   const kg=rebar.length?sum(floors.map(f=>f.kg)):null,volume=concrete.length?sum(floors.map(f=>f.volume)):null;
   const areaR=sum(floors.map(f=>f.areaR)),areaC=sum(floors.map(f=>f.areaC));
-  return {floors,base,kg,volume,areaR,areaC,steelRate:rebar.length&&rebar.every(r=>r.area>0)?ratio(kg,areaR):null,concreteRate:concrete.length&&concrete.every(c=>c.area>0)?ratio(volume,areaC):null,foundation:input.base?sum(base.map(r=>r.sum)):null,warnings};
+  const foundation=input.base?sum(base.map(r=>r.sum)):null;
+  const firstAreas=[...rebar,...concrete].filter(r=>/^(1|1层|首层|1F|F1)$/i.test(String(r.floor).trim())).map(r=>Number(r.area)).filter(a=>Number.isFinite(a)&&a>0);
+  const manualArea=input.firstFloorArea!==undefined&&input.firstFloorArea!==null&&input.firstFloorArea!=='';
+  const areaConflict=firstAreas.some(a=>Math.abs(a-firstAreas[0])>0.01);
+  const firstFloorArea=manualArea?(Number.isFinite(Number(input.firstFloorArea))&&Number(input.firstFloorArea)>0?Number(input.firstFloorArea):null):firstAreas.length&&!areaConflict?firstAreas[0]:null;
+  if(foundation!==null&&!firstFloorArea)warnings.push(areaConflict&&!manualArea?'首层面积不一致，请补填首层面积':'请补填首层面积');
+  return {floors,base,kg,tonnes:kg===null?null:kg/1000,volume,areaR,areaC,firstFloorArea,foundationRate:foundation===null?null:ratio(foundation,firstFloorArea),steelRate:rebar.length&&rebar.every(r=>r.area>0)?ratio(kg,areaR):null,concreteRate:concrete.length&&concrete.every(c=>c.area>0)?ratio(volume,areaC):null,foundation,warnings};
 }
 export function steelSignature(unit,params){return fingerprint({input:unit.input,sources:unit.sources,scope:unit.scope,params});}
 export function reviewSteel(unit,params,role){

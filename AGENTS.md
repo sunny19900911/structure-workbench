@@ -101,3 +101,12 @@ source_id: USER-20261001-RESTORE-TEMPLATE（小香金猪本轮明确要求，原
 - `measure-template.js`、`approved-template.js` 为来源派生默认内容；`default-expansion.js` 生成初稿。候选资料可显示带“待核”标识的概况；签发仍须确认。人工正文不自动覆盖；旧空白措施只补尚未编辑的空章节，保留恢复前正文。
 - 正文仅保留左侧目录。`word-document-view.js` 调用本机 Word 生成 A3 横向双栏 DOCX/PDF，网页展示该 PDF 渲染页面，预览与导出共用内容及版式。依赖本机 Microsoft Word 与 Poppler；输出缓存位于 `web-demo/outputs/word-preview`，原始资料不修改。
 - 回归追加：`node --test design/template-restoration/restoration.test.mjs`。本轮改前备份及来源登记见 `web-demo/design/template-restoration/`。
+
+## 2026-10-01 用钢量页面精简
+
+原文事实，source_id: USER-20261001-STEEL-SIMPLIFY。本段覆盖⑤旧版工具折叠保留的显示约定。
+
+- ⑤删去冗余说明、统计范围、审核提示及旧版工具入口；保留导入、单体切换与当前 CSV 导出，不删除已保存数据。
+- 显示：楼层钢筋总用量（t）、钢筋单方量（kg/m²）、上部混凝土单方量（m³/m²）、基础混凝土量（m³）及其单方量（m³/m²）。上部混凝土总量不展示；表格和 CSV 单位一致。
+- 基础单方＝基础混凝土量÷首层面积；优先采用用户补填的面积，否则读取明确的首层资料。缺失或冲突不猜值，不能用总楼面面积替代。内部钢筋原始量仍为 kg。
+- 回归：在 `web-demo` 运行 `node --test design/project-integration/steel-view.test.mjs design/project-integration/modules.test.mjs`。⑥仍只读取有效的已审核版本，本次不自动生成审核记录。
