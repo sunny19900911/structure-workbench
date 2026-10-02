@@ -1219,7 +1219,7 @@ td.stg{font-size:11.5px;color:#7b8794}
     <div class="calcbook-head">
       <div>
         <h2>计算书</h2>
-        <p>封面沿用母件版式，历史项目与人员信息在导出时替换；目录按四个固定大标题分组编辑，Excel 与 3 个 OUT 文件可联动生成 A3 Word。</p>
+        <p>保留 Word 完整目录，按输出路径查看计算书 PDF；目录可调整，Excel 与 OUT 可联动生成 A3 Word。</p>
       </div>
       <span class="calcbook-ready" id="calcbook-ready">正在连接计算书资料…</span>
     </div>
@@ -1234,7 +1234,7 @@ td.stg{font-size:11.5px;color:#7b8794}
       <div class="calcbook-source-card">
         <span class="calcbook-source-type">目录母件</span>
         <strong>结构计算书内容-媒体楼</strong>
-        <span>页面版式沿用母件，目录内容按两级结构重新生成</span>
+        <span>完整保留母件目录条目与分组</span>
         <a href="/api/calculation-book/template/catalog" target="_blank" rel="noopener">打开原件</a>
       </div>
     </div>
@@ -1258,20 +1258,35 @@ td.stg{font-size:11.5px;color:#7b8794}
         <div class="calcbook-list" id="calcbook-list"></div>
         <div class="calcbook-editor-foot">
           <span>可上移、下移、删除；变更后需重新人工确认</span>
-          <button class="calcbook-reset" id="calcbook-reset" type="button">恢复通用目录</button>
+          <button class="calcbook-reset" id="calcbook-reset" type="button">恢复 Word 完整目录</button>
         </div>
       </div>
 
       <div class="calcbook-preview-panel">
         <div class="calcbook-block-head">
-          <h3>计算书快照</h3>
-          <span class="calcbook-count">母件页 + 动态目录</span>
+          <h3>输出路径中的 PDF</h3>
+          <span class="calcbook-count" id="calcbook-pdf-count"></span>
         </div>
-        <div class="calcbook-stage">
-          <div class="calcbook-template-note">
-            <strong>母件参考</strong>
-            <span>封面原样保留；原目录页只作版式参考，实际目录按下方两级结构生成。</span>
+        <div class="calcbook-pdf-path-row">
+          <input id="calcbook-pdf-path" type="text" aria-label="盈建科输出路径" placeholder="E:\600-工作台数据库\610-待处理\模拟yjk路径" spellcheck="false">
+          <button class="calcbook-reset" id="calcbook-pdf-scan" type="button">读取 PDF</button>
+        </div>
+        <div id="calcbook-pdf-list" class="calcbook-pdf-list"></div>
+        <p id="calcbook-pdf-status" class="calcbook-pdf-status" role="status"></p>
+        <p id="calcbook-pdf-warnings" class="calcbook-pdf-status"></p>
+        <div id="calcbook-pdf-viewer" hidden>
+          <div class="calcbook-pdf-toolbar">
+            <strong id="calcbook-pdf-title"></strong>
+            <a id="calcbook-pdf-download" download>下载原 PDF</a>
+            <button id="calcbook-pdf-prev" type="button" aria-label="PDF 上一页">上一页</button>
+            <input id="calcbook-pdf-page" type="number" min="1" value="1" aria-label="PDF 页码">
+            <span id="calcbook-pdf-total"></span>
+            <button id="calcbook-pdf-next" type="button" aria-label="PDF 下一页">下一页</button>
           </div>
+          <div class="calcbook-pdf-canvas"><img id="calcbook-pdf-image" alt="PDF 页面预览"></div>
+        </div>
+        <details class="calcbook-template-reference">
+          <summary>Word 封面与目录原件预览</summary>
           <div class="calcbook-reference-grid">
             <figure class="calcbook-reference-page" aria-label="原始封面Word页面快照">
               <img src="./assets/calculation-book/cover-reference.png" alt="QS-324 原始计算书封面">
@@ -1279,15 +1294,10 @@ td.stg{font-size:11.5px;color:#7b8794}
             </figure>
             <figure class="calcbook-reference-page" aria-label="原始目录Word页面快照">
               <img src="./assets/calculation-book/catalog-reference.png" alt="原始结构计算书目录 Word 页面">
-              <figcaption>原目录母件（版式参考）</figcaption>
+              <figcaption>Word 完整目录母件</figcaption>
             </figure>
           </div>
-          <div class="calcbook-live-toc">
-            <div class="calcbook-toc-title">当前重排结果</div>
-            <div class="calcbook-toc" id="calcbook-toc"></div>
-            <p class="calcbook-more" id="calcbook-more"></p>
-          </div>
-        </div>
+        </details>
       </div>
     </div>
 
@@ -6108,7 +6118,9 @@ gn7GenerateGeneralOnly();
 <script src="./local-regulation-pilot.js"></script>
 <script type="module" src="./integrated-workbench-polish.js"></script>
 <script type="module" src="./deepseek-assistant.js"></script>
-<script src="./calculation-book.js?v=project-integration-1"></script>
+<script src="./calculation-book-catalog.js"></script>
+<script src="./calculation-pdfs.js"></script>
+<script src="./calculation-book.js?v=pdf-directory-2"></script>
 <script>
 window.ExpansionHost={
   params:function(){return wbMeasureSnapshot().params;},

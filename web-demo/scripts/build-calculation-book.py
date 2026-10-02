@@ -67,12 +67,10 @@ def read_catalog_sections(path: Path) -> list[dict]:
     sections = [{"title": title, "items": []} for title in SECTION_TITLES]
     current = 0
     for line in lines:
-        if re.match(r"^二[、.]", line):
-            current = 1
-        elif re.match(r"^三[、.]", line):
-            current = 2
-        elif re.match(r"^四[、.]", line):
-            current = 3
+        heading = re.match(r"^([一二三四])[、.](.*)", line)
+        if heading:
+            current = SECTION_NUMERALS.index(heading.group(1))
+            sections[current]["title"] = heading.group(2).strip()
         else:
             sections[current]["items"].append(line)
     return sections
@@ -84,7 +82,8 @@ def normalize_sections(value) -> list[dict]:
     for index, title in enumerate(SECTION_TITLES):
         raw_items = source[index].get("items", []) if index < len(source) and isinstance(source[index], dict) else []
         items = [clean_text(item) for item in raw_items if clean_text(item)][:80]
-        result.append({"title": title, "items": items})
+        actual_title = clean_text(source[index].get("title")) if index < len(source) and isinstance(source[index], dict) else ""
+        result.append({"title": actual_title or title, "items": items})
     return result
 
 

@@ -8,17 +8,12 @@ const calcbookState = {
 };
 
 function calcbookFallbackSections() {
-  return [
-    { title: CALCBOOK_SECTION_TITLES[0], items: ['计算书封面及目录'] },
-    { title: CALCBOOK_SECTION_TITLES[1], items: ['计算信息-小震（wmass、wdisp、wzq）'] },
-    { title: CALCBOOK_SECTION_TITLES[2], items: [] },
-    { title: CALCBOOK_SECTION_TITLES[3], items: [] },
-  ];
+  return calcbookCloneSections(window.CalculationBookCatalog?.sections || []);
 }
 
 function calcbookNormalizeSections(value) {
   return CALCBOOK_SECTION_TITLES.map((title, index) => ({
-    title,
+    title: typeof value?.[index]?.title === 'string' && value[index].title.trim() ? value[index].title.trim() : title,
     items: Array.isArray(value?.[index]?.items)
       ? value[index].items.filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim()).slice(0, 80)
       : [],
@@ -27,6 +22,16 @@ function calcbookNormalizeSections(value) {
 
 function calcbookCloneSections(value) {
   return calcbookNormalizeSections(value).map((section) => ({ ...section, items: [...section.items] }));
+}
+
+function calcbookProjectSections(saved = {}) {
+  const items = saved.sections?.map(section => section.items);
+  const legacy = !saved.catalogVersion && items?.length === 4 &&
+    items[0]?.length === 1 && items[0][0] === '计算书封面及目录' &&
+    items[1]?.length === 1 && /^计算信息-小震[（(]wmass、wdisp、wzq[）)]$/.test(items[1][0]) &&
+    items[2]?.length === 0 && items[3]?.length === 0;
+  return calcbookCloneSections(!saved.sections || legacy
+    ? (calcbookState.defaults.length ? calcbookState.defaults : calcbookFallbackSections()) : saved.sections);
 }
 
 function calcbookItemCount() {
@@ -87,6 +92,10 @@ function calcbookRenderCatalog() {
   if (!list || !count) return;
   const itemCount = calcbookItemCount();
   count.textContent = `4 个大标题 · ${itemCount} 个小标题`;
+  const sectionSelect = document.getElementById('calcbook-new-section');
+  if (sectionSelect) calcbookState.sections.forEach((section, index) => {
+    if(sectionSelect.options[index]) sectionSelect.options[index].textContent = CALCBOOK_SECTION_NUMERALS[index]+'、'+section.title;
+  });
   list.innerHTML = calcbookState.sections.map((section, sectionIndex) => `
     <section class="calcbook-group">
       <div class="calcbook-group-title"><span>${CALCBOOK_SECTION_NUMERALS[sectionIndex]}、</span>${calcbookEsc(section.title)}</div>
@@ -157,7 +166,7 @@ function calcbookMove(sectionIndex, index, direction) {
 }
 
 function calcbookReset() {
-  calcbookState.sections = calcbookFallbackSections();
+  calcbookState.sections = calcbookCloneSections(calcbookState.defaults.length ? calcbookState.defaults : calcbookFallbackSections());
   calcbookChanged();
 }
 
@@ -362,7 +371,7 @@ async function calcbookInit() {
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || '计算书资料连接失败');
     calcbookState.defaults = Array.isArray(payload.sections) ? calcbookNormalizeSections(payload.sections) : calcbookFallbackSections();
-    calcbookState.sections = calcbookFallbackSections();
+    calcbookState.sections = calcbookCloneSections(calcbookState.defaults);
     calcbookState.ready = Boolean(payload.ready);
     calcbookState.workbooks = Array.isArray(payload.workbooks) ? payload.workbooks : [];
     badge.textContent = calcbookState.ready
@@ -407,10 +416,11 @@ document.querySelectorAll('[data-k="project_name"],[data-k="project_code"],[data
 
 window.CalculationBook={
  ready:calcbookInit(),busy:()=>calcbookState.exporting,
- capture(){return JSON.parse(JSON.stringify({sections:calcbookState.sections,edits:calcbookState.edits,linkedExcel:calcbookState.linkedExcel,outFiles:calcbookState.outFiles,workbookKey:calcbookState.workbookKey,sheetName:calcbookState.sheetName}));},
+ capture(){return JSON.parse(JSON.stringify({catalogVersion:2,sections:calcbookState.sections,pdfSources:window.CalculationPDFs?.capture(),edits:calcbookState.edits,linkedExcel:calcbookState.linkedExcel,outFiles:calcbookState.outFiles,workbookKey:calcbookState.workbookKey,sheetName:calcbookState.sheetName}));},
  async loadProject(saved,mode){
   ++calcbookLoadTicket;const data=saved||{};
-  calcbookState.sections=calcbookNormalizeSections(data.sections||(mode==='sample'?calcbookState.defaults:calcbookFallbackSections()));
+  calcbookState.sections=calcbookProjectSections(data);
+  window.CalculationPDFs?.load(data.pdfSources);
   calcbookState.edits=data.edits||{};calcbookState.linkedExcel=data.linkedExcel||null;calcbookState.outFiles=data.outFiles||[];
   calcbookState.workbookKey=data.workbookKey||calcbookState.workbooks[0]?.key||'';calcbookState.sheetData=null;
   document.getElementById('calcbook-workbook').value=calcbookState.workbookKey;

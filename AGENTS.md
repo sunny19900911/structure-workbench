@@ -101,3 +101,11 @@ source_id: USER-20261001-RESTORE-TEMPLATE（小香金猪本轮明确要求，原
 - `measure-template.js`、`approved-template.js` 为来源派生默认内容；`default-expansion.js` 生成初稿。候选资料可显示带“待核”标识的概况；签发仍须确认。人工正文不自动覆盖；旧空白措施只补尚未编辑的空章节，保留恢复前正文。
 - 正文仅保留左侧目录。`word-document-view.js` 调用本机 Word 生成 A3 横向双栏 DOCX/PDF，网页展示该 PDF 渲染页面，预览与导出共用内容及版式。依赖本机 Microsoft Word 与 Poppler；输出缓存位于 `web-demo/outputs/word-preview`，原始资料不修改。
 - 回归追加：`node --test design/template-restoration/restoration.test.mjs`。本轮改前备份及来源登记见 `web-demo/design/template-restoration/`。
+
+## 2026-10-02 计算书完整目录与 PDF 路径
+
+原文事实，source_id: USER-20261002-CALCBOOK-PDF。计算书默认保留 Word 母件全部 27 个条目及分组，旧两条占位目录迁移为完整目录，人工调整保留；可主动恢复 Word 完整目录。
+
+- 用户提供模型输出根路径后，仅读取 `荷载校核`（兼容 `荷载校核图形`）及 `计算书/上部`、`计算书/基础`、`计算书/施工图` 内的 PDF，旁侧分组列出并按页预览。示例路径为 `E:/600-工作台数据库/610-待处理/模拟yjk路径`；不执行 CAD/YJK，不读取 DWG，不修改原件。
+- `calculation-book-catalog.js` 保留目录母件快照；`calculation-pdfs.js`、`server/calculation-pdf-api.mjs` 管理本地扫描和 Poppler 预览。路径和清单随当前项目 `main.calculation.pdfSources` 保存，预览授权不持久化；切换项目丢弃旧请求，恢复后主动重读。
+- 测试：`node --test design/project-integration/calculation-pdfs.test.mjs`。来源和边界见 `web-demo/design/task6-calculation-book/PDF路径与完整目录.md`。原始 PDF 不自动合并进 A3 Word，也不作为参数确认或计算通过结论。
