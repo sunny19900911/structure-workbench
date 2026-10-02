@@ -9,7 +9,7 @@ function measuresHTML(){
 }
 const content=kind=>kind==='measures'?measuresHTML():window.ExpansionWorkbench.documentHTML();
 async function request(html,kind,format){
- const r=await fetch('/api/expansion/document',{method:'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'expansion'},body:JSON.stringify({html,kind,format})});
+ const r=await fetch('/api/expansion/document',{method:'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'expansion'},body:JSON.stringify({html:kind==='expansion'?'':html,kind,format,...(kind==='expansion'?{template:window.ExpansionWorkbench.documentPackage()}: {})})});
  if(!r.ok)throw Error((await r.json()).error||'Word 排版未完成');
  return format==='preview'?r.json():r.blob();
 }
@@ -26,13 +26,13 @@ async function preview(v){
 }
 function edit(v){++v.ticket;v.frame.hidden=true;v.editor.hidden=false;v.edit.disabled=true;v.show.disabled=false;v.status.textContent='直接编辑正文；完成后点“Word 版式”查看分页';}
 function mount(kind,stage,editor){
- const bar=document.createElement('div');bar.className='word-view-bar';
+ const bar=document.createElement('div');bar.className='word-view-bar';if(kind==='expansion')bar.hidden=true;
  bar.innerHTML='<button type="button">Word 版式</button><button type="button">编辑正文</button><span role="status"></span>';
  const frame=document.createElement('div');frame.className='word-document-preview';frame.title=(kind==='measures'?'统一技术措施':'扩初说明')+' Word 版式预览';frame.hidden=true;
  editor.before(bar,frame);const [show,editButton]=bar.querySelectorAll('button');
  const v={kind,stage,editor,frame,show,edit:editButton,status:bar.querySelector('span'),ticket:0};views.set(kind,v);
  show.onclick=()=>preview(v);editButton.onclick=()=>edit(v);edit(v);
- const onOpen=()=>{if(!stage.hidden&&window.ExpansionWorkbench.capture())preview(v);};
+ const onOpen=()=>{if(!stage.hidden&&window.ExpansionWorkbench.capture()&&kind==='measures')preview(v);};
  new MutationObserver(onOpen).observe(stage,{attributes:true,attributeFilter:['hidden']});
  return v;
 }

@@ -1,3 +1,4 @@
+import {readWordSource} from './word-source.mjs';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {FIELD_LABELS,validateExtraction} from '../intake-core.js';
@@ -50,6 +51,10 @@ export function intakeApi(env={},dependencies={}){
       const path=new URL(req.url,'http://localhost').pathname;
       if(req.method==='GET'&&path==='/status')return reply(200,{configured:Boolean(env.DEEPSEEK_API_KEY)});
       if(req.method!=='POST'||req.headers['x-workbench-request']!=='intake')return reply(403,{error:'请求来源无效'});
+      if(path==='/read-word'){
+        let chunks=[],size=0;for await(const c of req){size+=c.length;if(size>30*1024*1024)return reply(413,{error:'文件超过30MB'});chunks.push(c);}
+        return reply(200,await readWordSource(Buffer.concat(chunks),req.headers['x-word-format']==='doc'));
+      }
       if(path==='/read-doc'){
         let chunks=[],size=0;for await(const c of req){size+=c.length;if(size>30*1024*1024)return reply(413,{error:'DOC超过30MB，请拆分'});chunks.push(c);}
         return reply(200,{xml:await extractLegacyDoc(Buffer.concat(chunks))});

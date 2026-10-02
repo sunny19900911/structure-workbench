@@ -26,7 +26,7 @@ const oldSteel=document.createElement('details');oldSteel.className='im-panel';o
 const overviewPanel=panel('im-overview','项目管理总览 · 已审核用量');document.querySelector('#stage6').prepend(overviewPanel);
 const oldOverview=document.createElement('details');oldOverview.className='im-panel';oldOverview.innerHTML='<summary>旧版项目快照与导出工具</summary>';for(const el of [...document.querySelector('#stage6').children])if(el!==overviewPanel)oldOverview.append(el);document.querySelector('#stage6').append(oldOverview);
 const regulationPanel=panel('im-regulations','规范可信查询 · 权威网站核查');document.querySelector('#stage3').prepend(regulationPanel);
-const cleaningPanel=panel('im-cleaning','接入已有资料清洗成果');document.querySelector('#intake-panel').after(cleaningPanel);
+const cleaningPanel=panel('im-cleaning','接入已有资料清洗成果');cleaningPanel.hidden=true;
 const dialog=document.createElement('dialog');dialog.className='im-dialog';document.body.append(dialog);
 const noteEl=document.createElement('p');noteEl.id='im-status';noteEl.setAttribute('role','status');document.querySelector('.wp-bar').append(noteEl);
 const note=s=>noteEl.textContent=s;

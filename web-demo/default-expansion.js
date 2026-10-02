@@ -1,8 +1,10 @@
+import {referenceText} from './reference-report.js';
 import {TEMPLATE_SOURCE,TEMPLATE_TEXT} from './approved-template.js';
 // This is the user's reusable document baseline, not a historical project's results.
 export function defaultExpansion(s,id){
  const evidence=new Set([TEMPLATE_SOURCE]);
- const p=(key,label)=>s.parameters[key]?`{{p:${key}}}`:facts.some(f=>f.key===key)?fact(facts.find(f=>f.key===key)):`【${label}待补充】`;
+ if(s.referenceTemplate)return {text:referenceText(s,id),evidence_ids:[TEMPLATE_SOURCE,...(s.document?.sourceIds||[])],kind:'template',sectionId:id,templateVersion:2,manual:false,warnings:[]};
+ const p=(key,label)=>s.parameters[key]?`{{p:${key}}}`:s.document?.parameters?.[key]|| (facts.some(f=>f.key===key)?fact(facts.find(f=>f.key===key)):`【${label}待补充】`);
  const fact=f=>{evidence.add(f.source_id);return `{{f:${f.id}}}`;};
  const facts=s.facts.filter(f=>f.status!=='rejected');
  const key=(name,label)=>{const f=facts.find(f=>f.key===name||f.key==='bldg_'+name);return f?fact(f):`【${label}待补充】`;};
@@ -25,5 +27,15 @@ export function defaultExpansion(s,id){
  if(id==='special')text='9.1 结构规则性判断\n规则性根据当前建筑布置及结构模型结果判断，不以关键词直接下结论。\n\n9.2 关键技术问题及措施\n'+(facts.filter(f=>f.origin==='decisions').map(f=>fact(f)).join('\n\n')||'本工程确认的专项判断及加强措施在资料、模型和重难点模块核对后补充。');
  if(id==='review')text='本说明采用项目统一技术措施及当前资料编制。工程资料调整后，相关参数、计算结果及文字说明同步复核；未完成事项见校核清单。';
  evidence.add('MEASURES-CONFIRMED');
- return {text,evidence_ids:[...evidence],kind:'template',templateVersion:1,manual:false,warnings:[]};
+ const document=s.document;
+ if(document?.sourceIds?.length){
+  document.sourceIds.forEach(id=>evidence.add(id));
+  if(id==='overview'&&document.overview)text=document.overview;
+  if(id==='ground'&&document.ground)text=document.ground;
+  if(id==='foundation'&&document.foundation)text=document.foundation;
+  if(id==='loads'&&document.waterText)text=text.replace(/4\.5 地下水位与水浮力\n[^\n]*/, '4.5 地下水位与水浮力\n地下结构水浮力按第5章所列抗浮水位及相应工况计算。');
+  if(id==='selection')text=text.replace(/\n\n6\.4 单体设计[\s\S]*$/,'');
+  text=text.replace(/【[^】]*(?:待补|待核|导入)[^】]*】/g,'—');
+ }
+ return {text,evidence_ids:[...evidence],kind:'template',sectionId:id,templateVersion:1,manual:false,warnings:[]};
 }
