@@ -33,3 +33,9 @@
 `USER-20261001-LOCAL-REG-DOCX`：地方规范目录版式取自用户指定《！结构初步设计说明-汇总版本.docx》第 2.2 节、表 2.2；原文事实及使用边界见 [版式来源](web-demo/design/regulation-document/README.md)。
 
 `USER-20261002-REGULATION-QUERY-ACTIONS`、`USER-20261002-REGULATION-ADD-ALL`：用户要求查询结果独立操作列和一键全部添加，取消单独已选目录；原文事实，见地方规范模块说明。
+
+`USER-20261001-KUNMING-DECISIONS`、`KM-*`、`QA-KM-20261001`：昆明重难点规则的官方依据、条文定位、核验状态与测试事实，见 [昆明联动来源与验收](web-demo/design/key-decisions/昆明联动规则与验收.md)。
+
+`USER-20261002-DEEPSEEK-RESEARCH`、`DS-NATIVE-SEARCH-DOC`、`DS-NATIVE-SEARCH-WIRE`、`QA-DS-RESEARCH-20261002`：方法、官方接口依据及合成验收边界见 [DeepSeek地区研判](web-demo/design/key-decisions/DeepSeek地区研判.md)。真实联网结果运行时以 `RESEARCH-*` 记录URL、摘录与抓取日期。
+
+`USER-20261002-DEEPSEEK-KEY-PATH`：用户指定外部目录 `E:/00-key`，只登记路径，不登记密钥内容。`QA-DS-LIVE-20261002`：南京合成参数真实联网联调，七专题返回并通过片段引用校验，边界见上文研判说明。

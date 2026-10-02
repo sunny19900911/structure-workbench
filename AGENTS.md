@@ -129,3 +129,13 @@ source_id: USER-20261001-RESTORE-TEMPLATE（小香金猪本轮明确要求，原
 
 
 - 查询结果支持“一键全部添加”，跳过已选条目，复用取消选用的原记录；完成后显示“已全部添加”。source_id: USER-20261002-REGULATION-ADD-ALL（原文事实）。
+
+## 2026-10-01 昆明重难点联动
+
+原文事实，source_id: USER-20261001-KUNMING-DECISIONS。⑩通过 `regional-decision-guide.js` 读取①参数及当前单体已确认事实；补充条件写入原 `intake` 分区。国家与省级触发条件独立判断，缺项不猜；参数、规则版本或项目规范状态变化使旧确认待复核。来源和边界见 `web-demo/design/key-decisions/昆明联动规则与验收.md`；回归：`node --test design/project-integration/regional-decisions.test.mjs`。规则匹配不替代模型分析或专项审查。
+
+## 2026-10-02 DeepSeek地区研判
+
+原文事实，source_id: USER-20261002-DEEPSEEK-RESEARCH。⑩和DeepSeek助理均可主动启动地区研判；方法内嵌于 `decision-research-method.js`，服务为 `/api/decision-research`。只用可追溯的官方网页或注明限制的摘要，校验摘录；研判保持AI草稿，变更输入后不得直接采用。复用 `modules` 分区，来源进程缓存24小时，支持主动刷新。配置、来源和验收边界见 `web-demo/design/key-decisions/DeepSeek地区研判.md`；测试 `design/project-integration/decision-research.test.mjs`。禁止把QA模拟响应接入正式入口。
+
+用户指定外部密钥目录 `E:/00-key`（source_id: USER-20261002-DEEPSEEK-KEY-PATH，原文事实）。`server/local-deepseek-config.mjs` 在服务端读取其中 `deep seek key.txt`，已有环境配置优先，可用 `DEEPSEEK_API_KEY_FILE` 改路径；不得复制密钥到仓库、浏览器或日志。回归 `design/project-integration/local-deepseek-config.test.mjs`。

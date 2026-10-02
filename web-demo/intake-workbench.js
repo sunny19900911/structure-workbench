@@ -3,6 +3,7 @@ import {projectPart,clone} from './project-store-client.js';
 import {fingerprint} from './expansion-core.js';
 import {PROJECT,FIELD_LABELS,GLOBAL_KEYS,freshIntake,fragments,extractLocal,mergeCandidates,conflicts,adoptFact,unitNames,unitParameters,combinedParameters,expansionEvidence,matchLocation,sourceRemoval,removeSource,restoreSource} from './intake-core.js';
 import './intake-workbench.css';
+import {DECISION_CONDITIONS} from './regional-decision-guide.js';
 
 const H=window.ExpansionHost,L=window.WorkbenchLegacy,W=window.WorkbenchProjects;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -48,7 +49,7 @@ function render(){
   renderKnowledge();renderSuggestions();renderMeasures();refreshGeo();controls();
 }
 function refreshGeo(){const el=document.querySelector('#gc-res');if(!el)return;const facts=state.facts.filter(f=>f.key==='site_class'&&f.slot==='geo'&&f.status!=='rejected');el.textContent=facts.length?'本项目地勘候选：'+facts.map(f=>f.unit+' '+f.value+'（'+(f.status==='confirmed'?'已采用':'待确认')+'）').join('；')+'。当前公共参数：'+(L.params().site_class||'未采用')+'。请在上方候选表核对原文及适用范围。':'请在②扩初说明导入地勘资料，采用后自动计入统一措施。';}
-function renderMeasures(){const paper=document.querySelector('#paper1');if(!paper)return;let section=paper.querySelector('[data-intake-summary]');if(!section){section=document.createElement('section');section.dataset.intakeSummary='true';paper.append(section);}const names=unitNames(state);section.innerHTML=names.length?'<h1>本项目单体资料与方案采用记录</h1>'+names.map(n=>'<h2>'+esc(n)+'</h2><table><tbody>'+state.facts.filter(f=>f.status==='confirmed'&&f.unit===n).map(f=>'<tr><td>'+esc(f.label)+'</td><td>'+esc(f.value)+'</td><td>'+esc(f.filename+' · '+f.locator)+'</td></tr>').join('')+'</tbody></table>').join(''):'';}
+function renderMeasures(){const paper=document.querySelector('#paper1');if(!paper)return;let section=paper.querySelector('[data-intake-summary]');if(!section){section=document.createElement('section');section.dataset.intakeSummary='true';paper.append(section);}const names=[...new Set([...unitNames(state),...(state.facts.some(f=>f.unit===PROJECT&&f.status==='confirmed'&&DECISION_CONDITIONS.some(([key])=>key===f.key))?[PROJECT]:[])])];section.innerHTML=names.length?'<h1>本项目单体资料与方案采用记录</h1>'+names.map(n=>'<h2>'+esc(n)+'</h2><table><tbody>'+state.facts.filter(f=>f.status==='confirmed'&&f.unit===n).map(f=>'<tr><td>'+esc(f.label)+'</td><td>'+esc(f.value)+'</td><td>'+esc(f.filename+' · '+f.locator)+'</td></tr>').join('')+'</tbody></table>').join(''):'';}
 function renderKnowledge(){q('#intake-knowledge').innerHTML=!knowledge?'':`<p>${esc(knowledge.authority)}</p><p>方法检查缺项：${esc(knowledge.missing.map(k=>({name:'单体名称',use:'用途',floors_above:'地上层数',floors_below:'地下层数',structural_height_m:'结构高度',first_floor_height_m:'首层层高',typical_floor_height_m:'标准层层高',plan_length_m:'平面长度',plan_width_m:'平面宽度',typical_span_m:'主要跨度',basement:'地下室条件',irregularity_features:'不规则特征'})[k]||k).join('、')||'已填写所需字段')} ${knowledge.complexCandidate?'· 有复杂结构线索，需专项核对':''}</p>${knowledge.warnings.map(w=>'<p>'+esc(w)+'</p>').join('')}${knowledge.cases.map(c=>`<details><summary>历史案例 ${esc(c.case_id)} · ${esc(c.system)}</summary><p>用途：${esc(c.use||'未登记')}；地点：${esc(c.location?.city||'未登记')}</p><p>${esc(JSON.stringify(c.evidence))}</p><p>仅供比选，不自动带入参数或截面。</p></details>`).join('')}${knowledge.cards.map(c=>`<details><summary>${esc(c.title)} · ${esc(c.review_status)}</summary><p>${esc(c.source_id)}</p><pre>${esc(c.body)}</pre></details>`).join('')}`;}
 function renderSuggestions(){const item=state.suggestions[selectedUnit];const stale=item&&item.signature!==querySignature();q('#intake-suggestions').innerHTML=item?`<p>${stale?'资料或参数已变化，请重新生成建议。':'AI 推断 · 待核对采用'}</p>${item.options.map((o,i)=>`<article><h4>${esc(o.system)}</h4><p>${esc(o.reasons.join('；'))}</p><p>待验证：${esc(o.checks.join('；'))}</p><small>${esc(o.source_ids.join('、'))}</small><p><button data-plan="${i}" ${stale?'disabled':''}>采用为该单体体系方案</button></p></article>`).join('')}`:'';}
 async function digest(bytes){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');}
@@ -125,6 +126,23 @@ panel.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)retu
 async function load({remoteOnly=false}={}){const t=++ticket;loading=true;controls();try{const next=projectPart(W.id,'intake',text=>{if(/失败|冲突|未保存|未连接/.test(text))note(text);});const data=await next.load({remoteOnly});if(t!==ticket)return;store=next;state=data||freshIntake();selectedUnit=state.activeUnit||PROJECT;knowledge=null;updateLocations();loading=false;render();note(data?'已载入本项目建筑与地勘资料':'新项目：请先导入建筑与地勘资料');publish();}finally{if(t===ticket){loading=false;controls();}}}
 window.WorkbenchIntake={async importBundle(converted,metadata){ensure();if(state.history.some(h=>h.bundle_id===metadata.bundle_id))throw Error('此成果包已导入本项目');for(const s of converted.sources)mergeCandidates(state,s,converted.facts.filter(f=>f.source_id===s.source_id));state.history.push({...metadata,event:'导入已有清洗成果包',unmapped:converted.unmapped,issues:converted.issues,previous_confirmations:converted.confirmations});state.revision++;updateLocations();await save();render();publish();note('清洗成果已进入候选表，请在本项目重新核对采用');},get busy(){return busy},get units(){return unitNames(state)},unitParameters:unit=>unitParameters(state,unit),parameters:unit=>combinedParameters(state,unit,L.params()),evidence:(unit,preview=false)=>expansionEvidence(state,unit,L.params(),preview),capture:()=>clone(state),refreshGeo,refresh:()=>{controls();renderMeasures();}};
 W.register('intake',{save,load,busy:()=>busy,capture:()=>clone(state)});
+// Explicit confirmation in the conditions form uses the existing intake partition,
+// source history and event bus; it does not create a second parameter store.
+window.WorkbenchIntake.confirmDecisionConditions=async(unit,values)=>action(async()=>{
+  if(unit!==PROJECT&&!unitNames(state).includes(unit))throw Error('请先确认当前单体');
+  const allowed=new Map(DECISION_CONDITIONS.map(([key,label,choices])=>[key,{label,choices}]));
+  for(const [key,value] of Object.entries(values)){const field=allowed.get(key);if(!field)throw Error('未知判断条件');if(value&&(Array.isArray(field.choices)?!field.choices.includes(value):!/^\d{4}-\d{2}-\d{2}$/.test(value)))throw Error('判断条件格式不正确');}
+  const sid='CURRENT-DECISION-CONDITIONS-'+crypto.randomUUID(),at=new Date().toISOString();
+  const source={source_id:sid,name:'人工确认的重难点项目条件',slot:'bldg',hash:sid,at,fragments:[]};
+  for(const [key,value] of Object.entries(values)){
+    const label=allowed.get(key).label,peers=state.facts.filter(f=>f.unit===unit&&f.key===key&&f.status!=='rejected');
+    if(peers.length===1&&peers[0].status==='confirmed'&&peers[0].value===value)continue;
+    state.history.push({event:'人工确认判断条件',unit,key,before:peers.map(f=>({id:f.id,value:f.value,status:f.status})),after:value,at});
+    peers.forEach(f=>{f.status='rejected';f.rejectionReason='用户在判断条件表中明确更正';});
+    if(value){const locator='判断条件表 · '+label,quote=label+'：'+value;source.fragments.push({id:key,locator,text:quote});state.facts.push({id:sid+'-'+key,key,label,value,unit,source_id:sid,filename:source.name,slot:'bldg',locator,quote,statement:'我的观点（用户人工确认）',status:'confirmed',confirmedAt:at});}
+  }
+  if(source.fragments.length)state.sources.push(source);state.revision++;W.contentChanged('确认重难点项目条件');note('条件已计入统一措施采用记录，并联动重难点判断');
+});
 window.addEventListener('workbuddy:measures-changed',()=>{if(!loading){renderSuggestions();refreshGeo();controls();}});
 document.querySelector('#role-sel')?.addEventListener('change',controls);
 window.addEventListener('workbuddy:permissions-changed',controls);

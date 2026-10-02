@@ -39,6 +39,7 @@ function initAssistant() {
       <button type="button" data-prompt="请根据当前页面内容，整理一份项目关键参数清单。按“已知事实、待确认项、AI建议”三部分输出。">提取关键参数</button>
       <button type="button" data-prompt="请检查当前页面中可能存在的参数冲突、缺项和需要人工确认的内容，并按风险高低排序。">检查冲突缺项</button>
       <button type="button" data-prompt="请根据当前项目上下文，列出应进一步核对的规范类别和条文方向。不要编造具体条文编号。">规范核对建议</button>
+      <button type="button" id="wb-ai-region-research">地区重难点研判</button>
     </div>
     <div class="wb-ai-messages" aria-live="polite"></div>
     <form class="wb-ai-compose">
@@ -58,6 +59,7 @@ function initAssistant() {
   toggle.addEventListener('click', () => setOpen(!state.open));
   closeButton.addEventListener('click', () => setOpen(false));
   shade.addEventListener('click', () => setOpen(false));
+  drawer.querySelector('#wb-ai-region-research').onclick=()=>{if(!window.WorkbenchModules?.openResearch){appendMessage('assistant','请在一体化工作台载入项目后使用地区研判。');return;}setOpen(false);window.WorkbenchModules.openResearch();};
   drawer.querySelectorAll('[data-prompt]').forEach((button) => {
     button.addEventListener('click', () => {
       textarea.value = button.dataset.prompt;

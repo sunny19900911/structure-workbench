@@ -6,3 +6,6 @@
 
 #im-steel .im-row h2{margin:0 auto 0 0}#im-steel .im-first-area{display:flex;align-items:center;gap:10px;margin:12px 0}#im-steel .im-first-area input{width:140px}#im-steel .im-steel-metrics{grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
 body:has(#stage5:not([hidden])) .side{display:none}
+
+.im-decision-logic{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px}.im-decision-logic>div{padding:12px;background:#f4f7f8;border-top:2px solid #7396a9;min-width:0}.im-decision-logic small,.im-decision-logic b,.im-decision-logic span{display:block;overflow-wrap:anywhere}.im-decision-logic b{margin:6px 0;font-size:13px}.im-decision-logic span{font-size:12px;color:#526b78}.im-decision-missing{margin:12px 18px;padding:10px 12px;background:#fff7e8;color:#76551f;font-size:13px}.im-decision-followthrough{padding:0 18px;font-size:13px}.im-decision-table a{font-size:12px}.im-dialog [data-condition]{display:block;width:100%;box-sizing:border-box;margin-top:5px}@media(max-width:760px){.im-decision-logic{grid-template-columns:1fr;margin:12px}}
+.im-ai-only .im-decision-result>.im-scroll,.im-ai-only .im-decision-result>.im-decision-conclusion,.im-ai-only .im-decision-result>.im-decision-actions{display:none}

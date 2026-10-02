@@ -11,6 +11,8 @@ import { expansionApi } from './server/expansion-api.mjs';
 import { projectStoreApi } from './server/project-store.mjs';
 import { intakeApi } from './server/intake-api.mjs';
 import { regulationDiscoveryApi } from './server/regulation-discovery-api.mjs';
+import { decisionResearchApi } from './server/decision-research-api.mjs';
+import { localDeepSeekConfig } from './server/local-deepseek-config.mjs';
 
 function sendJson(res, status, payload) {
   res.statusCode = status;
@@ -322,9 +324,9 @@ function calculationBookLocalApi(env) {
 }
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '');
+  const env = localDeepSeekConfig(loadEnv(mode, process.cwd(), ''));
   return {
-    plugins: [react(), deepSeekLocalApi(env), calculationBookLocalApi(env), calculationPdfApi(env), expansionApi(env), projectStoreApi(env), intakeApi(env), regulationDiscoveryApi()],
+    plugins: [react(), deepSeekLocalApi(env), calculationBookLocalApi(env), calculationPdfApi(env), expansionApi(env), projectStoreApi(env), intakeApi(env), regulationDiscoveryApi(), decisionResearchApi(env)],
     server: { watch: { ignored: ['**/qa/**','**/outputs/**','**/design/template-restoration/backup-*/**'] } },
     base: './',
     build: {

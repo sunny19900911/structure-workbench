@@ -1,5 +1,6 @@
 import {fingerprint} from './expansion-core.js';
 import {FIELD_LABELS,PROJECT} from './intake-core.js';
+import {regionalDecisionGuide,REGIONAL_RULE_VERSION} from './regional-decision-guide.js';
 
 // Topic taxonomy from the existing key-decisions prototype; its project-specific
 // conclusions are deliberately not rules for a new project.
@@ -42,6 +43,7 @@ function guideDraft(topic,input,rows,conclusion,note,ready){
 // This is a narrowly scoped, reviewed Baoshan guide. It proposes a draft only;
 // it never writes project parameters or creates a confirmed decision.
 export function decisionGuide(context,topic){
+  const regional=regionalDecisionGuide(context,topic);if(regional)return regional;
   const input=decisionInputs(context),location=compactDecision(input.location),all=compactDecision([input.use,input.projectText].join(' '));
   if(!/云南/.test(location)||!/保山/.test(location))return null;
   const longyang=/隆阳|兰城/.test(location),school=/学校|校舍|教学楼|幼儿园/.test(all),government=/政府投资|公共机构|公益性/.test(all),priority=/重点|乙类/.test(compactDecision(input.category)),frameWall=/框架.{0,4}(剪力墙|抗震墙)|框剪/.test(compactDecision(input.structure));
@@ -102,7 +104,7 @@ export function decisionGuide(context,topic){
   }
   return null;
 }
-export function decisionSignature(context){return fingerprint(context);}
+export function decisionSignature(context){return fingerprint({context,rules:REGIONAL_RULE_VERSION});}
 export function currentDecisions(records,unit,contextFor){return records.filter(r=>r.status==='confirmed'&&(r.unit===PROJECT||r.unit===unit)&&r.signature===decisionSignature(contextFor(r.unit)));}
 export function confirmDecision(record,context,role){
   if(role!=='m')throw Error('由专业负责人确认判断');
