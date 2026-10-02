@@ -1,0 +1,7 @@
+.regulation-workspace{margin-top:20px;padding:20px;background:#fff;border:1px solid #d8dde2;border-radius:8px}
+.regulation-body-column{min-width:0;overflow:auto}.regulation-paper{box-sizing:content-box;width:505pt;max-width:none;padding:30px 20px;min-height:400px;background:white;color:black}
+.regulation-paper [contenteditable=true]:hover{background:#f5f9fc}.regulation-paper [contenteditable=true]:focus{outline:1px solid #7195ae;outline-offset:-1px;background:#f5f9fc}
+.regulation-paper tr:target{background:#f4f8fa;outline:1px solid #7295ac}
+
+.regulation-paper[hidden]{display:none!important}.regulation-workspace .word-view-bar{margin:0 0 12px}
+.local-regulation-actions{white-space:nowrap}.local-regulation-actions button{padding:6px 10px;border:1px solid #a7b8c3;border-radius:4px;background:#fff;color:#284957;cursor:pointer}.local-regulation-actions button[data-selected=true]{background:#edf4f1}.local-regulation-actions button:disabled{opacity:.55;cursor:default}

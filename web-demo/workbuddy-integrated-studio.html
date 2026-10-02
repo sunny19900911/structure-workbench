@@ -336,7 +336,7 @@ td.stg{font-size:11.5px;color:#7b8794}
     <label>阶段</label>
     <select id="pstage-sel" onchange="setProjStage(this.value)"></select>
   </div>
-  <button class="act" onclick="if(window.WordDocumentView&amp;&amp;(curStage===1||curStage===2)){window.WordDocumentView.export(curStage===1?'measures':'expansion','pdf')}else{window.print()}">打印 / 存 PDF</button>
+  <button class="act" onclick="if(window.WordDocumentView&amp;&amp;(curStage===1||curStage===2||curStage===3)){window.WordDocumentView.export(curStage===1?'measures':curStage===3?'regulations':'expansion','pdf')}else{window.print()}">打印 / 存 PDF</button>
   <button class="act" onclick="copyDoc()">复制全文</button>
   <button class="act" onclick="wbOpenPptReport()">汇报 PPT</button>
   <button class="act primary" id="word-export-btn" onclick="exportDocx()">导出 Word</button>
@@ -725,8 +725,9 @@ td.stg{font-size:11.5px;color:#7b8794}
     </form>
     <p class="local-regulation-message" id="local-regulation-message">正在加载规范清单……</p>
     <div class="local-regulation-table" id="local-regulation-results" hidden>
+      <button type="button" id="local-regulation-add-all" class="gen" style="margin-bottom:12px" disabled>一键全部添加</button>
       <table>
-        <thead><tr><th>规范名称及编号</th><th>有效状态</th><th>权威原始网页</th></tr></thead>
+        <thead><tr><th>规范名称及编号</th><th>有效状态</th><th>权威原始网页</th><th>操作</th></tr></thead>
         <tbody id="local-regulation-body"></tbody>
       </table>
     </div>
@@ -4203,6 +4204,7 @@ function copyDoc(){
   navigator.clipboard.write([item]).then(()=>toast('已复制，可直接粘贴到 Word')).catch(()=>toast('复制失败，请用导出 Word'));
 }
 function exportDocx(){
+  if(curStage===3&&window.WordDocumentView){window.WordDocumentView.export('regulations');return;}
   if(curStage===1&&window.WordDocumentView){window.WordDocumentView.export('measures');return;}
   if(curStage===2&&window.ExpansionWorkbench){window.ExpansionWorkbench.exportWord();return;}
   if(curStage===7){gn7ExportDocx();return;}

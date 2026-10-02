@@ -1,3 +1,4 @@
+import {REGULATION_WORD_CSS} from '../regulation-document.js';
 import {mkdir,writeFile,readFile,readdir} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 import {createHash} from 'node:crypto';
@@ -14,18 +15,18 @@ export function cleanDocumentHTML(html){
  return html.replace(/<(script|style|iframe|object|embed|form|button|svg|img)\b[^>]*>[\s\S]*?<\/\1>/gi,'').replace(/<!--[^]*?-->/g,'').replace(/<\/?([a-z][\w-]*)\b([^>]*)>/gi,(tag,name,attrs)=>{
   if(!/^(p|div|span|br|h1|h2|h3|table|thead|tbody|tr|td|th|b|strong|i|em|ul|ol|li|sup|sub)$/.test(name.toLowerCase()))return '';
   const closing=tag.startsWith('</');const spans=/^(td|th)$/i.test(name)?[...attrs.matchAll(/\b(colspan|rowspan)=["']?(\d{1,2})/gi)].map(m=>' '+m[1]+'="'+m[2]+'"').join(''):'';
-  const cls=/\bclass=["']([^"']*)/.exec(attrs)?.[1]?.split(/\s+/).find(c=>['document-title','document-subtitle'].includes(c));
+  const cls=/\bclass=["']([^"']*)/.exec(attrs)?.[1]?.split(/\s+/).find(c=>['document-title','document-subtitle','regulation-heading','regulation-subheading','regulation-caption','regulation-table','regulation-name','regulation-code','regulation-note'].includes(c));
   return '<'+(closing?'/':'')+name+(closing?'':spans+(cls?' class="'+cls+'"':''))+'>';
  });
 }
 export async function wordLayout(raw,kind='expansion',format='pdf'){
- kind=kind==='measures'?'measures':'expansion';format=['docx','preview'].includes(format)?format:'pdf';
+ kind=['measures','regulations'].includes(kind)?kind:'expansion';format=['docx','preview'].includes(format)?format:'pdf';
  const html=cleanDocumentHTML(raw),measures=kind==='measures';
  const css=measures
  ? 'body{font-size:12pt}p{line-height:150%;text-indent:24pt;margin:0}h1,h2{font-size:14pt;line-height:150%;margin:0}'
  : 'body{font-size:9.5pt}p{line-height:100%;margin:0 0 1pt 18pt}h1{font-size:13pt;margin:10pt 0 4pt}h2{font-size:10.5pt;margin:6pt 0 2pt 6pt}';
- const document='<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:"Times New Roman","SimSun";color:black}p{text-align:justify}h1,h2,h3{font-family:SimSun;color:black;page-break-after:avoid}'+css+'.document-title{font:700 18pt SimSun;text-align:center;margin:0 0 2pt}.document-subtitle{font:10.5pt SimSun;text-align:center;margin:0 0 4pt}table{border-collapse:collapse;width:100%;font-size:9pt;margin:4pt 0}td,th{border:0.5pt solid black;padding:2pt;text-align:left}td p,th p{margin:0;text-indent:0}th{font-weight:bold}</style></head><body>'+html+'</body></html>';
- const key=createHash('sha256').update('native-word-v3'+kind+document).digest('hex').slice(0,32);
+ const document='<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:"Times New Roman","SimSun";color:black}p{text-align:justify}h1,h2,h3{font-family:SimSun;color:black;page-break-after:avoid}'+css+'.document-title{font:700 18pt SimSun;text-align:center;margin:0 0 2pt}.document-subtitle{font:10.5pt SimSun;text-align:center;margin:0 0 4pt}table{border-collapse:collapse;width:100%;font-size:9pt;margin:4pt 0}td,th{border:0.5pt solid black;padding:2pt;text-align:left}td p,th p{margin:0;text-indent:0}th{font-weight:bold}'+REGULATION_WORD_CSS+'</style></head><body>'+html+'</body></html>';
+ const key=createHash('sha256').update('native-word-v5-regulations'+kind+document).digest('hex').slice(0,32);
  const dir=join(root,key),path=join(dir,'document.'+(format==='preview'?'pdf':format));
  const job=queue.catch(()=>{}).then(async()=>{
   if(!existsSync(path)){

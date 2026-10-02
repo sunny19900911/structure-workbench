@@ -29,3 +29,7 @@
 `USER-20261001-RESTORE-TEMPLATE`、`MEASURES-V1.2-20250912`、`EXPANSION-WORD-BASELINE`、`EXPANSION-OUTLINE`：原文事实及路径登记见 [来源说明](web-demo/design/template-restoration/README.md)。原件只读，历史工程数值不作为当前事实。
 
 `USER-20261002-CALCBOOK-PDF`、`CALCBOOK-WORD-CATALOG`、`QA-CALCBOOK-PDF-20261002`：计算书 Word 完整目录、模型输出路径结构和四份 PDF 实测记录，见 [目录与 PDF 来源](web-demo/design/task6-calculation-book/PDF路径与完整目录.md)。原件只读，扫描结果不代表工程校核通过。
+
+`USER-20261001-LOCAL-REG-DOCX`：地方规范目录版式取自用户指定《！结构初步设计说明-汇总版本.docx》第 2.2 节、表 2.2；原文事实及使用边界见 [版式来源](web-demo/design/regulation-document/README.md)。
+
+`USER-20261002-REGULATION-QUERY-ACTIONS`、`USER-20261002-REGULATION-ADD-ALL`：用户要求查询结果独立操作列和一键全部添加，取消单独已选目录；原文事实，见地方规范模块说明。

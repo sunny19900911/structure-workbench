@@ -1,3 +1,4 @@
+import {selectedRegulations} from './regulation-document.js';
 import {TEMPLATE_SOURCE,TEMPLATE_TEXT,TEMPLATE_TABLES} from './approved-template.js';
 // Evidence and revision rules shared by the browser, API and regression tests.
 export const VERSION = '2.0.0';
@@ -30,7 +31,7 @@ export function references(s) {
   return refs;
 }
 export function resolveText(text,s) { const refs=references(s); return String(text).replace(/\{\{([pfmrt]):([^{}]+)\}\}/g,(_,kind,key)=>refs[kind][key]??(kind==='f'&&s.facts.find(f=>f.id===key&&f.status==='candidate')?'【待核】'+textValue(s.facts.find(f=>f.id===key).value):'【待核引用】')); }
-export function dependencies(s) { return fingerprint({identity:s.identity,measuresVersion:s.measuresVersion,parameters:s.parameters,confirmed:s.parametersConfirmed,templateText:s.templateText,templateTables:s.templateTables,facts:s.facts,model:s.model,regulations:s.regulations,criteria:s.criteria}); }
+export function dependencies(s) { return fingerprint({identity:s.identity,measuresVersion:s.measuresVersion,parameters:s.parameters,confirmed:s.parametersConfirmed,templateText:s.templateText,templateTables:s.templateTables,facts:s.facts,model:s.model,regulations:s.regulations,regulationDocument:s.regulationDocument,criteria:s.criteria}); }
 export function requestStamp(s,id) { const d=s.sections[id];return fingerprint({deps:dependencies(s),section:d?{text:d.text||'',hidden:!!d.hidden}:null}); }
 export function isCurrent(s,id,stamp) { return requestStamp(s,id)===stamp; }
 export function validateDraft(draft,s,original='') {
@@ -111,7 +112,7 @@ export const METRIC_LABELS={mass:'总质量（t）',T1:'第一振型周期（s�
 export function reportTables(s,id){
   if(id==='loads')return Object.entries(s.templateTables||TEMPLATE_TABLES).map(([key,rows])=>({title:({floor:'楼面均布活荷载',roof:'屋面均布活荷载',equipment:'机电设备楼屋面均布活荷载'})[key]||'',headers:rows[0],rows:rows.slice(1)}));
   if(id==='model'&&s.model?.confirmed)return [{headers:['计算项目','结果','适用判据与判断'],rows:Object.entries(METRIC_LABELS).map(([key,label])=>{const c=s.criteria.find(x=>x.key===key);return [label,textValue(s.model.metrics[key]??'未提取'),(c?`${c.operator} ${c.limit}；${c.clause}；${c.scope}。`:'')+checkMetric(s.model.metrics[key],c,s.regulations).text];})}];
-  if(id==='basis')return [{headers:['规范名称与版本','适用范围','来源定位'],rows:s.regulations.filter(r=>r.selected).map(r=>[`${r.title} ${r.code||''} ${r.version||''}${r.review==='confirmed'&&r.status==='current'?'':'（待核）'}`,r.scope||'待核',r.locator||r.source_id])}];
+  if(id==='basis')return ['national','local'].map(kind=>({title:kind==='local'?'表2.2 地方设计标准与规范':'表2.1 国家设计标准与规范',headers:['规范、规程和图集名称','编号'],rows:selectedRegulations(s,kind).map(r=>[r.title+(r.review==='confirmed'&&r.status==='current'?'':'（待核）'),[r.code,r.version&&!(r.code||'').includes(r.version)?'（'+r.version+'）':''].filter(Boolean).join('')])}));
   return [];
 }
 export function modelBatch(files) {

@@ -474,7 +474,7 @@
         aliases: entry[1].aliases,
         records: entry[1].records.map(function (row) {
           return {
-            id: row[0], title: row[1], code: row[2], status: row[3], status_label: row[6] || statusLabels[row[3]],
+            id: row[0], province: entry[0], category: 'local', title: row[1], code: row[2], status: row[3], status_label: row[6] || statusLabels[row[3]],
             source_id: row[4], source_url: row[5], status_date: row[7] || '', status_replacement: row[8] || '',
             replacement_codes: row[9] || []
           };
@@ -559,22 +559,26 @@
     linkCell.appendChild(link);
     var selectButton = document.createElement('button');
     selectButton.type = 'button';
-    selectButton.textContent = '加入项目规范清单';
-    selectButton.style.marginLeft = '8px';
+    selectButton.textContent = '添加到规范';
+    selectButton.dataset.regulationSelect = record.source_id;
     selectButton.addEventListener('click',function(){
-      window.dispatchEvent(new CustomEvent('workbuddy:local-regulation-selected',{detail:Object.assign({},record)}));
+      window.dispatchEvent(new CustomEvent('workbuddy:local-regulation-selected',{detail:Object.assign({},record,{selected:selectButton.dataset.selected !== 'true'})}));
     });
-    linkCell.appendChild(selectButton);
+    var actionCell = document.createElement('td');
+    actionCell.className = 'local-regulation-actions';
+    actionCell.appendChild(selectButton);
 
-    tr.append(nameCell, statusCell, linkCell);
+    tr.append(nameCell, statusCell, linkCell, actionCell);
     return tr;
   }
 
+  var queryRecords = [];
   function queryLocalRegulations(event) {
     if (event) event.preventDefault();
     var input = byId('local-regulation-query');
     var tableWrap = byId('local-regulation-results');
     clearRows();
+    queryRecords = [];
 
     var value = input ? input.value : '';
     if (!String(value).trim()) {
@@ -591,17 +595,38 @@
     }
 
     var body = byId('local-regulation-body');
+    queryRecords = match[1].records;
     match[1].records.forEach(function (record) {
       body.appendChild(renderRecord(record));
     });
     tableWrap.hidden = false;
+    refreshSelection();
     setMessage(match[0] + '地方规范查询结果（核查基准 ' + dataset.as_of_date + '）', 'success');
     return false;
   }
 
   window.queryLocalRegulations = queryLocalRegulations;
+  function refreshSelection() {
+    var selection = window.ExpansionWorkbench?.regulationSelection();
+    var addAll = byId('local-regulation-add-all');
+    if (addAll) {
+      var remaining = queryRecords.some(function(record) { return !selection?.sourceIds.includes(record.source_id); });
+      addAll.disabled = !selection?.editable || !remaining;
+      addAll.textContent = queryRecords.length && !remaining ? '已全部添加' : '一键全部添加';
+    }
+    document.querySelectorAll('[data-regulation-select]').forEach(function(button) {
+      var selected = Boolean(selection?.sourceIds.includes(button.dataset.regulationSelect));
+      button.dataset.selected = String(selected);
+      button.textContent = selected ? '已添加 · 移除' : '添加到规范';
+      button.disabled = !selection?.editable;
+    });
+  }
+  window.addEventListener('workbuddy:regulations-changed', refreshSelection);
 
   document.addEventListener('DOMContentLoaded', function () {
+    byId('local-regulation-add-all')?.addEventListener('click', function () {
+      if (queryRecords.length) window.dispatchEvent(new CustomEvent('workbuddy:local-regulations-add-all', {detail: queryRecords.map(function(record) { return Object.assign({},record,{selected:true}); })}));
+    });
     var form = byId('local-regulation-form');
     var input = byId('local-regulation-query');
     if (form) form.addEventListener('submit', queryLocalRegulations);

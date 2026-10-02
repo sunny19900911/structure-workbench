@@ -118,3 +118,14 @@ source_id: USER-20261001-RESTORE-TEMPLATE（小香金猪本轮明确要求，原
 - 用户提供模型输出根路径后，仅读取 `荷载校核`（兼容 `荷载校核图形`）及 `计算书/上部`、`计算书/基础`、`计算书/施工图` 内的 PDF，旁侧分组列出并按页预览。示例路径为 `E:/600-工作台数据库/610-待处理/模拟yjk路径`；不执行 CAD/YJK，不读取 DWG，不修改原件。
 - `calculation-book-catalog.js` 保留目录母件快照；`calculation-pdfs.js`、`server/calculation-pdf-api.mjs` 管理本地扫描和 Poppler 预览。路径和清单随当前项目 `main.calculation.pdfSources` 保存，预览授权不持久化；切换项目丢弃旧请求，恢复后主动重读。
 - 测试：`node --test design/project-integration/calculation-pdfs.test.mjs`。来源和边界见 `web-demo/design/task6-calculation-book/PDF路径与完整目录.md`。原始 PDF 不自动合并进 A3 Word，也不作为参数确认或计算通过结论。
+
+## 2026-10-01 地方规范正文目录
+
+原文事实，source_id: USER-20261001-LOCAL-REG-DOCX。③移除重复权威抓取面板，保留地方规范查询。已选目录支持逐条删除、恢复、正文编辑和 Word 版式，使用②同一单体的 regulations 与 regulationDocument.localNote；更改名称或编号撤回旧确认，签发稿锁定。版式与来源见 web-demo/design/regulation-document/README.md；回归运行 node --test design/project-integration/regulation-document.test.mjs。
+
+## 2026-10-02 地方规范查询操作合并
+
+原文事实，source_id: USER-20261002-REGULATION-QUERY-ACTIONS。③选择操作统一放在查询结果的独立操作列，取消单独“已选规范”目录及工具栏；保留 Word 正文与版式。添加/移除复用同一项目、单体的 regulations，取消选用不删记录，再次添加保留人工编辑。
+
+
+- 查询结果支持“一键全部添加”，跳过已选条目，复用取消选用的原记录；完成后显示“已全部添加”。source_id: USER-20261002-REGULATION-ADD-ALL（原文事实）。
