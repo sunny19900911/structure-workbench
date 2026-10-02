@@ -110,3 +110,11 @@ source_id: USER-20261001-RESTORE-TEMPLATE（小香金猪本轮明确要求，原
 - 显示：楼层钢筋总用量（t）、钢筋单方量（kg/m²）、上部混凝土单方量（m³/m²）、基础混凝土量（m³）及其单方量（m³/m²）。上部混凝土总量不展示；表格和 CSV 单位一致。
 - 基础单方＝基础混凝土量÷首层面积；优先采用用户补填的面积，否则读取明确的首层资料。缺失或冲突不猜值，不能用总楼面面积替代。内部钢筋原始量仍为 kg。
 - 回归：在 `web-demo` 运行 `node --test design/project-integration/steel-view.test.mjs design/project-integration/modules.test.mjs`。⑥仍只读取有效的已审核版本，本次不自动生成审核记录。
+
+## 2026-10-02 计算书完整目录与 PDF 路径
+
+原文事实，source_id: USER-20261002-CALCBOOK-PDF。计算书默认保留 Word 母件全部 27 个条目及分组，旧两条占位目录迁移为完整目录，人工调整保留；可主动恢复 Word 完整目录。
+
+- 用户提供模型输出根路径后，仅读取 `荷载校核`（兼容 `荷载校核图形`）及 `计算书/上部`、`计算书/基础`、`计算书/施工图` 内的 PDF，旁侧分组列出并按页预览。示例路径为 `E:/600-工作台数据库/610-待处理/模拟yjk路径`；不执行 CAD/YJK，不读取 DWG，不修改原件。
+- `calculation-book-catalog.js` 保留目录母件快照；`calculation-pdfs.js`、`server/calculation-pdf-api.mjs` 管理本地扫描和 Poppler 预览。路径和清单随当前项目 `main.calculation.pdfSources` 保存，预览授权不持久化；切换项目丢弃旧请求，恢复后主动重读。
+- 测试：`node --test design/project-integration/calculation-pdfs.test.mjs`。来源和边界见 `web-demo/design/task6-calculation-book/PDF路径与完整目录.md`。原始 PDF 不自动合并进 A3 Word，也不作为参数确认或计算通过结论。

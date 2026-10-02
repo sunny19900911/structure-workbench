@@ -1,4 +1,29 @@
 .calcbook-shell{max-width:1180px}
+.calcbook-pdf-path-row{display:flex;gap:8px;padding:12px}
+.calcbook-pdf-path-row input{min-width:0;flex:1;padding:8px;border:1px solid #cbd6e2;border-radius:6px;font-size:12px}
+.calcbook-pdf-path-row button{white-space:nowrap}
+.calcbook-pdf-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 8px;padding:0 12px;max-height:260px;overflow:auto}
+.calcbook-pdf-empty{grid-column:1/-1}
+.calcbook-pdf-group h4{margin:10px 0 4px;font-size:12px;color:#49647f}
+.calcbook-pdf-file{width:100%;min-height:48px;display:flex;justify-content:space-between;align-items:center;gap:7px;padding:9px;border:1px solid transparent;border-radius:6px;background:#f7f9fc;text-align:left;margin-bottom:4px;color:#26384d;cursor:pointer}
+.calcbook-pdf-file.active{border-color:#779bbd;background:#eaf2f9}
+.calcbook-pdf-file span{min-width:0;overflow-wrap:anywhere;font-size:12px}
+.calcbook-pdf-file small{display:block;font-size:10px;color:#77879a;margin-top:3px}
+.calcbook-pdf-file em{white-space:nowrap;font-size:11px;font-style:normal;color:#62758a}
+.calcbook-pdf-file:disabled{cursor:default;opacity:.7}
+.calcbook-pdf-status,.calcbook-pdf-empty{margin:8px 12px!important;text-indent:0!important;font-size:11px!important;color:#65768a;overflow-wrap:anywhere}
+.calcbook-pdf-status:empty{display:none}
+.calcbook-pdf-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:10px 12px;border-top:1px solid #e0e7ef;font-size:11px}
+.calcbook-pdf-toolbar strong{flex:1 1 140px;min-width:0;overflow-wrap:anywhere}
+.calcbook-pdf-toolbar a{color:#2b547f}
+.calcbook-pdf-toolbar button{border:1px solid #cad7e3;border-radius:4px;padding:4px 6px;background:white;color:#2b547f;cursor:pointer}
+.calcbook-pdf-toolbar button:disabled{opacity:.4;cursor:default}
+.calcbook-pdf-toolbar input{width:50px;padding:4px;border:1px solid #cad7e3;border-radius:4px}
+.calcbook-pdf-canvas{height:520px;overflow:auto;padding:10px;background:#e8edf3}
+.calcbook-pdf-canvas img{display:block;width:100%;height:auto;background:white;box-shadow:0 2px 8px #26384d20}
+.calcbook-pdf-canvas img:not([src]){display:none}
+.calcbook-template-reference{padding:12px;border-top:1px solid #e0e7ef;color:#62758a;font-size:11px}
+.calcbook-template-reference summary{cursor:pointer;margin-bottom:8px}
 .calcbook-head{display:flex;align-items:flex-start;gap:18px;justify-content:space-between}
 .calcbook-head h2{margin:0}
 .calcbook-head p{margin:4px 0 0;text-indent:0;color:#617085;font-size:12.5px}

@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from 'vite';
+import {calculationPdfApi} from './server/calculation-pdf-api.mjs';
 import react from '@vitejs/plugin-react';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -262,7 +263,7 @@ function calculationBookLocalApi(env) {
         const body = await readJsonBody(req, 16 * 1024 * 1024);
         const sectionTitles = ['计算书目录', '上部结构', '基础', '其他（需要自行补充）'];
         const sections = sectionTitles.map((title, index) => ({
-          title,
+          title: String(body.sections?.[index]?.title || title).slice(0, 200),
           items: Array.isArray(body.sections?.[index]?.items)
             ? body.sections[index].items.filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim()).slice(0, 80)
             : [],
@@ -323,7 +324,7 @@ function calculationBookLocalApi(env) {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
-    plugins: [react(), deepSeekLocalApi(env), calculationBookLocalApi(env), expansionApi(env), projectStoreApi(env), intakeApi(env), regulationDiscoveryApi()],
+    plugins: [react(), deepSeekLocalApi(env), calculationBookLocalApi(env), calculationPdfApi(env), expansionApi(env), projectStoreApi(env), intakeApi(env), regulationDiscoveryApi()],
     server: { watch: { ignored: ['**/qa/**','**/outputs/**','**/design/template-restoration/backup-*/**'] } },
     base: './',
     build: {
