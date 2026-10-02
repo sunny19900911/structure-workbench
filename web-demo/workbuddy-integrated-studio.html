@@ -318,13 +318,11 @@ td.stg{font-size:11.5px;color:#7b8794}
 <div class="topbar">
   <h1>结构与技术措施 · 一体化工作台</h1>
   <div class="tabs">
-    <button id="tab0" class="on" onclick="goStage(0)">首页</button>
     <button id="tab1" onclick="goStage(1)">① 统一技术措施</button>
     <button id="tab2" onclick="goStage(2)">② 扩初说明</button>
     <button id="tab3" onclick="goStage(3)">③ 整理地方规范</button>
     <button id="tab4" onclick="goStage(4)">④ 反校核</button>
     <button id="tab5" onclick="goStage(5)">⑤ 用钢量统计</button>
-    <button id="tab6" onclick="goStage(6)">⑥ 全院总览</button>
     <button id="tab7" onclick="goStage(7)">⑦ 施工图总说明</button>
     <button id="tab8" onclick="goStage(8)">⑧ 提资台账</button>
     <button id="tab9" onclick="goStage(9)">计算书</button>
@@ -567,29 +565,6 @@ td.stg{font-size:11.5px;color:#7b8794}
       <div class="fld"><label>标准冻深 / 基础埋深要求</label><input data-k="frost" value=""><small>当地气象资料与地勘报告（冻土地区须按冻胀性考虑）</small></div>
       <div class="fld"><label>结构阻尼比</label><input data-k="damping" value=""><small>GB 50011 第 5.1.5 条（混凝土 0.05；钢结构按高度 0.02~0.04；隔震结构按专项）</small></div>
     </div>
-    <details class="pgrp" open>
-      <summary>项目类型与专项特征 <span class="sub">①为唯一编辑入口；待确认不等于“无”</span></summary>
-      <div class="fldgrid">
-        <div class="fld"><label>混凝土结构</label><select data-k="has_concrete"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select><small>控制混凝土结构母件</small></div>
-        <div class="fld"><label>钢结构</label><select data-k="has_steel"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select><small>控制钢结构母件；局部钢结构也应选“有”</small></div>
-        <div class="fld"><label>砌体承重结构</label><select data-k="has_masonry"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select><small>不控制一般填充墙条款</small></div>
-        <div class="fld"><label>绿色建筑结构专篇</label><select data-k="has_green_building"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">需要</option><option value="false">不需要</option></select><small>需结合建筑专业和项目要求</small></div>
-        <div class="fld"><label>装配式混凝土结构</label><select data-k="has_precast"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select></div>
-        <div class="fld"><label>隔震设计</label><select data-k="has_iso"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select></div>
-        <div class="fld"><label>消能减震设计</label><select data-k="has_damp"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select></div>
-        <div class="fld"><label>结构健康监测</label><select data-k="has_health_monitoring"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select></div>
-        <div class="fld"><label>专项设计技术要求</label><select data-k="has_special_design_scope"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">需要</option><option value="false">不需要</option></select><small>涉及设计责任界面时必须人工确认</small></div>
-        <div class="fld"><label>既有建筑加固改造</label><select data-k="has_existing"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select></div>
-        <div class="fld"><label>地下室</label><select data-k="has_basement"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select></div>
-        <div class="fld"><label>桩基</label><select data-k="has_pile"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select></div>
-        <div class="fld"><label>建筑边坡</label><select data-k="has_slope"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select></div>
-        <div class="fld"><label>人防结构</label><select data-k="has_human_def"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select></div>
-        <div class="fld"><label>超长结构</label><select data-k="has_superlong"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select></div>
-        <div class="fld"><label>预应力结构</label><select data-k="has_posttension"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select></div>
-        <div class="fld"><label>再生混凝土</label><select data-k="has_recycled_concrete"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select></div>
-        <div class="fld"><label>地基处理或复合地基</label><select data-k="has_ground_treatment"><option value="" selected>— 待确认 —</option><option value="unknown">待确认</option><option value="true">有</option><option value="false">无</option></select></div>
-      </div>
-    </details>
     <details class="pgrp" open>
       <summary>计算参数与模型设置 <span class="sub">与 ② 表 8.2-1「主要输入计算参数汇总表」逐项联动；后续「反校核」以本组为基准</span></summary>
       <div class="fldgrid"><div class="fld"><label>周期折减系数</label><select data-k="period_reduce"><option value="" selected>— 待确认 —</option><option>0.70</option><option>0.75</option><option>0.80</option><option>0.85</option><option>0.90</option><option>1.0（隔震模型）</option></select><small>GB 50011 第 5.2.7 条；框架结构填充墙较多取 0.75、较少取 0.80；隔震模型通常取 1.0</small></div>
@@ -977,14 +952,7 @@ td.stg{font-size:11.5px;color:#7b8794}
   </div>
 </section>
 
-<!-- ═══════════ 首页 · 卡片墙 ═══════════ -->
-<section id="home">
-  <div class="panel-card step">
-    <h2>卡片墙 <span class="sub">按「角色 × 阶段」筛选；当前不可见的卡片也列在这里，并说明为什么不可见</span></h2>
-    <div class="whoami" id="whoami">正在初始化…</div>
-    <div class="cards" id="cardwall"></div>
-  </div>
-</section>
+
 
 <!-- ═══════════ ⑥ 全院总览与项目快照 ═══════════ -->
 <section id="stage6" hidden>
@@ -1364,7 +1332,12 @@ function toast(s){const t=document.getElementById('toast');t.textContent=s;t.cla
    卡片骨架：角色 / 阶段 / 状态机
    —— 每个模块声明为一张卡片（元数据 + 状态），页签与卡片墙都由声明渲染
    ══════════════════════════════════════════════════ */
-const ROLES=[['d','设计人员'],['m','专业负责人'],['a','全院总控']];
+const ROLES=[['d','设计人员']];
+const WORKSPACE_NAV=[[1,'统一措施'],[3,'整理地方规范'],[2,'扩充说明'],[11,'汇报的 PPT'],[5,'用钢量'],[9,'计算书'],[10,'重难点'],[4,'反校核']];
+function arrangeWorkspaceNav(){
+  const nav=document.querySelector('.topbar .tabs');
+  for(const [n,label] of WORKSPACE_NAV){const b=document.getElementById('tab'+n);if(b){b.textContent=label;nav.append(b);}}
+}
 const PSTAGES=['扩初','施工图'];
 const CARDS=[
   {id:'c1', n:1, tab:'① 统一技术措施', name:'统一技术措施', sec:'stage1',
@@ -1374,7 +1347,7 @@ const CARDS=[
    stage:['扩初'], roles:{d:'填',m:'审',a:'—'},
    desc:'导入建筑、地勘和模型，按默认版生成扩初正文；采用参数计入①统一措施。'},
   {id:'c3', n:3, tab:'③ 整理地方规范', name:'整理地方规范', sec:'stage3',
-   stage:['扩初','施工图'], roles:{d:'看',m:'定',a:'—'},
+   stage:['扩初','施工图'], roles:{d:'填',m:'定',a:'—'},
    desc:'输入省市名称，查询地方规范名称、有效状态和权威原始网页；已接入二十二个省市。'},
   {id:'c4', n:4, tab:'④ 反校核', name:'反校核（模型 ↔ 措施）', sec:'stage4',
    stage:['扩初','施工图'], roles:{d:'填',m:'审',a:'—'},
@@ -1404,7 +1377,7 @@ let CST={};
 function cOf(id){ for(let i=0;i<CARDS.length;i++){ if(CARDS[i].id===id) return CARDS[i]; } return null; }
 function roleName(r){ for(let i=0;i<ROLES.length;i++){ if(ROLES[i][0]===r) return ROLES[i][1]; } return r; }
 function permOf(c){ return (c.roles&&c.roles[ROLE])||'—'; }
-function stageOk(c){ return !['c7','c8'].includes(c.id)&&c.stage.indexOf(PSTAGE)>=0; }
+function stageOk(c){ return WORKSPACE_NAV.some(([n])=>n===c.n); }
 function cardVisible(c){ return permOf(c)!=='—'&&stageOk(c); }
 function whyNot(c){
   if(permOf(c)==='—') return '当前角色「'+roleName(ROLE)+'」无这张卡的权限';
@@ -1488,6 +1461,8 @@ function renderWall(){
   w.innerHTML=h;
 }
 function applyRole(){
+  ROLE='d';
+  arrangeWorkspaceNav();
   CARDS.forEach(function(c){ const b=document.getElementById('tab'+c.n); if(b) b.hidden=!cardVisible(c); });
   const rs=document.getElementById('role-sel'), ps=document.getElementById('pstage-sel');
   if(rs&&!rs.options.length){ ROLES.forEach(function(r){ const o=document.createElement('option');
@@ -1511,7 +1486,8 @@ function syncLock(){
     if(shut){
       if(!bn){ bn=document.createElement('div'); bn.id='lk-'+c.id; bn.className='lockbanner';
         s.insertBefore(bn,s.firstChild); }
-      bn.textContent='本卡片已签发，内容为只读。如需修改，请在首页卡片墙点「撤回签发」（'+roleName(ROLE)+' 可撤回）。';
+      bn.textContent='已签发，当前内容只读。';
+      const revoke=document.createElement('button');revoke.textContent='撤回签发';revoke.onclick=()=>cardAct(c.id,'revoke');bn.append(revoke);
     }else if(bn){ bn.parentNode.removeChild(bn); }
   });
   if(typeof kbSyncEditability==='function') kbSyncEditability();
@@ -2634,6 +2610,7 @@ function fx(v,d){ const n=parseFloat(v); return isNaN(n)?'—':n.toFixed(d); }
 
 /* ── 阶段切换 ── */
 function goStage(n){
+  if(n===0||n===6)n=1;
   if(n===7||n===8){toast('本阶段暂不开放台账与施工总说明');return;}
   curStage = n;
   [0,...CARDS.map(c=>c.n)].forEach(function(i){
