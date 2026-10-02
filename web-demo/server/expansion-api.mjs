@@ -12,7 +12,7 @@ const DEFAULT_DB='E:/600-工作台数据库';
 const locks=new Map();
 async function serialized(id,fn){const prior=locks.get(id)||Promise.resolve();const next=prior.catch(()=>{}).then(fn);locks.set(id,next);try{return await next;}finally{if(locks.get(id)===next)locks.delete(id);}}
 function reply(res,code,data){res.writeHead(code,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));}
-async function body(req){let size=0,parts=[];for await(const chunk of req){size+=chunk.length;if(size>4*1024*1024)throw Error('请求超过4MB，请按章节或资料分批处理');parts.push(chunk);}return JSON.parse(Buffer.concat(parts).toString()||'{}');}
+async function body(req,limit=4*1024*1024){let size=0,parts=[];for await(const chunk of req){size+=chunk.length;if(size>limit)throw Error('请求超过4MB，请按章节或资料分批处理');parts.push(chunk);}return JSON.parse(Buffer.concat(parts).toString()||'{}');}
 function validId(id){if(!/^[a-f0-9]{6,16}$/.test(id||''))throw Error('项目标识无效');return id;}
 export async function latestState(root,id){const dir=join(root,validId(id));if(!existsSync(dir))return null;const files=(await readdir(dir)).filter(f=>/^\d{10}-[a-f0-9-]+\.json$/.test(f)).sort();return files.length?JSON.parse(await readFile(join(dir,files.at(-1)),'utf8')):null;}
 export async function appendState(root,id,state,expected){return serialized(id,async()=>{const previous=await latestState(root,id);if((previous?.revision||0)!==expected){const e=Error('存在更新的项目版本，请先载入最新版本再合并');e.status=409;throw e;}if(state?.schema!==2||!state.identity||!Array.isArray(state.facts)||!Array.isArray(state.regulations)||!state.sections)throw Error('草稿格式无效');const saved={...state,revision:expected+1,savedAt:new Date().toISOString()};const dir=join(root,validId(id));await mkdir(dir,{recursive:true});await writeFile(join(dir,String(saved.revision).padStart(10,'0')+'-'+randomUUID()+'.json'),JSON.stringify(saved,null,2),{encoding:'utf8',flag:'wx'});return saved;});}
@@ -37,8 +37,8 @@ export function expansionApi(env={}){
       if(u.pathname==='/status'&&req.method==='GET')return reply(res,200,{version:'2.0.0',persistent:existsSync(dbRoot),deepseek:Boolean(env.DEEPSEEK_API_KEY),imaBridge:existsSync(bridge),imaConfigured:Boolean((env.IMA_API_KEY||env.IMA_OPENAPI_APIKEY)||(existsSync(join(homedir(),'.config','ima','api_key'))&&existsSync(join(homedir(),'.config','ima','client_id'))))});
       if(u.pathname==='/method'&&req.method==='GET')return reply(res,200,await method());
       if(u.pathname==='/document'&&req.method==='POST'){
-        const b=await body(req),format=['docx','preview'].includes(b.format)?b.format:'pdf';
-        const bytes=await wordLayout(b.html,b.kind,format);
+        const b=await body(req,32*1024*1024),format=['docx','preview'].includes(b.format)?b.format:'pdf';
+        const bytes=await wordLayout(b.html,b.kind,format,b.template);
         if(format==='preview')return reply(res,200,bytes);
         res.writeHead(200,{'Content-Type':format==='pdf'?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Cache-Control':'no-store'});return res.end(bytes);
       }
@@ -56,7 +56,7 @@ export function expansionApi(env={}){
       }
       if(u.pathname==='/generate'&&req.method==='POST'){
         const b=await body(req),s=b.state,section=SECTIONS.find(x=>x.id===b.sectionId);
-        if(!section||!s?.parametersConfirmed)throw Error('请先确认统一技术措施及目标章节');
+        if(!section||!s?.parameters)throw Error('请先载入当前项目及目标章节');
         if(!env.DEEPSEEK_API_KEY)return reply(res,503,{error:'DeepSeek尚未配置；可先生成本地依据骨架并编辑'});
         const refs=references(s),original=b.mode==='rewrite'?s.sections[section.id]?.text||'':'';
         const methods=await method();
@@ -69,6 +69,7 @@ export function expansionApi(env={}){
           '先依据建筑需求、已确认方案和地勘/模型组织说明；不要虚构比选、计算通过、构件尺寸、布置、承载力或规范条文。',
           '所有数值、体系、等级及规范名称必须使用referenceTokens中的引用标记，例如{{p:struct_sys}}、{{f:事实ID}}、{{m:T1}}、{{r:规范ID}}、{{t:steel}}，不要复制为固定文字。保留原稿章节编号。',
           '资料建议与设计采用值明确区分，缺项集中写入warnings。不要输出HTML。',
+          '原稿中的[[table:...]]和[[image:...]]是表格及图片位置标记，必须原样保留，不改写、不删除。',
           '只输出JSON：{"text":"正文段落，用\\n\\n分段","evidence_ids":["实际采用的source_id，参数来源为MEASURES-CONFIRMED"],"warnings":["待核问题"]}。',
           b.mode==='rewrite'?'改写当前原文，保留所有已有引用标记，不改变事实或擅自新增设计决定。':'首次生成只使用当前证据；本章证据不足时简述缺失内容，不用空泛套话凑文章。'
         ].join('\n');

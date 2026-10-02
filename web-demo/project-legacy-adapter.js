@@ -41,7 +41,7 @@
   const spec=document.querySelector('#spec-itbl tbody');if(spec){const d=new DOMParser().parseFromString(safePaper(s.spec?.rows||''),'text/html');spec.innerHTML=d.querySelector('tbody')?.innerHTML||'';}
   const text=document.getElementById('spec-ta');if(text)text.value=s.spec?.text||'';
   ['specprev','spec-sum','spec-out','spec-ledger'].forEach(id=>document.getElementById(id)?.replaceChildren());
-  ['st-yjk','st-bldg','st-geo'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=id==='st-yjk'?'当前单体模型见②来源清单':'当前项目资料见本页候选清单';});
+  ['st-yjk','st-bldg','st-geo'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=id==='st-yjk'?'当前单体模型见②来源清单':'上传后自动编入下方正文';});
   [['stq',Boolean(STIN.up)],['stb',Boolean(STIN.base)],['sts',Boolean(STIN.rebar.length)]].forEach(([slot,has])=>{document.getElementById('box-'+slot)?.classList.toggle('done',has);const e=document.getElementById('st-'+slot);if(e)e.textContent=has?'本项目已导入':'未导入';});
   ['steel-ta','st-sts2','st-diff','rc-diff'].forEach(id=>{const e=document.getElementById(id);if(e){if(e.tagName==='TEXTAREA')e.value='';else e.textContent='待重新生成';}});
   document.querySelectorAll('[data-k]').forEach(e=>{const v=s.parameters?.[e.dataset.k]??'';if(e.tagName==='SELECT'&&![...e.options].some(o=>o.value===String(v)))e.add(new Option(v||'— 待确认 —',v));e.value=v;});
@@ -55,7 +55,7 @@
   const section=id=>{const heading=document.getElementById(id),nodes=[];for(let n=heading?.nextElementSibling;n&&!/^H[12]$/.test(n.tagName);n=n.nextElementSibling)nodes.push(n);return nodes;};
   const text=id=>section(id).filter(n=>n.tagName==='P').map(n=>n.textContent.trim()).join('\n');
   const table=id=>section(id).flatMap(n=>[...n.querySelectorAll('tr')]).map(row=>[...row.querySelectorAll('th:not(.op),td:not(.op)')].map(c=>c.textContent.trim()));
-  return {templateText:{permanent:section('s1ch3_1').filter(n=>n.tagName==='P'&&(!n.textContent.includes('河北地区')||/河北/.test(wbMeasureSnapshot().params.region||''))).map(n=>n.textContent.trim()).join('\n'),wall:text('s1ch3_2'),reinforcement:text('s1ch4_2'),steel:text('s1ch4_3'),masonry:table('s1ch4_4').slice(1).map(row=>row.filter(Boolean).join('：')).join('；')},templateTables:{floor:table('s1ch3_3'),roof:table('s1ch3_4'),equipment:table('s1ch3_5')}};
+  return {templateText:{permanent:section('s1ch3_1').filter(n=>n.tagName==='P'&&(!n.textContent.includes('河北地区')||/河北/.test(wbMeasureSnapshot().params.region||''))).map(n=>n.textContent.trim()).join('\n'),wall:text('s1ch3_2'),reinforcement:text('s1ch4_2'),steel:text('s1ch4_3'),masonry:table('s1ch4_4').slice(1).map(row=>row.filter(Boolean).join('：')).join('；')},templateTables:{concrete:table('s1ch4_1'),durability:table('s1durability'),floor:table('s1ch3_3'),roof:table('s1ch3_4'),equipment:table('s1ch3_5')}};
  }
  window.WorkbenchLegacy={templateContent,capture,apply,blank,sample,loadExample,params:()=>wbMeasureSnapshot().params,
    role:()=>ROLE,cardState:id=>stOf(id),permission:id=>permOf(cOf(id)),

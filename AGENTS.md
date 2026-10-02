@@ -139,3 +139,53 @@ source_id: USER-20261001-RESTORE-TEMPLATE（小香金猪本轮明确要求，原
 原文事实，source_id: USER-20261002-DEEPSEEK-RESEARCH。⑩和DeepSeek助理均可主动启动地区研判；方法内嵌于 `decision-research-method.js`，服务为 `/api/decision-research`。只用可追溯的官方网页或注明限制的摘要，校验摘录；研判保持AI草稿，变更输入后不得直接采用。复用 `modules` 分区，来源进程缓存24小时，支持主动刷新。配置、来源和验收边界见 `web-demo/design/key-decisions/DeepSeek地区研判.md`；测试 `design/project-integration/decision-research.test.mjs`。禁止把QA模拟响应接入正式入口。
 
 用户指定外部密钥目录 `E:/00-key`（source_id: USER-20261002-DEEPSEEK-KEY-PATH，原文事实）。`server/local-deepseek-config.mjs` 在服务端读取其中 `deep seek key.txt`，已有环境配置优先，可用 `DEEPSEEK_API_KEY_FILE` 改路径；不得复制密钥到仓库、浏览器或日志。回归 `design/project-integration/local-deepseek-config.test.mjs`。
+
+## 2026-10-02 按用户 Word 模板编排扩初
+
+source_id: USER-REFERENCE-20261002（小香金猪指定汇总版扩初模板，原文事实）。
+
+- `reference-report.js` 统一章节、联动表格与图位；`design/reference-expansion/` 保存原模板派生样式和表格几何。历史工程数值不带入当前项目，资料缺项留空；不增加候选确认、填写理由流程。
+- `/api/intake/read-word` 只读提取 DOC/DOCX 正文、表格和内嵌图片；`geotech-document.js` 按章节边界组织 4.1～4.6。当前建筑/地勘原文及图片仍存同项目 `intake` 分区。
+- 集中上传图片存当前扩初分区 `reportImages`，国家规范编辑存 `referenceNorms`；地方规范联动③，耐久性、材料、荷载和计算参数联动①。无当前依据的抗震等级、计算指标不补猜测值。
+- 网页 Word 版式和导出共同使用 `server/reference-docx.py`，直接复用原表列宽、合并、边框和段落属性；Microsoft Word 渲染、Poppler 显示。Python 可用 `WORKBENCH_PYTHON` 指定，默认采用本机 Codex 文档运行环境。
+- 回归：`node --test design/reference-expansion/reference.test.mjs`；原生格式验收：`python design/reference-expansion/verify-native.py <spec.json> <output.docx>`。参考文件和实际项目的验收副本仅在忽略的 `web-demo/qa/reference-expansion/`，不提交原始项目资料。
+
+### 同日页面精简与多层规则性表
+
+source_id: USER-SIMPLIFY-REGULARITY-20261002（用户本轮要求，原文事实）。②默认显示连续网页正文，Word 版式仅用于导出；移除额外识别、粘贴、候选说明、清洗导入、单体确认与规范确认卡片，保留图片上传及正文编辑。不要重新添加这些确认流程。
+
+- 多层规则性表取自用户无锡组团三说明的表9.1-1，来源登记于 `design/reference-expansion/regularity-source.json`；只留一个单体，原项目判定清空，支持文字编辑和逐行删减。高层规则性表本轮明确不做。
+- `regularity` 存当前扩初分区，导出不含删除按钮。重新提取模板时先运行 `distill.py`，再运行 `distill-regularity.py`。
+- 抗倾覆比使用 OUT 解析器的 `over_wind_x/y`、`over_eq_x/y`；振型取 `periods`，剪重比取 `shear_x_r/y_r`。构件强度按统一措施的构件名称和地上/地下位置匹配，不能把地下强度套入地上。
+
+## 2026-10-01 旧版地勘 DOC 兼容读取
+
+- 原文事实（source_id: QA-JK-DOC-20261001）：存在扇区长度未对齐的可读 DOC，Antiword 拒绝原件，补齐后仍可能遗漏正文。`server/legacy-doc.mjs` 对此类 Windows 文件调用 `legacy-doc-word.ps1`，仅以临时副本在禁宏、关闭自动链接更新的 Word 中转换并读取；不得截断原件或把补齐后的 Antiword 结果视为完整提取。缺少 Word 时提示另存 DOCX，不返回可能不完整的结果。
+- 在 `web-demo` 运行 `node --test design/project-integration/legacy-doc.test.mjs design/project-integration/intake.test.mjs`。本次原始资料、来源登记与人工提取只保存在忽略的 `web-demo/outputs/jingkai-intake/`，不随代码上传。
+
+## 2026-10-01 资料直接编入扩初正文
+
+原文事实（source_id: USER-20261001-DIRECT-DOCUMENT，小香金猪要求）：建筑、地勘上传后直接整理进扩初说明，不再展示实体候选表或要求逐项确认、填写冲突理由。
+
+- `document-intake.js` 从当前项目原文与表格组织概况、单体面积/层数/分口径高度/功能、地质及基础建议；保留来源片段与版本说明，不把勘察建议写成已完成的设计验算。
+- 自动稿随资料更新，人工正文及签发快照保留。来源状态留在数据中，工作流标记不进入 Word 正文；不同部位抗浮水位分别表述。
+- 回归：`node --test design/project-integration/document-intake.test.mjs`。实测项目和改前备份留在忽略的 `web-demo/qa/direct-document/`，不提交原始项目资料。
+
+## 2026-10-02 来源颜色与单体表编辑
+
+依据用户要求（source_id: USER-20261002-SOURCE-COLORS，原文事实）：网页建筑资料墨绿色、地勘淡黄色、模型粉色。`report-provenance.js` 仅控制网页来源标色；人工改写段落、人工表格值取消来源色，Word不带这些底色。表1人工覆盖和删除列表保存于原扩初分区的 `unitTable`，不修改建筑原件；未编辑单元格继续采用上游数据。分类与荷载表去除末列规范辅助信息，规范依据清单保留。
+
+派生模板重建顺序为 `distill.py`、`distill-regularity.py`、`distill-simple-tables.py`；最后一步生成21–24号双列表格，网页及Word共用。回归追加：`node --test design/reference-expansion/provenance.test.mjs`。
+
+## 2026-10-02 六类不规则应对措施库
+
+source_id: USER-20261002-IRREGULARITY-LIBRARY（用户要求，原文事实）。`irregularity-library-data.js`保存指定历史目录的分类摘录；`irregularity-library.js`管理六类选择、历史版本和人工措施。规则表删除列改为是/否，10.2只展开选是的措施；否隐藏但不丢失人工稿。初始未选择留空，不自动判断。不规则选择及各版本文字保存在原项目/单体扩初分区的`regularity.items`，Word复用同一结果。第六类楼层承载力突变暂缺历史措施，不编造填充。来源、适用边界、重建和测试命令见 `web-demo/design/irregularity-library/接入与验收.md`。
+
+## 2026-10-02 回到主工作区
+
+source_id: USER-20261002-RETURN-MAIN（用户明确要求，原文事实）。本轮将 `codex/geotech-doc-read` 的资料提取、模板扩初、来源配色、单体表编辑和不规则措施库合入 `main`，保留主工作区已有计算书、地方规范、用钢量和地区研判功能。
+
+- 后续本对话开发与页面操作以 `C:/Users/mj528/Documents/004 工作` 为主工作区，正式入口为 `http://127.0.0.1:5190/workbuddy-integrated-studio.html`，使用根目录 `启动Demo.cmd`。不再把5297试用入口作为日常工作入口。
+- 当前经开项目 `4756c13dad2b43aaafe52237452c6b1c` 的 main/intake/expansion/modules/ppt 已使用 expectedRevision=0 迁入主入口项目库；保留稳定ID及主库其他项目，未迁入QA演示项目。迁移备份仅在忽略目录 `web-demo/qa/main-integration`。
+- 合并冲突保留③规范选择/编辑/附注及专用Word版式；②原生表采用同一规范分类与附注。检查84项通过，新增跨模块联动回归通过，构建通过；主入口浏览器验证六类下拉、单体表编辑、地方规范正文、地区研判入口及27条计算书目录。
+- 补充回归：`node --test design/project-integration/main-expansion-merge.test.mjs`。

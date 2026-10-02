@@ -1,4 +1,6 @@
 import {selectedRegulations} from './regulation-document.js';
+import {referenceSections} from './reference-report.js';
+import {defaultExpansion} from './default-expansion.js';
 import {TEMPLATE_SOURCE,TEMPLATE_TEXT,TEMPLATE_TABLES} from './approved-template.js';
 // Evidence and revision rules shared by the browser, API and regression tests.
 export const VERSION = '2.0.0';
@@ -13,8 +15,8 @@ export const SECTIONS = [
   ['materials','7 主要结构材料','s2ch7','按用户指定统一措施采用材料通用条款，项目有变化时调整。'],
   ['model','8 计算原则与主要结果','s2ch8','只引用当前单体已确认模型批次。结果、判据和判断分别说明。'],
   ['special','9 专项与加强措施','s2ch9','仅纳入当前证据支持的专项；关键词或历史案例不能确认不规则性。'],
-  ['review','10 待核事项与结论','s2ch10','归纳当前缺项、冲突及复核事项；不得把待核改成已完成。'],
-].map(([id,title,anchor,rule])=>({id,title,anchor,rule}));
+  ['review','10 编制说明','s2ch10','归纳当前缺项、冲突及复核事项；不得把待核改成已完成。'],
+].map(([id,title,anchor,rule])=>({id,title:referenceSections.find(x=>x[0]===id)?.[1]||title,anchor,rule})).sort((a,b)=>referenceSections.findIndex(x=>x[0]===a.id)-referenceSections.findIndex(x=>x[0]===b.id));
 export const LABELS = {site_surround:'周边条件',bldg_total:'总建筑面积',bldg_above:'地上建筑面积',bldg_below:'地下建筑面积',bldg_civil:'人防面积',bldg_units:'建筑单体信息',geo_landform:'地形地貌',geo_strata:'地层',geo_water:'地下水',geo_corrosion:'腐蚀性',geo_vs_note:'场地类别依据',geo_liquefaction:'液化',geo_settlement:'沉降与震陷',geo_fault:'断裂影响',geo_foundation:'地勘基础建议',geo_foundation_note:'基础注意事项',geo_water_candidate:'抗浮水位建议',geo_soil:'岩土参数表',geo_bore:'钻孔信息'};
 export const PARAMS = ['project_name','project_code','region','struct_sys','intensity','pga','eq_group','site_class','tg','wind','snow','safety_grade','gamma0','found_grade','anti_float','water_depth','g_frame','g_wall','fixed_end','has_basement','has_iso','has_convert','has_longspan','software','iso_pos','waterproof','damping'];
 export function stable(value) { if(Array.isArray(value)) return '['+value.map(stable).join(',')+']'; if(value && typeof value==='object')return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+stable(value[k])).join(',')+'}'; return JSON.stringify(value); }
@@ -31,18 +33,25 @@ export function references(s) {
   return refs;
 }
 export function resolveText(text,s) { const refs=references(s); return String(text).replace(/\{\{([pfmrt]):([^{}]+)\}\}/g,(_,kind,key)=>refs[kind][key]??(kind==='f'&&s.facts.find(f=>f.id===key&&f.status==='candidate')?'【待核】'+textValue(s.facts.find(f=>f.id===key).value):'【待核引用】')); }
-export function dependencies(s) { return fingerprint({identity:s.identity,measuresVersion:s.measuresVersion,parameters:s.parameters,confirmed:s.parametersConfirmed,templateText:s.templateText,templateTables:s.templateTables,facts:s.facts,model:s.model,regulations:s.regulations,regulationDocument:s.regulationDocument,criteria:s.criteria}); }
+export function dependencies(s) { return fingerprint({identity:s.identity,measuresVersion:s.measuresVersion,parameters:s.parameters,confirmed:s.parametersConfirmed,templateText:s.templateText,templateTables:s.templateTables,regularity:s.regularity,unitTable:s.unitTable,referenceNorms:s.referenceNorms,reportImages:s.reportImages,unitParameters:s.unitParameters,document:s.document,facts:s.facts,model:s.model,regulations:s.regulations,regulationDocument:s.regulationDocument,criteria:s.criteria}); }
 export function requestStamp(s,id) { const d=s.sections[id];return fingerprint({deps:dependencies(s),section:d?{text:d.text||'',hidden:!!d.hidden}:null}); }
 export function isCurrent(s,id,stamp) { return requestStamp(s,id)===stamp; }
 export function validateDraft(draft,s,original='') {
   const errors=[], warnings=[];const refs=references(s);
   if(!draft||typeof draft.text!=='string'||!draft.text.trim()||draft.text.length>24000)return {errors:['正文为空或超过长度限制'],warnings};
   if(/<\/?(?:script|iframe|object|style)\b/i.test(draft.text))errors.push('正文含不允许的标记');
+  // Deterministic document composition already binds its extracted text to source fragments.
+  // Regenerate to verify the whole draft; AI/manual text still uses the strict validator below.
+  if(!original&&draft.kind==='template'&&(s.referenceTemplate||s.document?.sourceIds?.length)&&SECTIONS.some(x=>x.id===draft.sectionId)){
+    const expected=defaultExpansion(s,draft.sectionId);
+    if(draft.text===expected.text&&JSON.stringify(draft.evidence_ids)===JSON.stringify(expected.evidence_ids))return {errors,warnings};
+  }
   tokens(draft.text).forEach(t=>{if(refs[t.kind][t.key]===undefined)errors.push('引用不存在或尚未确认：'+t.raw);});
   const allowed=new Set([...s.facts.filter(f=>f.status==='confirmed').map(f=>f.source_id),...s.regulations.filter(r=>r.selected&&r.review==='confirmed'&&r.status==='current').map(r=>r.source_id),...(s.model?.confirmed?s.model.sourceIds:[]),'MEASURES-CONFIRMED',TEMPLATE_SOURCE]);
   if(!Array.isArray(draft.evidence_ids))errors.push('缺少证据来源列表');
   for(const id of draft.evidence_ids||[])if(!allowed.has(id))errors.push('来源未确认：'+id);
   for(const t of tokens(original))if(!draft.text.includes(t.raw))errors.push('改写丢失受保护引用：'+t.raw);
+  for(const t of original.match(/\[\[(?:table|image):[^\]]+\]\]/g)||[])if(!draft.text.includes(t))errors.push('改写丢失表格或图片位置：'+t);
   const unitNames=[...new Set(s.facts.map(f=>f.unit).filter(Boolean))];
   const body=unitNames.reduce((text,name)=>text.split(name).join(''),draft.text);
   const prose=body.replace(/\{\{[^{}]+\}\}/g,'').replace(/^\d+(?:\.\d+)*\s+[^\n]+$/gm,'');
@@ -110,6 +119,7 @@ export function issues(s) {
 }
 export const METRIC_LABELS={mass:'总质量（t）',T1:'第一振型周期（s）',T2:'第二振型周期（s）',T3:'第三振型周期（s）',ratio_tt:'扭转/平动周期比',mass_coef_x:'X向质量参与系数（%）',mass_coef_y:'Y向质量参与系数（%）',drift_env_x:'X向地震位移角包络',drift_env_y:'Y向地震位移角包络',drift_wind_x:'X向风位移角',drift_wind_y:'Y向风位移角',stiff_x:'X向侧向刚度比',stiff_y:'Y向侧向刚度比',vcap_x:'X向受剪承载力比',vcap_y:'Y向受剪承载力比',gravity_ratio_x:'X向刚重比',gravity_ratio_y:'Y向刚重比'};
 export function reportTables(s,id){
+  if(id==='overview'&&s.document?.units?.length)return [{title:'建筑规模与主要功能',headers:['单体','建筑面积（㎡）','层数','规划高度（m）','消防高度（m）','主要功能'],rows:s.document.units.map(u=>[u.name,u.area+(u.belowArea?'（含地下'+u.belowArea+'）':''),u.floors||'—',u.planningHeight||'—',u.fireHeight||'—',u.use||'—'])}];
   if(id==='loads')return Object.entries(s.templateTables||TEMPLATE_TABLES).map(([key,rows])=>({title:({floor:'楼面均布活荷载',roof:'屋面均布活荷载',equipment:'机电设备楼屋面均布活荷载'})[key]||'',headers:rows[0],rows:rows.slice(1)}));
   if(id==='model'&&s.model?.confirmed)return [{headers:['计算项目','结果','适用判据与判断'],rows:Object.entries(METRIC_LABELS).map(([key,label])=>{const c=s.criteria.find(x=>x.key===key);return [label,textValue(s.model.metrics[key]??'未提取'),(c?`${c.operator} ${c.limit}；${c.clause}；${c.scope}。`:'')+checkMetric(s.model.metrics[key],c,s.regulations).text];})}];
   if(id==='basis')return ['national','local'].map(kind=>({title:kind==='local'?'表2.2 地方设计标准与规范':'表2.1 国家设计标准与规范',headers:['规范、规程和图集名称','编号'],rows:selectedRegulations(s,kind).map(r=>[r.title+(r.review==='confirmed'&&r.status==='current'?'':'（待核）'),[r.code,r.version&&!(r.code||'').includes(r.version)?'（'+r.version+'）':''].filter(Boolean).join('')])}));

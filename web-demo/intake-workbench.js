@@ -1,3 +1,4 @@
+import {composeDocument} from './document-intake.js';
 import './project-workspace.js';
 import {projectPart,clone} from './project-store-client.js';
 import {fingerprint} from './expansion-core.js';
@@ -10,36 +11,40 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 let state=freshIntake(),store,loading=true,busy=false,ticket=0,selectedUnit=PROJECT,knowledge=null,importSlot=null;
 const panel=document.querySelector('#intake-panel'),fileGrid=panel.querySelector('#intake-files');
 document.querySelector('#stage2').prepend(panel);
-panel.innerHTML=`<h2>资料导入 · 建筑与地勘 <span class="sub">建筑与地勘导入 → 生成扩初 → 参数计入统一措施</span></h2>
+panel.innerHTML=`<h2>建筑与地勘资料</h2>
 <div id="intake-files" class="upgrid"></div>
-<p id="intake-access" class="intake-access" role="status"></p>
-<p><label><input id="intake-ai" type="checkbox"> 导入后使用 DeepSeek 识别</label> <small>启用后发送提取的文字；原始文件留在本机。未启用时先做本地提取。</small></p>
-<details><summary>粘贴建筑或地勘摘录</summary><label>资料类型 <select id="intake-slot"><option value="bldg">建筑资料</option><option value="geo">地勘资料</option></select></label><label>来源名称 <input id="intake-name" value="人工粘贴摘录"></label><textarea id="intake-text" aria-label="建筑或地勘摘录" placeholder="粘贴当前项目原文，保留单体名称、表头和单位"></textarea><button id="intake-paste">提取候选信息</button></details>
-<p id="intake-status" role="status">正在载入项目资料…</p><div id="intake-source-list"></div>
-<h3>项目与单体候选信息</h3><p>核对采用值和来源。不同资料有冲突时，填写理由再采用；其余取值保留在记录中。</p><div id="intake-facts"></div>
-<div id="intake-locations"></div>
+<p hidden id="intake-access" class="intake-access" role="status"></p>
+<p hidden id="intake-status" role="status">正在载入项目资料…</p><div id="intake-source-list"></div>
+<div id="intake-facts" hidden></div><div id="intake-document-notes" hidden><div id="intake-document-notes-body"></div></div>
+<div id="intake-locations" hidden></div><div hidden>
 <h3>按单体组织方案</h3><label>当前单体 <select id="intake-unit" aria-label="统一措施当前单体"></select></label> <button id="intake-retrieve">查找相关方法与案例</button> <button id="intake-suggest">AI 提出体系比选建议</button> <button id="intake-open-expansion">进入该单体扩初</button>
-<p class="intake-muted">AI 比选会发送本单体已确认信息与检索到的方法、案例片段。历史案例只作为比较依据；采用建议后仍需模型验证。</p><div id="intake-knowledge"></div><div id="intake-suggestions"></div>`;
+<p class="intake-muted">AI 比选会发送本单体已确认信息与检索到的方法、案例片段。历史案例只作为比较依据；采用建议后仍需模型验证。</p><div id="intake-knowledge"></div><div id="intake-suggestions"></div></div>`;
 const q=s=>panel.querySelector(s);
 q('#intake-files').replaceWith(fileGrid);
 fileGrid.querySelectorAll('input[type=file]').forEach(input=>input.addEventListener('click',()=>{input.value='';}));
 const importPanel=document.querySelector('#box-yjk')?.closest('.panel-card');
 if(importPanel){const title=importPanel.querySelector('h2');if(title)title.textContent='结构模型总信息';const grid=importPanel.querySelector('.upgrid');if(grid)grid.style.gridTemplateColumns='1fr';}
-function note(s,kind='info'){const status=q('#intake-status');status.textContent=s;status.dataset.kind=kind;if(importSlot){const box=q('#box-'+importSlot),label=q('#st-'+importSlot);label.textContent=s;label.setAttribute('role','status');box.dataset.status=kind;}}
+function note(s,kind='info'){const status=q('#intake-status');status.textContent=s;status.dataset.kind=kind;status.hidden=kind!=='error';if(importSlot){const box=q('#box-'+importSlot),label=q('#st-'+importSlot);label.textContent=s;label.setAttribute('role','status');box.dataset.status=kind;}}
 const canEdit=()=>!loading&&!W.loading&&!!store&&L.canEditMeasures();
 function ensure(){if(!canEdit())throw Error('请先载入项目；统一措施只读或签发状态下不能修改资料');}
 function controls(){
   panel.querySelectorAll('button,input,textarea,select').forEach(e=>e.disabled=busy||!canEdit()||(e.hasAttribute('data-plan')&&state.suggestions[selectedUnit]?.signature!==querySignature()));
-  q('#intake-access').textContent=loading||W.loading?'正在载入项目，完成后可选择资料文件。':busy?'正在处理资料，请稍候。':L.cardState('c1')===3?'统一措施已签发，资料导入已锁定；请撤回签发后再修改。':canEdit()?'可直接选择建筑或地勘资料，提取后核对并确认采用。':'当前项目资料只读或尚未载入，暂不能导入。';
+  q('#intake-access').textContent=loading||W.loading?'正在载入项目，完成后可选择资料文件。':busy?'正在处理资料，请稍候。':L.cardState('c1')===3?'统一措施已签发，资料导入已锁定；请撤回签发后再修改。':canEdit()?'选择建筑或地勘资料后，自动编入扩初说明；可直接编辑正文。':'当前项目资料只读或尚未载入，暂不能导入。';
 }
 async function api(path,data){const r=await fetch('/api/intake/'+path,{method:data===undefined?'GET':'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'intake'},...(data===undefined?{}:{body:JSON.stringify(data)})});const result=await r.json();if(!r.ok)throw Error(result.error||'处理失败');return result;}
 async function save(){if(loading||!store)return;await store.save(state);}
+function applyDocumentIdentity(){
+ const d=composeDocument(state.sources),next={project_name:d.projectName,region:d.location,...Object.fromEntries(['intensity','pga','eq_group','site_class'].filter(k=>d.parameters[k]).map(k=>[k,d.parameters[k]]))},current=L.params(),previous=state.autoDocumentIdentity||{},updates={};
+ for(const [key,value] of Object.entries(next))if(value&&(!current[key]||current[key]==='未命名项目'||current[key]===previous[key])&&current[key]!==value)updates[key]=value;
+ if(Object.keys(updates).length){L.adoptParameters(updates);state.autoDocumentIdentity={...previous,...updates};}
+}
 function publish(){window.dispatchEvent(new CustomEvent('workbuddy:intake-changed',{detail:{projectId:W.id,revision:state.revision}}));}
 async function action(run){if(busy)return;try{ensure();busy=true;controls();await run();render();await save();publish();return true;}catch(e){note(e.message,'error');await save().catch(()=>{});return false;}finally{busy=false;controls();}}
 function queryUnit(){return {name:selectedUnit,...Object.fromEntries(state.facts.filter(f=>f.status==='confirmed'&&f.unit===selectedUnit).map(f=>[f.key,f.value])),geotechnical:state.facts.filter(f=>f.status==='confirmed'&&f.slot==='geo'&&(f.unit===PROJECT||f.unit===selectedUnit)).map(({key,value,source_id,locator,statement})=>({key,value,source_id,locator,statement}))};}
 function querySignature(){return fingerprint({unit:queryUnit(),parameters:L.params()});}
 function render(){
-  q('#intake-source-list').innerHTML=state.sources.map(s=>`<div class="intake-source-row"><details><summary>${esc(s.name)} · ${s.slot==='geo'?'地勘':s.slot==='lookup'?'地点查表':'建筑'} · ${s.fragments.length} 段</summary><p>${esc(s.source_id)}</p><button data-source-ai="${esc(s.source_id)}" ${s.slot==='lookup'?'hidden':''}>AI 重新识别此份资料</button><pre>${esc(s.fragments.map(f=>f.locator+'\n'+f.text).join('\n\n'))}</pre></details><button class="intake-remove" data-remove-source="${esc(s.source_id)}" aria-label="移除资料：${esc(s.name)}">移除资料</button></div>`).join('')||'<p>尚未导入本项目资料。</p>';
+  const doc=composeDocument(state.sources);q('#intake-document-notes-body').innerHTML=doc.notes.map(t=>'<p>'+esc(t)+'</p>').join('');q('#intake-document-notes').hidden=true;
+  q('#intake-source-list').innerHTML=state.sources.map(s=>`<div class="intake-source-row" data-source-kind="${s.slot==='geo'?'geo':s.slot==='bldg'?'bldg':''}"><details><summary>${esc(s.name)} · ${s.slot==='geo'?'地勘':s.slot==='lookup'?'地点查表':'建筑'} · ${s.fragments.length} 段</summary><p>${esc(s.source_id)}</p><button data-source-ai="${esc(s.source_id)}" ${s.slot==='lookup'?'hidden':''}>AI 重新识别此份资料</button><pre>${esc(s.fragments.map(f=>f.locator+'\n'+f.text).join('\n\n'))}</pre></details><button class="intake-remove" data-remove-source="${esc(s.source_id)}" aria-label="移除资料：${esc(s.name)}">移除资料</button></div>`).join('')||'<p>尚未导入本项目资料。</p>';
   if(state.removedSources?.length)q('#intake-source-list').insertAdjacentHTML('beforeend',`<details><summary>已移除资料（${state.removedSources.length}）· 可恢复</summary>${state.removedSources.map(r=>`<p>${esc(r.name)} <button data-restore-source="${esc(r.id)}">恢复为待确认资料</button></p>`).join('')}<small>恢复后重新核对采用，不自动恢复已确认参数。</small></details>`);
   const conflictIds=new Set(conflicts(state.facts).flatMap(a=>a.map(f=>f.id)));
   q('#intake-facts').innerHTML=state.facts.length?'<div class="intake-table"><table><thead><tr><th>范围／字段</th><th>候选值与采用值</th><th>原文依据</th><th>操作</th></tr></thead><tbody>'+state.facts.map(f=>`<tr data-fact="${f.id}"><td>${esc(f.unit)}<br><b>${esc(f.label)}</b><br>${f.status==='confirmed'?'已采用':f.status==='rejected'?'未采用':'待确认'} ${conflictIds.has(f.id)?'<strong class="intake-conflict">取值冲突</strong>':''}</td><td><textarea data-value aria-label="${esc(f.unit+' '+f.label+'采用值')}">${esc(f.value)}</textarea><input data-reason aria-label="${esc(f.unit+' '+f.label+'修改理由')}" placeholder="更正或解决冲突时填写理由" value="${esc(f.reason||'')}"></td><td><details><summary>${esc(f.filename)} · ${esc(f.locator)}</summary><p>${esc(f.quote)}</p><small>${esc(f.statement)} · ${esc(f.source_id)}</small></details>${f.slot==='lookup'?'<small>内置地点表候选，标准原文及适用版本待核对。</small>':''}</td><td><button data-adopt="${f.id}">${conflictIds.has(f.id)?'按此值解决冲突':'确认采用'}</button><button data-reject="${f.id}">不采用</button></td></tr>`).join('')+'</tbody></table></div>':'<p>导入后显示候选值，不用历史示例填空。</p>';
@@ -57,11 +62,11 @@ async function ingest(slot,name,blocks,hash){
   const parts=fragments(blocks);if(!parts.length)throw Error('未提取到可读文字，请使用文字版或粘贴摘录');
   // Local import is independent of the model's per-request context limit.
   if(parts.length>30000||new TextEncoder().encode(JSON.stringify(parts)).length>8*1024*1024)throw Error('提取文字超过本地单份资料容量（8MB或30000段），请按章节拆分；原文件未修改');
-  const source={source_id:'CURRENT-'+slot+'-'+hash.slice(0,20),name,slot,hash,fragments:parts,at:new Date().toISOString()};
+  const source={source_id:'CURRENT-'+slot+'-'+hash.slice(0,20),name,slot,hash,fragments:parts,blocks,at:new Date().toISOString()};
   if(state.sources.some(s=>s.source_id===source.source_id)){note('该资料版本已经导入，可选择AI重新识别');return;}
-  const local=extractLocal(source);mergeCandidates(state,source,local.facts);let warnings=local.warnings;
-  if(q('#intake-ai').checked){if(parts.length>1200||JSON.stringify(parts).length>120000){warnings.push('全文已在本地导入；超出单次AI识别范围，本次仅做本地提取，可粘贴关键章节再进行AI识别');}else{note('DeepSeek 正在识别当前资料…');try{const result=await api('extract',{source,consent:true});mergeCandidates(state,source,result.facts);warnings=[...warnings,...result.warnings];}catch(e){warnings.push('AI识别未完成，已保留本地候选：'+e.message);}}}
-  updateLocations();for(const query of state.locationQueries)if(query.matches.length===1)addLocation(query.matches[0]);const count=state.facts.filter(f=>f.source_id===source.source_id).length;note('已读取「'+name+'」：'+parts.length+'段，'+count+'项候选。'+(count?'请在下方核对采用。':'未匹配到参数，请展开来源查看原文或粘贴关键摘录。')+warnings.join('；'),'success');
+  const local=extractLocal(source);mergeCandidates(state,source,local.facts);applyDocumentIdentity();let warnings=local.warnings;
+
+  updateLocations();for(const query of state.locationQueries)if(query.matches.length===1)addLocation(query.matches[0]);const count=state.facts.filter(f=>f.source_id===source.source_id).length;note('已读取「'+name+'」，内容已自动编入扩初说明。'+warnings.join('；'),'success');
 }
 function addLocation(match){const values=L.locationValues(match),sid='LOOKUP-'+fingerprint(match.label);const source={source_id:sid,name:'工作台内置地点表 · '+match.label,slot:'lookup',hash:fingerprint(values),fragments:[],at:new Date().toISOString()};const facts=Object.entries(values).map(([key,value])=>({id:sid+'-'+key,key,value,label:({intensity:'设防烈度',pga:'地震加速度',eq_group:'地震分组',wind:'基本风压',snow:'基本雪压',snow_zone:'雪荷载分区',temp_low:'最低气温',temp_high:'最高气温'})[key],unit:PROJECT,slot:'lookup',source_id:sid,filename:source.name,locator:match.label+' 表记录',quote:match.label+'：'+key+'='+value,statement:'原文事实（内置表转录，未核规范版本）',status:'candidate'}));source.fragments=facts.map(f=>({id:f.id,text:f.quote,locator:f.locator}));mergeCandidates(state,source,facts);}
 function updateLocations(){const found=state.facts.filter(f=>f.key==='region'&&f.status!=='rejected');state.locationQueries=found.map(f=>({text:f.value,source_id:f.source_id,matches:matchLocation(f.value,L.locations())}));}
@@ -82,8 +87,7 @@ async function readFiles(slot,files){
       try{
         if(file.size>30*1024*1024)throw Error('单份资料超过30MB，请拆分');
         const bytes=await file.arrayBuffer();let blocks;
-        if(/\.docx$/i.test(file.name))blocks=await H.readDocx(file);
-        else if(/\.doc$/i.test(file.name)){note('正在本机解析「'+file.name+'」的DOC正文与表格…','busy');blocks=await readLegacyDoc(bytes);}
+        if(/\.docx?$/i.test(file.name)){const response=await fetch('/api/intake/read-word',{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Workbench-Request':'intake','X-Word-Format':/\.doc$/i.test(file.name)?'doc':'docx'},body:bytes});blocks=await response.json();if(!response.ok)throw Error(blocks.error||'Word读取失败');}
         else if(/\.pdf$/i.test(file.name)){note('正在解析「'+file.name+'」的PDF文字，较大报告需要一些时间…','busy');let text;try{text=await H.readPdfJs(file);}catch{text=(await H.readPdf(file)).text;}blocks=H.textBlocks(text||'');}
         else if(/\.(txt|md)$/i.test(file.name))blocks=H.textBlocks(H.decode(bytes));
         else throw Error('支持DOC、DOCX、文字PDF、TXT、MD');
@@ -94,7 +98,7 @@ async function readFiles(slot,files){
   });}finally{importSlot=null;}
 }
 document.addEventListener('change',e=>{const input=e.target.closest('input[data-imp]');if(input&&['bldg','geo'].includes(input.dataset.imp)){e.stopImmediatePropagation();const files=[...input.files];readFiles(input.dataset.imp,files);}},true);
-q('#intake-paste').onclick=()=>action(async()=>{const text=q('#intake-text').value.trim();if(!text)throw Error('请粘贴当前项目原文');await ingest(q('#intake-slot').value,q('#intake-name').value.trim()||'人工摘录',H.textBlocks(text),await digest(new TextEncoder().encode(text)));q('#intake-text').value='';});
+
 q('#intake-unit').onchange=()=>{selectedUnit=q('#intake-unit').value;state.activeUnit=selectedUnit;save().catch(e=>note(e.message));knowledge=null;renderKnowledge();renderSuggestions();};
 q('#intake-retrieve').onclick=()=>action(async()=>{knowledge=await api('knowledge',{parameters:L.params(),unit:queryUnit()});note('已按当前单体查找本地方法与历史案例');});
 q('#intake-suggest').onclick=()=>action(async()=>{if(selectedUnit===PROJECT)throw Error('请先确认单体信息并选择单体');const signature=querySignature();note('正在结合当前单体与本地方法提出比选建议…');const result=await api('suggest',{parameters:L.params(),unit:queryUnit(),consent:true});if(signature!==querySignature())throw Error('资料已变化，请重新生成');knowledge=result.knowledge;state.suggestions[selectedUnit]={...result,signature,at:new Date().toISOString()};note('已形成候选方案，请核对建筑条件与待验证事项');});
@@ -123,8 +127,8 @@ panel.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)retu
   if(b.dataset.location)action(async()=>{const [i,j]=b.dataset.location.split(':').map(Number);addLocation(state.locationQueries[i].matches[j]);note('已生成参数候选；采用前核对标准版本及项目适用性');});
   if(b.dataset.plan!==undefined)action(async()=>{const s=state.suggestions[selectedUnit];if(!s||s.signature!==querySignature())throw Error('资料已变化，请重新生成建议');const o=s.options[+b.dataset.plan],sid='DECISION-'+crypto.randomUUID();const f={id:sid,key:'struct_sys',value:o.system,unit:selectedUnit,label:FIELD_LABELS.struct_sys,slot:'bldg',source_id:sid,filename:'当前单体方案决定',locator:'体系比选',quote:o.reasons.join('；'),statement:'AI推断（人工采用，待模型验证）',status:'candidate'};state.sources.push({source_id:sid,name:f.filename,slot:'bldg',hash:sid,fragments:[{id:'F1',text:f.quote,locator:f.locator}],evidence:o.source_ids});state.facts.push(f);adoptFact(state,sid,{reason:'人工采用本次体系比选建议',resolve:true});W.contentChanged('采用单体体系候选');note('已记录单体方案，后续以当前模型验证');});
 });
-async function load({remoteOnly=false}={}){const t=++ticket;loading=true;controls();try{const next=projectPart(W.id,'intake',text=>{if(/失败|冲突|未保存|未连接/.test(text))note(text);});const data=await next.load({remoteOnly});if(t!==ticket)return;store=next;state=data||freshIntake();selectedUnit=state.activeUnit||PROJECT;knowledge=null;updateLocations();loading=false;render();note(data?'已载入本项目建筑与地勘资料':'新项目：请先导入建筑与地勘资料');publish();}finally{if(t===ticket){loading=false;controls();}}}
-window.WorkbenchIntake={async importBundle(converted,metadata){ensure();if(state.history.some(h=>h.bundle_id===metadata.bundle_id))throw Error('此成果包已导入本项目');for(const s of converted.sources)mergeCandidates(state,s,converted.facts.filter(f=>f.source_id===s.source_id));state.history.push({...metadata,event:'导入已有清洗成果包',unmapped:converted.unmapped,issues:converted.issues,previous_confirmations:converted.confirmations});state.revision++;updateLocations();await save();render();publish();note('清洗成果已进入候选表，请在本项目重新核对采用');},get busy(){return busy},get units(){return unitNames(state)},unitParameters:unit=>unitParameters(state,unit),parameters:unit=>combinedParameters(state,unit,L.params()),evidence:(unit,preview=false)=>expansionEvidence(state,unit,L.params(),preview),capture:()=>clone(state),refreshGeo,refresh:()=>{controls();renderMeasures();}};
+async function load({remoteOnly=false}={}){const t=++ticket;loading=true;controls();try{const next=projectPart(W.id,'intake',text=>{if(/失败|冲突|未保存|未连接/.test(text))note(text);});const data=await next.load({remoteOnly});if(t!==ticket)return;store=next;state=data||freshIntake();selectedUnit=state.activeUnit||PROJECT;knowledge=null;updateLocations();loading=false;applyDocumentIdentity();render();note(data?'已读取资料并编入扩初说明，可直接编辑正文':'新项目：请先导入建筑与地勘资料');publish();}finally{if(t===ticket){loading=false;controls();}}}
+window.WorkbenchIntake={async importBundle(converted,metadata){ensure();if(state.history.some(h=>h.bundle_id===metadata.bundle_id))throw Error('此成果包已导入本项目');for(const s of converted.sources)mergeCandidates(state,s,converted.facts.filter(f=>f.source_id===s.source_id));state.history.push({...metadata,event:'导入已有清洗成果包',unmapped:converted.unmapped,issues:converted.issues,previous_confirmations:converted.confirmations});state.revision++;updateLocations();await save();render();publish();note('清洗成果已进入候选表，请在本项目重新核对采用');},get busy(){return busy},get units(){return [...new Set([...unitNames(state),...composeDocument(state.sources).allUnitNames])]},unitParameters:unit=>unitParameters(state,unit),parameters:unit=>combinedParameters(state,unit,L.params()),evidence:(unit,preview=false)=>({...expansionEvidence(state,unit,L.params(),preview),document:composeDocument(state.sources,unit)}),capture:()=>clone(state),refreshGeo,refresh:()=>{controls();renderMeasures();}};
 W.register('intake',{save,load,busy:()=>busy,capture:()=>clone(state)});
 // Explicit confirmation in the conditions form uses the existing intake partition,
 // source history and event bus; it does not create a second parameter store.
@@ -146,4 +150,4 @@ window.WorkbenchIntake.confirmDecisionConditions=async(unit,values)=>action(asyn
 window.addEventListener('workbuddy:measures-changed',()=>{if(!loading){renderSuggestions();refreshGeo();controls();}});
 document.querySelector('#role-sel')?.addEventListener('change',controls);
 window.addEventListener('workbuddy:permissions-changed',controls);
-await load();try{const status=await api('status');q('#intake-ai').checked=false;q('#intake-ai').title=status.configured?'已配置，可主动启用':'尚未配置，可先本地提取';}catch{note('AI状态未连接，可使用本地提取');}
+await load();
