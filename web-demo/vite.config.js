@@ -1,3 +1,4 @@
+import { rewriteApi } from './deepseek-rewrite/service.mjs';
 import { rewriteGuidance } from './design/parallel-tasks/06-ppt-report/report-core.js';
 import { defineConfig, loadEnv } from 'vite';
 import {calculationPdfApi} from './server/calculation-pdf-api.mjs';
@@ -328,7 +329,7 @@ function calculationBookLocalApi(env) {
 export default defineConfig(({ mode }) => {
   const env = localDeepSeekConfig(loadEnv(mode, process.cwd(), ''));
   return {
-    plugins: [react(), deepSeekLocalApi(env), calculationBookLocalApi(env), calculationPdfApi(env), expansionApi(env), projectStoreApi(env), intakeApi(env), regulationDiscoveryApi(), decisionResearchApi(env)],
+    plugins: [react(), deepSeekLocalApi(env), calculationBookLocalApi(env), calculationPdfApi(env), expansionApi(env), projectStoreApi(env), intakeApi(env), regulationDiscoveryApi(), decisionResearchApi(env), rewriteApi(env)],
     server: { watch: { ignored: ['**/qa/**','**/outputs/**','**/design/template-restoration/backup-*/**'] } },
     base: './',
     build: {

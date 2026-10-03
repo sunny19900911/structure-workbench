@@ -198,6 +198,12 @@ source_id: USER-20261002-RETURN-MAIN（用户明确要求，原文事实）。�
 
 source_id: USER-LIVE-LOADS-20261003（用户要求，原文事实）。`floor-live-loads.js` 按用户提供清单生成17行楼面活荷载，只保留序号、类别、标准值；支持直接编辑、删除及一键重排序号。沿用 `main.paper` 和扩初表格联动，迁移标记防止删除后重新补回；人工取值及已签发稿保留。来源差异及回归见 `web-demo/design/template-restoration/楼面活荷载清单.md`。
 
+## 2026-10-03 独立 DeepSeek 段落改写模块
+
+source_id: USER-20261003-DEEPSEEK-REWRITE（用户要求，原文事实）。`web-demo/deepseek-rewrite/` 独立维护对话面板、思考模式调用、联网检索和扩初适配层；扩初通过选段／光标段落接入，不合并进既有全局助理。采用才回填，复用原分区保存和上一稿撤回；项目、单体、来源版本或原文改变时拒绝旧结果。联网失败明确提示，不声称已核查；配置仅在服务端复用。拆卸接口、边界与验证命令见该目录 README.md。
+
+source_id: USER-20261003-REWRITE-FREE（用户要求，原文事实）。`writing.js` 仅保留简短提示，让 DeepSeek 按要求自由改写，不限压缩比例、改动幅度或数字次数；多轮追问以侧栏当前稿为对象，初始原文仅用于联动引用保护。结果由用户采用，不写回统一措施参数。联网检索到资料不等于本稿采用，侧栏据实际来源采用状态显示；不增加额外确认或写作按钮。
+
 ## 2026-10-03 PPT 页面与扩展信息
 
 原文事实，source_id: USER-20261003-PPT-SIMPLIFY。汇报页直接展示“工作台 PPT 模板”，移除重复编辑器入口、复核重难点和核对扩初模型链接。DeepSeek“扩展信息”按已有事实扩写，前后端共用 `report-core.js` 的写作约束；保留数值、单位及未确认状态，最长600字。新版原生表格没有参数标记时，仍传入当前单体的统一措施参数。回归：在 `web-demo` 运行 `node --test design/parallel-tasks/06-ppt-report/report-core.test.mjs design/parallel-tasks/06-ppt-report/cafeteria.test.mjs design/project-integration/modules.test.mjs`。
