@@ -352,6 +352,7 @@ td.stg{font-size:11.5px;color:#7b8794}
     <b>④ 反校核</b> 模型 ↔ 措施
   </div>
   <div id="toc1">
+<a href="#seismic-grade-panel">单体抗震等级 · 自动查表</a>
     <h3>目录 · 统一技术措施</h3>
     
     <a class="l1" href="#s1ch1">总则</a>
@@ -577,23 +578,8 @@ td.stg{font-size:11.5px;color:#7b8794}
       <div class="fld"><label>梁刚度放大系数取值方式</label><input data-k="stiff_amp" value=""><small>现浇楼盖考虑楼板对梁刚度的贡献（按 T 形梁）；YJK 中勾选「矩形混凝土梁按 T 形梁配筋」</small></div>
       <div class="fld"><label>有效质量参与系数下限（%）</label><input data-k="mass_participation" value=""><small>GB 50011 第 5.2.2 条；振型数应使各方向有效质量参与系数不小于 90%</small></div></div>
     </details>
-    <details class="pgrp">
-      <summary>抗震等级与构造措施取值 <span class="sub">同时写入 ① 表 3.8-2 与 ② 表 3.3-2，改这里两处同步</span></summary>
-      <div class="fldgrid"><div class="fld"><label>主体结构体系</label><select data-k="struct_sys"><option value="" selected>— 待确认 —</option><option>混凝土框架结构</option><option>混凝土框架-剪力墙结构</option><option>混凝土剪力墙结构</option><option>部分框支剪力墙结构</option><option>其他</option></select><small>按项目主体结构体系填写；抗震等级按 GB 50011 表 6.1.2 按体系 × 烈度 × 高度分界确定</small></div>
-      <div class="fld"><label>抗震措施按提高一度采用</label><select data-k="seismic_up"><option value="" selected>— 待确认 —</option><option>是</option><option>否</option></select><small>GB 50223 第 3.0.3 条；重点设防类（乙类）应按提高一度加强抗震措施（9 度以上不再提高）</small></div>
-      <div class="fld"><label>隔震后抗震等级降低一度</label><select data-k="iso_reduce"><option value="" selected>— 待确认 —</option><option>是</option><option>否</option></select><small>GB/T 51408 第 6.1.3 条；隔震后上部结构抗震等级可按设防烈度降低一度确定</small></div>
-      <div class="fld"><label>隔震层以上框架 抗震等级</label><select data-k="g_frame"><option value="" selected>— 待确认 —</option><option>一级</option><option>二级</option><option>三级</option><option>四级</option><option>—</option></select><small>内力调整等级；框架结构 8 度 &gt;24m 为一级，隔震后降低一度取二级</small></div>
-      <div class="fld"><label>隔震层以上框架 抗震构造措施</label><select data-k="g_frame_m"><option value="" selected>— 待确认 —</option><option>一级</option><option>二级</option><option>三级</option><option>四级</option><option>—</option></select><small>构造措施按提高一度（9 度）采用，取一级</small></div>
-      <div class="fld"><label>有地下室时框架 抗震构造措施</label><input data-k="g_frame_base_m" value=""><small>地下室外延一跨相关范围二级、非相关范围一级，按项目嵌固与地下室范围确定</small></div>
-      <div class="fld"><label>大跨结构（跨度 ≥24m）抗震等级</label><select data-k="g_bigspan"><option value="" selected>— 待确认 —</option><option>一级</option><option>二级</option><option>三级</option><option>四级</option><option>—</option></select><small>大跨框架抗震等级提高一级（GB 50011 第 6.1.2 条注）</small></div>
-      <div class="fld"><label>关键构件（转换梁柱等）抗震等级</label><select data-k="g_key"><option value="" selected>— 待确认 —</option><option>一级</option><option>二级</option><option>三级</option><option>四级</option><option>—</option></select><small>转换梁、转换柱及隔震层相关构件抗震等级取一级</small></div>
-      <div class="fld"><label>纯地下室抗震等级</label><select data-k="g_pure"><option value="" selected>— 待确认 —</option><option>一级</option><option>二级</option><option>三级</option><option>四级</option><option>—</option></select><small>非嵌固相关范围的纯地下室结构构件，按 GB 50011 表 6.1.2 相应取值</small></div>
-      <div class="fld"><label>连廊框架抗震等级</label><select data-k="g_corridor"><option value="" selected>— 待确认 —</option><option>一级</option><option>二级</option><option>三级</option><option>四级</option><option>—</option></select><small>连廊不采用隔震，按提高一度采取抗震措施（本项目按 9 度）</small></div>
-      <div class="fld"><label>地上（下）外延一跨竖向构件抗震等级</label><input data-k="g_extend" value=""><small>嵌固端相关范围取一级，其余取二级；按项目地下室范围与嵌固方案确定</small></div>
-      <div class="fld"><label>长悬挑结构抗震等级</label><input data-k="g_cantilever" value=""><small>长悬挑（悬挑 ≥2m）按大跨结构同等要求，无长悬挑时填「—」</small></div>
-      <div class="fld"><label>剪力墙 / 框架-剪力墙中剪力墙抗震等级</label><select data-k="g_wall"><option value="" selected>— 待确认 —</option><option>一级</option><option>二级</option><option>三级</option><option>四级</option><option>—</option></select><small>按 GB 50011 表 6.1.2 按框剪体系 × 烈度 × 高度确定（本项目取一级）</small></div>
-      <div class="fld"><label>地基基础设计等级补充说明</label><input data-k="foundation_note" value=""><small>与 ② 表 3.1-1 下方注文联动；无地下室时可改为「全部单体按本表取值」</small></div></div>
-    </details>
+    <section id="seismic-grade-panel" class="pgrp" style="padding:14px;margin-top:12px"><h3>单体抗震等级</h3><p>正在载入查表…</p></section>
+    <div class="fld"><label>地基基础设计等级补充说明</label><input data-k="foundation_note" value=""></div>
     <div class="linkchk">
       <button class="gbtn" onclick="linkAudit()">参数联动自检</button>
       <div class="lk-res" id="lk-res">点此检查：① 正文中每个蓝色数值是否都与面板一致；② 表格里是否还残留与面板不符的等级取值（硬编码）。</div>
@@ -6116,5 +6102,6 @@ import('./expansion-workbench.js').then(()=>import('./word-document-view.js')).c
 });
 </script>
 <script type="module" src="./integrated-modules.js"></script>
+<script type="module" src="./seismic-grade-workbench.js"></script>
 </body>
 </html>

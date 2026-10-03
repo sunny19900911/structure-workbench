@@ -75,7 +75,7 @@ export function reportTable(s,key){
   if(key==='parameters'){const row=t.rows.find(r=>r.values[0]==='水平地震影响系数最大值（中震）');if(row)row.values[1]=v('alpha_m');}
   return t;
  }
- if(key==='grades')return repeated(9,'表3.3.4 结构构件抗震等级',2,u.map(x=>{const p=s.unitParameters?.[x.name]||{};return [x.name,p.struct_sys||x.structuralType||'',p.g_frame||v('g_frame'),p.g_bigspan||v('g_bigspan'),p.g_wall||v('g_wall')];}),2);
+ if(key==='grades'){const grade=(p,k,d)=>{const a=p[k]??v(k),b=p[d]??v(d);return a&&b&&a!==b?a+'（'+b+'）':a;};const gradeUnits=[...u,...Object.keys(s.unitParameters||{}).filter(n=>!u.some(x=>x.name===n)&&n!=='项目整体').map(name=>({name}))];return repeated(9,'表3.3.4 结构构件抗震等级',2,gradeUnits.map(x=>{const p=s.unitParameters?.[x.name]||{};return [x.name,p.struct_sys||x.structuralType||'',grade(p,'g_frame','g_frame_m'),p.g_bigspan??v('g_bigspan'),grade(p,'g_wall','g_wall_m')];}),2);}
  if(key==='comfort')return base(10,'表3.4 竖向振动舒适度限值');
  if(key==='drift'){const t=base(7,'地震作用下结构侧移控制标准');t.rows.slice(1).forEach((r,i)=>{r.values[0]=T[7].rows[i+1][0].text;r.values[1]=v('drift_fortification');r.values[2]=v('drift_rare');});return t;}
  if(key==='performance'){const t=base(8,'表3.3.3 结构构件抗震性能目标');t.rows.slice(1).forEach(r=>{r.values[r.values.length-2]=v('performance_fortification');r.values[r.values.length-1]=v('performance_rare');});return t;}

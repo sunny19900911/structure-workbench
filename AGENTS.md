@@ -207,3 +207,11 @@ source_id: USER-20261003-REWRITE-FREE（用户要求，原文事实）。`writin
 ## 2026-10-03 PPT 页面与扩展信息
 
 原文事实，source_id: USER-20261003-PPT-SIMPLIFY。汇报页直接展示“工作台 PPT 模板”，移除重复编辑器入口、复核重难点和核对扩初模型链接。DeepSeek“扩展信息”按已有事实扩写，前后端共用 `report-core.js` 的写作约束；保留数值、单位及未确认状态，最长600字。新版原生表格没有参数标记时，仍传入当前单体的统一措施参数。回归：在 `web-demo` 运行 `node --test design/parallel-tasks/06-ppt-report/report-core.test.mjs design/parallel-tasks/06-ppt-report/cafeteria.test.mjs design/project-integration/modules.test.mjs`。
+
+## 2026-10-03 单体抗震等级自动查表
+
+source_id: USER-SEISMIC-GRADE-20261003（小香金猪要求，原文事实）。①新增单体高度/结构形式查表，联动公共烈度、类别、场地；②表3.3.4按单体读取结果。输入存原 intake.seismicGrades，变更留历史，仍用 expectedRevision。旧隔震层与特殊构件等级预设入口及生成正文行移除，历史数据及签发稿保留。
+
+- 规则在 `web-demo/seismic-grade-core.js`，界面在 `seismic-grade-workbench.js`；依据本地抗规2016完整正文配合2024局部修订、JGJ3表3.9.3。来源、页码、规则和边界见 `web-demo/design/seismic-grade/抗震等级查表逻辑.md`。
+- 普通现浇混凝土体系支持查表；甲/丁类、B级、减隔震及超适用范围留专项处理。住宅和其他民用建筑分别判断高规范围，不以所有建筑>24m一概套高规；不把消防/规划高度当作房屋高度。
+- 回归：`node --test design/seismic-grade/seismic-grade.test.mjs design/project-integration/intake.test.mjs design/reference-expansion/reference.test.mjs`。浏览器隔离库为 `web-demo/qa/seismic-grade/store`，正式入口仍5190。

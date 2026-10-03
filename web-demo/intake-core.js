@@ -1,5 +1,6 @@
 // Current-project evidence only. Historical retrieval never writes these facts.
 import {fingerprint} from './expansion-core.js';
+import {gradeParameters} from './seismic-grade-core.js';
 
 export const PROJECT='项目整体';
 export const FIELD_LABELS={project_name:'项目名称',project_code:'项目编号',region:'工程地点',unit_name:'单体名称',use:'建筑用途',floors_above:'地上层数',floors_below:'地下层数',height_m:'结构高度（m）',height_arch_m:'建筑高度（m）',span_m:'主要跨度（m）',struct_sys:'结构体系',site_class:'场地类别',geo_water:'地下水描述',water_depth:'抗浮水位采用值',geo_water_candidate:'抗浮水位建议',geo_foundation:'基础建议',geo_strata:'地层描述',geo_liquefaction:'液化情况',bldg_total:'总建筑面积（㎡）'};
@@ -86,12 +87,13 @@ export function adoptFact(state,id,{value,reason='',resolve=false}={}){
   if(!f.original_value)f.original_value=f.value;if(next!==f.value){f.original_statement=f.original_statement||f.statement;f.statement='我的观点（人工更正，原文保留）';}f.value=next;f.status='confirmed';f.reason=reason;f.confirmedAt=new Date().toISOString();state.revision++;
   return f;
 }
-export function unitNames(state){return [...new Set(state.facts.filter(f=>f.status==='confirmed'&&UNIT_KEYS.has(f.key)).map(f=>f.unit))];}
+export function unitNames(state){return [...new Set([...state.facts.filter(f=>f.status==='confirmed'&&UNIT_KEYS.has(f.key)).map(f=>f.unit),...Object.keys(state.seismicGrades||{})])];}
 export function unitParameters(state,unit){return Object.fromEntries(state.facts.filter(f=>f.status==='confirmed'&&f.unit===unit&&['struct_sys','site_class','water_depth'].includes(f.key)).map(f=>[f.key,f.value]));}
 export function combinedParameters(state,unit,global){
   const local=unitParameters(state,unit),result={...global,...local};
   if(local.struct_sys&&local.struct_sys!==global.struct_sys)for(const key of ['g_frame','g_wall','g_frame_m','g_wall_m'])result[key]='';
   if(local.site_class&&compact(local.site_class)!==compact(global.site_class))result.tg='';
+  Object.assign(result,gradeParameters(state.seismicGrades?.[unit],result));
   return result;
 }
 export function expansionEvidence(state,unit,parameters=null,includeCandidates=false){
