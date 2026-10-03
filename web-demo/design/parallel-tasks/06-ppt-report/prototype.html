@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>扩初 PPT 汇报｜工作草案</title>
+  <title>工作台 PPT 模板</title>
   <link rel="stylesheet" href="./prototype.css" />
 </head>
 <body>
@@ -12,7 +12,7 @@
       <span class="brand-mark" aria-hidden="true"></span>
       <div>
         <strong>结构与技术措施 · 一体化工作台</strong>
-        <span>扩初 PPT 汇报</span>
+        <span>汇报 PPT</span>
       </div>
     </div>
     <div class="project-context" aria-label="当前项目">
@@ -37,7 +37,7 @@
     <aside class="page-rail" aria-label="PPT分页">
       <div class="rail-heading">
         <strong>汇报分页</strong>
-        <span id="page-count">16页</span>
+        <span id="page-count">25页</span>
       </div>
       <nav id="page-list" class="page-list"></nav>
     </aside>
@@ -52,7 +52,7 @@
           <button id="prev-btn" type="button" aria-label="上一页">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
           </button>
-          <span id="pager-label">1 / 16</span>
+          <span id="pager-label">1 / 25</span>
           <button id="next-btn" type="button" aria-label="下一页">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
           </button>
@@ -64,9 +64,8 @@
       </div>
 
       <p id="link-status" class="link-status" role="status">尚未连接统一技术措施。公共参数待读取。</p>
-      <p class="edit-hint">蓝色引用来自①资料与参数、②确认模型、⑩确认判断，修改请回来源模块。文字与图片按当前项目和单体保存；上游变化后需重新核对，截图仍需人工更新。</p>
       <section class="ai-editor" aria-label="DeepSeek 智能改写">
-        <div class="ai-toolbar"><strong>DeepSeek 智能改写</strong><select id="rewrite-style" aria-label="改写方式"><option>精简为汇报要点</option><option>突出设计依据与待核事项</option><option>改为口头汇报表达</option></select><button id="rewrite-btn" type="button">改写本页说明</button><button id="rewrite-apply" type="button" disabled>采纳建议</button><button id="rewrite-undo" type="button" disabled>撤销采纳</button></div>
+        <div class="ai-toolbar"><strong>DeepSeek 智能改写</strong><select id="rewrite-style" aria-label="改写方式"><option>精简为汇报要点</option><option>扩展信息</option><option>改为口头汇报表达</option></select><button id="rewrite-btn" type="button">改写本页说明</button><button id="rewrite-apply" type="button" disabled>采纳建议</button><button id="rewrite-undo" type="button" disabled>撤销采纳</button></div>
         <p>点击改写将本页文字与所引用参数发送给已配置的 DeepSeek；建议经你采纳后才替换。表格与联动参数保持原值。</p>
         <div id="rewrite-status" role="status">选择有说明文字的页面开始；可先在页面中补充设计判断。</div>
         <div id="rewrite-preview"></div>
@@ -92,6 +91,7 @@
   <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp" hidden />
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <script src="../../../vendor/jszip.min.js"></script>
   <script type="module" src="./prototype.js"></script>
 </body>
 </html>

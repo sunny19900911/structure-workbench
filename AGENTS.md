@@ -197,3 +197,7 @@ source_id: USER-20261002-RETURN-MAIN（用户明确要求，原文事实）。�
 ## 2026-10-03 楼面活荷载清单
 
 source_id: USER-LIVE-LOADS-20261003（用户要求，原文事实）。`floor-live-loads.js` 按用户提供清单生成17行楼面活荷载，只保留序号、类别、标准值；支持直接编辑、删除及一键重排序号。沿用 `main.paper` 和扩初表格联动，迁移标记防止删除后重新补回；人工取值及已签发稿保留。来源差异及回归见 `web-demo/design/template-restoration/楼面活荷载清单.md`。
+
+## 2026-10-03 PPT 页面与扩展信息
+
+原文事实，source_id: USER-20261003-PPT-SIMPLIFY。汇报页直接展示“工作台 PPT 模板”，移除重复编辑器入口、复核重难点和核对扩初模型链接。DeepSeek“扩展信息”按已有事实扩写，前后端共用 `report-core.js` 的写作约束；保留数值、单位及未确认状态，最长600字。新版原生表格没有参数标记时，仍传入当前单体的统一措施参数。回归：在 `web-demo` 运行 `node --test design/parallel-tasks/06-ppt-report/report-core.test.mjs design/parallel-tasks/06-ppt-report/cafeteria.test.mjs design/project-integration/modules.test.mjs`。

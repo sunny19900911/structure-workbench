@@ -1,28 +1,13 @@
-import { exportReport } from './report-export.js';
-import { validateRewrite, parameterEvidence } from './report-core.js';
+import {templatePages,buildCafeteriaSlides} from './cafeteria-core.js';
+import {cafeteriaHTML} from './cafeteria-view.js';
+import {downloadCafeteria} from './cafeteria-export.js';
+import { validateRewrite, parameterEvidence, rewriteGuidance } from './report-core.js';
 import {projectPart} from '../../../project-store-client.js';
 let draftStore, snapshotQueue=Promise.resolve(), draftLoading=false;
 let unitDrafts={}, imageLoading=false;
 const embedded=new URL(location.href).searchParams.get('embedded')==='1'&&window.parent!==window;
 
-const pages = [
-  { title: '封面', type: 'cover' },
-  { title: '总体', type: 'section', sectionTitle: '总体' },
-  { title: '项目鸟瞰图', type: 'photo', slot: '项目鸟瞰图' },
-  { title: '结构设计概况', type: 'overview', section: '01', slot: '项目总平面图' },
-  { title: '结构设计参数', type: 'parameters', section: '01' },
-  { title: '代表单体', type: 'section', sectionTitle: '代表单体', center: true },
-  { title: '单体概况', type: 'unit-overview', section: '02', slots: ['建筑效果图', '结构计算模型'] },
-  { title: '建筑与结构布置', type: 'pair', section: '02', slots: ['典型建筑平面', '典型结构平面'] },
-  { title: '典型结构平面', type: 'single-plan', section: '02', slot: '结构平面图' },
-  { title: '构件尺寸与结构模型', type: 'model', section: '02', slot: '结构计算模型' },
-  { title: '结构不规则与抗震措施', type: 'audit', section: '02', slot: '判定依据或关键平面' },
-  { title: '结构特点及难点', type: 'difficulty', section: '02', slot: '重难点位置示意图' },
-  { title: '方案比选', type: 'comparison', section: '02', slots: ['方案一示意图', '方案二示意图'] },
-  { title: '计算结果', type: 'results', section: '02', slot: '计算结果图' },
-  { title: '设计结论', type: 'conclusion', section: '02', slot: '单体结构模型或最终方案图' },
-  { title: '结束页', type: 'thanks' },
-];
+const pages = templatePages;
 
 const state = {
   current: 0,
@@ -125,65 +110,9 @@ function pageFrame(page, body, title = page.title) {
 
 function renderSlide() {
   renderedUnit=els.unitName.value;
-  const page = pages[state.current];
-  const unit = els.unitName.value.trim() || '[代表单体]';
-  let html = '';
-
-  if (page.type === 'cover') {
-    html = `<div class="ppt-cover"><div class="cover-band"><h1 >${linked('project_name')}扩初设计汇报</h1></div><div class="cover-date" contenteditable="true" spellcheck="false">[汇报日期]</div></div>`;
-  } else if (page.type === 'section') {
-    html = `<div class="ppt-section${page.center ? ' center' : ''}"><div class="section-band"><h2 contenteditable="true" spellcheck="false">${page.center ? page.sectionTitle : `——  ${page.sectionTitle}  ——`}</h2></div></div>`;
-  } else if (page.type === 'photo') {
-    html = `<figure class="ppt-photo">${imageSlot(page.slot)}<figcaption contenteditable="true" spellcheck="false">项目鸟瞰图</figcaption></figure>`;
-  } else if (page.type === 'overview') {
-    const overviewText = state.measureParams
-      ? `项目地点：${linked('region')}<br>抗震设防：${linked('intensity')} 度，${linked('seismic_cat')}<br>场地类别：${linked('site_class')}`
-      : '项目总体说明';
-    html = pageFrame(page, `<div class="layout-overview">${imageSlot(page.slot)}<div class="overview-copy"><div class="editable-copy" contenteditable="true" spellcheck="false">${overviewText}</div>${table(['建筑单体','结构体系','地上/地下层数','设防方式'], [[unit,param('struct_sys'),param('unit_floors'),param('has_iso')]])}</div></div>`);
-  } else if (page.type === 'parameters') {
-    html = pageFrame(page, `<div class="layout-parameters">${table(['参数','取值','参数','取值'], [['结构设计使用年限','[填写]', '结构重要性系数',param('gamma0')],['建筑结构安全等级',param('safety_grade'),'建筑抗震设防类别',param('seismic_cat')],['地基基础设计等级',param('found_grade'),'抗震设防烈度',param('intensity', ' 度')],['设计地震分组',param('eq_group'),'场地类别',param('site_class')]])}${table(['荷载类别','标准值','说明'], [['基本风压',param('wind', ' kN/m²'),param('wind_shape')],['基本雪压',param('snow', ' kN/m²'),param('snow_zone')],['楼面活荷载','[填写]','按主要功能列示']])}</div>`);
-  } else if (page.type === 'unit-overview') {
-    html = pageFrame(page, `<div class="layout-pair">${imageSlot('建筑效果图')}${imageSlot('结构计算模型')}</div><div style="height:18%;margin-top:4.5%">${table(['地上/地下层数','长×宽','结构高度','主要跨度','结构体系','框架抗震等级'], [[param('unit_floors'),'[填写]',param('height_m',' m'),param('span_m',' m'),param('struct_sys'),param('g_frame')]])}</div>`, `${unit}结构设计`);
-  } else if (page.type === 'pair') {
-    html = pageFrame(page, `<div class="layout-pair">${imageSlot(page.slots[0])}${imageSlot(page.slots[1])}</div>`);
-  } else if (page.type === 'single-plan') {
-    html = pageFrame(page, `<div class="layout-difficulty"><div class="difficulty-title" contenteditable="true" spellcheck="false">[楼层名称]</div>${imageSlot(page.slot)}</div>`);
-  } else if (page.type === 'model') {
-    html = pageFrame(page, `<div class="layout-model"><div class="model-copy" contenteditable="false" spellcheck="false">结构体系：${linked('struct_sys')}<br>嵌固端：${linked('fixed_end')}<br>周期折减系数：${linked('period_reduce')}<br>结构阻尼比：${linked('damping')}<br>有效质量参与系数下限： ${linked('mass_participation')}%</div>${imageSlot(page.slot, { dark: true })}</div>`);
-  } else if (page.type === 'audit') {
-    html = pageFrame(page, `<div class="layout-audit">${table(['统一技术措施项目','取值','处理措施'], [['抗震设防类别',param('seismic_cat'),'按统一措施执行'],['抗震措施提高一度',param('seismic_up'),'按统一措施执行'],['考虑偶然偏心',param('ecc_ratio'),'模型复核'],['考虑双向地震作用',param('bidir_eq'),'模型复核'],['考虑竖向地震作用',param('vert_eq'),'专项复核']])}${imageSlot(page.slot)}</div><div class="confirm-line" contenteditable="true" spellcheck="false">结论：不规则性判定需结合当前图纸与模型复核，待人工确认</div>`);
-  } else if (page.type === 'difficulty') {
-    html = pageFrame(page, `<div class="layout-difficulty"><div class="difficulty-title linked-decisions" contenteditable="false">${linked('decision_summary')}</div>${imageSlot(page.slot)}</div>`);
-  } else if (page.type === 'comparison') {
-    html = pageFrame(page, `<div class="layout-comparison">${table(['方案','结构形式','适用条件','主要优点','主要限制'], [['方案一','[填写]','[填写]','[填写]','[填写]'],['方案二','[填写]','[填写]','[填写]','[填写]']])}<div class="layout-pair">${imageSlot(page.slots[0])}${imageSlot(page.slots[1])}</div></div>`);
-  } else if (page.type === 'results') {
-    html = pageFrame(page, `<div class="layout-results">${table(['验算项目','控制值','本批计算值','结论'], [['X向地震位移角','[填写]',param('model:drift_env_x'),'[待复核]'],['Y向地震位移角','[填写]',param('model:drift_env_y'),'[待复核]'],['扭转/平动周期比','[填写]',param('model:ratio_tt'),'[待复核]'],['第一振型周期(s)','—',param('model:T1'),'[待复核]']])}${imageSlot(page.slot)}</div><div class="confirm-line" contenteditable="true" spellcheck="false">结论：[人工确认内容]</div>`);
-  } else if (page.type === 'conclusion') {
-    html = pageFrame(page, `<div class="layout-conclusion"><div class="conclusion-copy" contenteditable="false" spellcheck="false">结构体系：${linked('struct_sys')}<br>设防标准：${linked('intensity')} 度，${linked('seismic_cat')}<br>场地类别：${linked('site_class')}<br>基础等级：${linked('foundation')}</div>${imageSlot(page.slot, { dark: true })}</div>`);
-  } else {
-    html = `<div class="ppt-cover"><h1 style="color:var(--ppt-red);font-weight:400" contenteditable="true" spellcheck="false">THANKS</h1></div>`;
-  }
-
-  els.canvas.innerHTML = html;
-  // Parameter-containing prose is read-only as a whole, so paste/delete cannot erase a binding.
-  els.canvas.querySelectorAll('[contenteditable="true"]').forEach((node) => {
-    if (node.querySelector('[data-param]')) node.contentEditable = 'false';
-  });
-  if (!['cover', 'section', 'photo', 'thanks', 'parameters'].includes(page.type)) {
-    const body = els.canvas.querySelector('.ppt-body');
-    const note = document.createElement('div');
-    note.className = 'report-narrative';
-    note.contentEditable = 'true';
-    note.dataset.ai = 'true';
-    note.textContent = '[待补充本页汇报要点]';
-    body.appendChild(note);
-  }
-  els.canvas.querySelectorAll('[contenteditable="true"]').forEach((node, index) => {
-    node.dataset.editId = `${[3,6,11,13].includes(state.current)?'v2:':''}${state.current}:${index}`;
-    const saved = state.edits[node.dataset.editId];
-    if (typeof saved === 'string') node.textContent = saved;
-    if (node.matches('.difficulty-title,.confirm-line')) node.dataset.ai = 'true';
-  });
+  const page = buildCafeteriaSlides(state.snapshot||{},els.unitName.value,state.edits)[state.current];
+  els.canvas.innerHTML = cafeteriaHTML(page,imageSlot);
+  document.querySelector('#page-count').textContent=pages.length+'页';
   updateRewriteControls();
   els.currentNumber.textContent = String(state.current + 1).padStart(2, '0');
   els.currentTitle.textContent = page.title;
@@ -191,10 +120,6 @@ function renderSlide() {
   els.prev.disabled = state.current === 0;
   els.next.disabled = state.current === pages.length - 1;
   renderPageList();
-  let oldCopy=document.querySelector('#legacy-page-copy');
-  if(!oldCopy){oldCopy=document.createElement('div');oldCopy.id='legacy-page-copy';document.querySelector('#link-status').after(oldCopy);}
-  const legacy=[3,6,11,13].includes(state.current)?Object.entries(state.edits).filter(([k])=>k.startsWith(state.current+':')):[];
-  oldCopy.innerHTML=legacy.length?'<details><summary>查看本页升级前的手工文稿（保留供迁入）</summary><p>本页部分单元格已改为参数联动；旧文稿按原顺序保留，请将仍适用的内容复制到本页汇报要点。</p><pre style="white-space:pre-wrap">'+escapeHtml(legacy.map(([,v])=>v).join('\n\n'))+'</pre></details>':'';
   const readOnly=state.snapshot?.context?.canEdit===false;
   if(readOnly)els.canvas.querySelectorAll('[contenteditable="true"]').forEach(n=>n.contentEditable='false');
   els.unitName.disabled=readOnly;
@@ -329,7 +254,7 @@ async function loadMeasureSnapshot(snapshot) {
   els.projectName.classList.add('linked');
   els.measureLinkButton.textContent = '技术措施已联动';
   els.measureLinkButton.classList.add('confirmed');
-  document.querySelector('#link-status').textContent = `已联动项目 / 单体资料、确认的重难点及模型结果 · ${new Date(snapshot.updated_at).toLocaleTimeString()} 更新。输入变化后需重新人工确认。`;
+  document.querySelector('#link-status').textContent = `已联动工作台参数 · ${new Date(snapshot.updated_at).toLocaleTimeString()} 更新`;
   if (Object.keys(state.edits).length) document.querySelector('#link-status').textContent += ' 已保留手工/AI说明，请核对其与当前参数是否一致。';
   if(Object.keys(state.edits).some(k=>/^(3|6|11|13):/.test(k)))document.querySelector('#link-status').textContent+=' 联动页旧版手工稿保留在项目备份的edits中，避免错位套用；请核对后迁入本页说明。';
 
@@ -430,20 +355,7 @@ els.generate.addEventListener('click', async () => {
   document.body.classList.add('exporting');
   const current = state.current;
   try {
-    const slides = [];
-    for (let index = 0; index < pages.length; index += 1) {
-      state.current = index;
-      renderSlide();
-      await document.fonts.ready;
-      await Promise.all([...els.canvas.querySelectorAll('img')].map((img) => img.decode()));
-      slides.push(await exportReport.capture(els.canvas, pages[index].title));
-    }
-    await exportReport.download(slides, {
-      project: els.projectName.value,
-      confirmed: state.confirmed,
-      snapshot: state.snapshot,
-      provenance: state.provenance,
-    });
+    await downloadCafeteria(buildCafeteriaSlides(state.snapshot,els.unitName.value,state.edits),state.images,els.projectName.value);
     showToast('PPT 草稿已下载，文字与表格可编辑');
   } catch (error) {
     showToast(`导出失败：${error.message}`);
@@ -476,7 +388,7 @@ function saveDraft() {
   if (!state.measureParams||!draftStore||draftLoading) return Promise.resolve();
   if(state.snapshot?.context?.canEdit===false)return draftStore.flush();
   unitDrafts[els.unitName.value]={edits:state.edits,provenance:state.provenance,images:Object.fromEntries(state.images)};
-  return draftStore.save({layoutVersion:2,edits:state.edits,provenance:state.provenance,unit:els.unitName.value,images:Object.fromEntries(state.images),unitDrafts,parameterVersion:state.snapshot?.parameter_version}).catch(e=>{showToast('PPT未保存到项目库：'+e.message);throw e;});
+  return draftStore.save({layoutVersion:3,edits:state.edits,provenance:state.provenance,unit:els.unitName.value,images:Object.fromEntries(state.images),unitDrafts,parameterVersion:state.snapshot?.parameter_version}).catch(e=>{showToast('PPT未保存到项目库：'+e.message);throw e;});
 }
 function clearProposal() {
   state.proposal = null;
@@ -514,6 +426,10 @@ function updateRewriteControls() {
 }
 document.querySelector('#rewrite-btn').addEventListener('click', async () => {
   const blocks = aiBlocks();
+  const style=document.querySelector('#rewrite-style').value;
+  const rewriteMode=style==='扩展信息'?'expand':'concise';
+  const unit=state.snapshot?.units?.find(u=>u.name===els.unitName.value);
+  const parameters={...state.measureParams,...unit?.parameters};
   const revision = state.revision;
   const pageIndex = state.current;
   clearProposal();
@@ -528,14 +444,14 @@ document.querySelector('#rewrite-btn').addEventListener('click', async () => {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: controller.signal,
       body: JSON.stringify({
         task: 'rewrite-ppt-report',
-        context: { blocks, pageTitle: pages[pageIndex].title, pageText: els.canvas.innerText.slice(0, 10000), parameters: parameterEvidence(els.canvas, state.measureParams), statement_type: '工作草案，未经负责人审签' },
-        messages: [{ role: 'user', content: `请${document.querySelector('#rewrite-style').value}。仅改写给出的blocks；占位内容保留待确认，不补造设计事实。` }],
+        context: { blocks, rewriteMode, pageTitle: pages[pageIndex].title, pageText: els.canvas.innerText.slice(0, 10000), parameters: parameterEvidence(els.canvas, parameters), statement_type: '工作草案，未经负责人审签' },
+        messages: [{ role: 'user', content: `请${style}。${rewriteGuidance(rewriteMode)}仅改写给出的blocks；占位内容保留待确认，不补造设计事实。` }],
       }),
     });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || `请求失败（${response.status}）`);
     if (revision !== state.revision || pageIndex !== state.current) throw new Error('页面或参数已变化，请重新改写');
-    const proposal = validateRewrite(payload.content, blocks);
+    const proposal = validateRewrite(payload.content, blocks, rewriteMode);
     state.proposal = { ...proposal, revision, pageIndex };
     document.querySelector('#rewrite-preview').innerHTML = proposal.blocks.map((block, index) => `<div class="rewrite-diff"><div><b>原文</b><p>${escapeHtml(blocks[index].text)}</p></div><div><b>AI 建议 · 待确认</b><p>${escapeHtml(block.text)}</p></div></div>`).join('');
     status.textContent = proposal.warnings.length ? `待核对：${proposal.warnings.join('；')}` : '建议已生成，请核对含义后采纳。来源：本页原文及统一技术措施；陈述类型：AI推断。';

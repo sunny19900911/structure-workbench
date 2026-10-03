@@ -231,4 +231,17 @@ button { cursor: pointer; }
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
 }
 .project-context select{max-width:190px;border:0;background:transparent;font:inherit;color:inherit}
+.caf-page{position:absolute;inset:0;container-type:inline-size;background:white;font-family:SimSun,serif}
+.caf-shape{position:absolute;box-sizing:border-box;margin:0}
+.caf-text{white-space:pre-wrap;line-height:1.2;padding:.25% .7%;overflow:auto;min-height:1em}
+.caf-text[contenteditable=true]:empty:before{content:'点击填写';color:#a7a7a7;font-size:1.2cqw}
+.caf-linked{color:#315e84!important}
+.caf-band{position:absolute;left:0;right:0;top:41%;height:29%;background:#d9d9d9}
+.caf-redline{position:absolute;left:0;right:0;top:8.6%;border-top:2px solid #f00}
+.caf-table{border-collapse:collapse;table-layout:fixed;background:white}
+.caf-table td{border:1px solid #333;line-height:1.12;padding:.15em .3em;text-align:center!important;white-space:pre-wrap;overflow-wrap:anywhere}
+.caf-image .image-slot{height:100%;width:100%;border:1px solid #d5d5d5;background:#fafafa}
+.caf-image .image-action{padding:4px;gap:5px}
+.caf-image .slot-name{font-size:1.1cqw;white-space:normal}
+.caf-image .upload-btn{min-height:20px;font-size:1cqw;padding:3px 6px}
 .layout-difficulty .linked-decisions{font-size:clamp(12px,1.4vw,22px);white-space:normal;overflow:auto;max-height:4.2em;min-height:1.4em;line-height:1.4}
