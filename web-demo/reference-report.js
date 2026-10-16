@@ -1,11 +1,11 @@
-import {selectedRegulations,regulationNote} from './regulation-document.js';
+import {selectedRegulations,regulationNote,updateRegulationField} from './regulation-document.js';
 import {irregularityCategories,irregularityAnswer,irregularityMeasureBlocks} from './irregularity-library.js';
 import {REFERENCE_TABLES as T} from './reference-template-data.js';
 export const referenceSections=[
  ['overview','1 工程概况'],['basis','2 设计依据'],['criteria','3 设计控制标准与等级'],['ground','4 工程地质'],['loads','5 荷载与作用'],['materials','6 主要结构材料'],['review','7 装配式'],['foundation','8 结构设计'],['selection','8.2 地下室及上部结构'],['model','9 结构计算分析'],['special','10 结构规则性判断与应对措施']
 ];
 export const isoEnabled=s=>['是','有','采用','1','true'].includes(String(s.parameters?.has_iso))||['是','有','采用','1','true'].includes(String(s.parameters?.has_damp));
-const aliases={found_gamma0:'gamma0_found',pile_grade:'pile',pile_gamma0:'pile_gamma',fire_class:'fire',period_factor:'period_reduce',eccentricity:'ecc_ratio',bidirectional:'bidir_eq',vertical_eq:'vert_eq',oblique_angle:'skew_angle',mode_method:'modal_combo',beam_stiffness:'stiff_amp'};
+const aliases={found_gamma0:'gamma0_found',pile_grade:'pile',pile_safety:'pile',pile_gamma0:'pile_gamma',fire_class:'fire',fire_grade:'fire',period_factor:'period_reduce',eccentricity:'ecc_ratio',bidirectional:'bidir_eq',vertical_eq:'vert_eq',oblique_angle:'skew_angle',mode_method:'modal_combo',beam_stiffness:'stiff_amp'};
 const value=(s,k)=>String(s.parameters?.[k]||s.parameters?.[aliases[k]]||s.document?.parameters?.[k]||'');
 const tok=(s,k)=>s.parameters?.[k]?`{{p:${k}}}`:s.document?.parameters?.[k]||'';
 const marker=k=>'[[table:'+k+']]';
@@ -41,7 +41,7 @@ export function referenceText(s,id){
 }
 const base=(id,title)=>({kind:'table',template:id,title,rows:T[id].rows.map((r,i)=>({source:i,values:r.map(c=>c.text)}))});
 const repeated=(id,title,heads,data,row)=>({...base(id,title),rows:[...base(id,title).rows.slice(0,heads),...data.map(v=>({source:row,values:v}))]});
-export function reportTable(s,key){
+function rawReportTable(s,key){
  const v=k=>value(s,k),u=s.document?.units||[];
  if(key==='regularity'){
   const t=base(20,'表10.1-1 多层建筑不规则超限判定');
@@ -63,7 +63,7 @@ export function reportTable(s,key){
  }
  if(key==='classification'){
   const t=base(21,'表3.1 建筑结构分类等级'),keys=['','safety_grade','gamma0','found_grade','found_safety','found_gamma0','pile_grade','pile_safety','pile_gamma0','seismic_cat','civil_grade','fire_class','fire_grade','waterproof'];
-  t.rows.forEach((r,i)=>{if(i){r.values[1]=v(keys[i]);}});return t;
+  t.rows.forEach((r,i)=>{if(i){r.values[1]=v(keys[i]);r.links=['',aliases[keys[i]]||keys[i]];}});return t;
  }
  if(key==='durability'){
   const data=s.templateTables?.durability?.slice(1);return data?.length?repeated(5,'表3.2.1 混凝土构件的环境类别',1,data.map(r=>[r[0]||'',r[1]||'',r[2]||'']),1):{...base(5,'表3.2.1 混凝土构件的环境类别'),rows:[base(5,'').rows[0],{source:1,values:[v('environment_class'),'','']} ]};
@@ -71,8 +71,8 @@ export function reportTable(s,key){
  if(key==='earthquake'||key==='parameters'){
   const t=base(key==='earthquake'?6:18,key==='earthquake'?'表3.3.1 地震作用设计参数':'表9.2 主要输入计算参数汇总表');
   const map={'抗震设防烈度':'intensity','基本地震加速度':'pga','设计地震分组':'eq_group','场地类别':'site_class','场地土类别':'site_class','设计地震特征周期':'tg','特征周期':'tg','水平地震影响系数最大值':'alpha_max','水平地震影响系数最大值（中震）':'alpha_max','抗震设防类别':'seismic_cat','结构安全等级':'safety_grade','结构重要性系数':'gamma0','结构阻尼比':'damping','地震作用放大系数':'eq_amplification','周期折减系数':'period_factor','是否考虑偶然偏心':'eccentricity','是否考虑双向地震作用':'bidirectional','是否考虑竖向地震作用':'vertical_eq','斜交抗侧力构件方向角度':'oblique_angle','振型组合方法':'mode_method','计算振型数':'mode_count','嵌固端':'fixed_end','梁刚度放大系数':'beam_stiffness','抗震等级':'g_frame'};
-  t.rows.forEach((r,i)=>{if(i)r.values[1]=v(map[r.values[0]]);});
-  if(key==='parameters'){const row=t.rows.find(r=>r.values[0]==='水平地震影响系数最大值（中震）');if(row)row.values[1]=v('alpha_m');}
+  t.rows.forEach((r,i)=>{if(i){const field=map[r.values[0]];r.values[1]=v(field);r.links=['',aliases[field]||field||''];}});
+  if(key==='parameters'){const row=t.rows.find(r=>r.values[0]==='水平地震影响系数最大值（中震）');if(row){row.values[1]=v('alpha_m');row.links[1]='alpha_m';}}
   return t;
  }
  if(key==='grades'){const grade=(p,k,d)=>{const a=p[k]??v(k),b=p[d]??v(d);return a&&b&&a!==b?a+'（'+b+'）':a;};const gradeUnits=[...u,...Object.keys(s.unitParameters||{}).filter(n=>!u.some(x=>x.name===n)&&n!=='项目整体').map(name=>({name}))];return repeated(9,'表3.3.4 结构构件抗震等级',2,gradeUnits.map(x=>{const p=s.unitParameters?.[x.name]||{};return [x.name,p.struct_sys||x.structuralType||'',grade(p,'g_frame','g_frame_m'),p.g_bigspan??v('g_bigspan'),grade(p,'g_wall','g_wall_m')];}),2);}
@@ -109,11 +109,41 @@ export function reportTable(s,key){
  }
  return null;
 }
+// Cell drafts live in the existing project/unit expansion partition. Sources stay intact.
+export function reportTable(s,key){
+ const t=rawReportTable(s,key);if(!t)return t;
+ const counts=new Map();
+ t.rows=t.rows.map((row,index)=>{
+  const identity=JSON.stringify([row.source,row.values[0]]),occurrence=counts.get(identity)||0;counts.set(identity,occurrence+1);
+  const rowKey=key==='units'?row.unitKey:JSON.stringify([row.source,row.values[0],occurrence]);
+  const edits=s.tableEdits?.[key]?.[rowKey]||{},links=row.links||row.values.map(()=>''),manual=row.manual||row.values.map(()=>false);
+  if(['floor','roof','equipment','durability'].includes(key)&&index>0)links.fill('template:'+key);
+  if(key==='concrete'&&index>0)links[2]='template:concrete';
+  if(key==='grades'&&index>=2)for(let i=1;i<row.values.length;i++)links[i]='unit:'+row.values[0]+':'+['','struct_sys','g_frame','g_bigspan','g_wall'][i];
+  if(key==='drift'&&index>0){links[1]='drift_fortification';links[2]='drift_rare';}
+  if(key==='performance'&&index>0){links[links.length-2]='performance_fortification';links[links.length-1]='performance_rare';}
+  const values=row.values.map((value,col)=>{if(Object.hasOwn(edits,col)){manual[col]=true;links[col]='';return edits[col];}return value;});
+  return {...row,rowKey,values,manual,links};
+ });return {...t,key};
+}
+export function editReportCell(s,key,rowKey,column,text){
+ if(s.signed)return false;
+ const table=reportTable(s,key),index=table?.rows.findIndex(r=>r.rowKey===rowKey),row=table?.rows[index];
+ if(!row||!Number.isInteger(column)||column<0||column>=row.values.length)return false;
+ const value=String(text??'');if(row.values[column]===value)return false;
+ if(['national','local'].includes(key)&&index>0){
+  const selected=selectedRegulations(s,key),record=selected[index-1];
+  if(s.referenceNorms?.[key]===undefined&&record){return updateRegulationField(s,record.id,column===0?'title':'code',value);}
+  s.referenceNorms??={};s.referenceNorms[key]=table.rows.slice(1).map(r=>[...r.values]);s.referenceNorms[key][index-1][column]=value;return true;
+ }
+ s.tableEdits??={};s.tableEdits[key]??={};s.tableEdits[key][rowKey]??={};s.tableEdits[key][rowKey][column]=value;
+ return true;
+}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function nativeTableHTML(t,options={}){
  const rows=t.rows.map(r=>({...r,cells:T[t.template].rows[r.source]}));
  const grid=T[t.template].grid,total=grid.reduce((a,b)=>a+b,0);
- return `<p class="ref-caption">${esc(t.title)}</p><table class="ev-table ref-native"><colgroup>${grid.map(w=>`<col style="width:${100*w/total}%">`).join('')}</colgroup><tbody>`+rows.map((r,ri)=>{let col=0;return '<tr>'+r.cells.map((c,ci)=>{const start=col;col+=c.span;if(c.merge==='continue')return '';let span=1;if(c.merge==='restart')for(let j=ri+1;j<rows.length;j++){let at=0;const next=rows[j].cells.find(x=>{const match=at===start;at+=x.span;return match;});if(next?.merge!=='continue')break;span++;}const source=options.source?.(r,ri,ci)||'';const edit=options.editUnits?` contenteditable="${options.editable!==false}" data-unit-cell="${esc(r.unitKey)}" data-unit-col="${ci}"`: '';return `<td${edit}${source?` data-source-kind="${source}"`: ''} colspan="${c.span}" rowspan="${span}">${esc(r.values[ci]).replace(/\n/g,'<br>')}</td>`;}).join('')+(options.editUnits?(ri===0?'<td rowspan="2"></td>':ri===1?'':`<td class="ev-row-action"><button data-ev-write data-unit-delete="${esc(r.unitKey)}" aria-label="删除${esc(r.values[0])}行">删除</button></td>`):'')+'</tr>';}).join('')+'</tbody></table>';
+ return `<p class="ref-caption">${esc(t.title)}</p><table class="ev-table ref-native"><colgroup>${grid.map(w=>`<col style="width:${100*w/total}%">`).join('')}</colgroup><tbody>`+rows.map((r,ri)=>{let col=0;return '<tr>'+r.cells.map((c,ci)=>{const start=col;col+=c.span;if(c.merge==='continue')return '';let span=1;if(c.merge==='restart')for(let j=ri+1;j<rows.length;j++){let at=0;const next=rows[j].cells.find(x=>{const match=at===start;at+=x.span;return match;});if(next?.merge!=='continue')break;span++;}const source=options.source?.(r,ri,ci)||'';const edit=options.editUnits?` contenteditable="${options.editable!==false}" data-unit-cell="${esc(r.unitKey)}" data-unit-col="${ci}"`:options.editCells?` contenteditable="${options.editable!==false}" data-table-key="${esc(t.key)}" data-table-row="${esc(r.rowKey)}" data-table-col="${ci}" role="textbox" aria-label="${esc(t.title)} 第${ri+1}行第${ci+1}列"`: '';const linked=options.web&&r.links?.[ci]&&!r.manual?.[ci];return `<td${edit}${linked?` class="ev-linked" data-linked-parameter="${esc(r.links[ci])}" title="联动统一技术措施；直接编辑后保留为本稿人工值"`:r.manual?.[ci]?' title="本稿人工值"':''}${source?` data-source-kind="${source}"`: ''} colspan="${c.span}" rowspan="${span}">${esc(r.values[ci]).replace(/\n/g,'<br>')}</td>`;}).join('')+(options.editUnits?(ri===0?'<td rowspan="2"></td>':ri===1?'':`<td class="ev-row-action"><button data-ev-write data-unit-delete="${esc(r.unitKey)}" aria-label="删除${esc(r.values[0])}行">删除</button></td>`):'')+'</tr>';}).join('')+'</tbody></table>';
 }
 export function sectionBlocks(s,id,resolved){
  const result=[];

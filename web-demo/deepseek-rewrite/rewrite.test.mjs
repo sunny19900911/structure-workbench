@@ -79,3 +79,44 @@ test('API拒绝跨源、无主动标记及超长请求',async()=>{
   assert.equal((await call({'x-workbench-request':'deepseek-rewrite',origin:'https://evil.test'})).status,403);
   assert.equal((await call({'x-workbench-request':'deepseek-rewrite'},'x'.repeat(180001))).status,413);
 });
+
+test('联网卡住预算结束后继续改写，并报告真实阶段',async()=>{
+ const progress=[];const run=createRewriteService({DEEPSEEK_API_KEY:'test-placeholder'},{searchTimeoutMs:10,search:()=>new Promise(()=>{}),fetch:async()=>response(payload())});
+ const result=await run({...input,online:true},undefined,text=>progress.push(text));
+ assert.equal(result.searchStatus,'failed');assert.match(result.warning,/仅按项目资料/);assert.equal(progress.length,2);assert.match(progress[1],/生成回复|深入思考/);
+});
+
+test('官方网页卡住时保留已取得的检索摘要',async()=>{
+ const result={content:[{type:'text',citations:[{url:'https://www.mohurd.gov.cn/example',cited_text:'实际检索摘要'}]},{type:'web_search_tool_result',content:[{type:'web_search_result',title:'规范',url:'https://www.mohurd.gov.cn/example'}]}]};
+ const progress=[];
+ const sources=await searchRewrite(input,{}, {request:async()=>result,readPage:()=>new Promise(()=>{}),pageTimeoutMs:10,onProgress:x=>progress.push(x)});
+ assert.equal(sources[0].text,'实际检索摘要');assert.match(sources[0].kind,/未取得全文/);assert.match(progress[0],/已取得1个官方来源/);
+});
+
+test('首轮只有不可读网页时补查一次，使用第二轮可读正文',async()=>{
+ let calls=0;const progress=[];
+ const sources=await searchRewrite(input,{}, {request:async()=>{calls++;return {content:[{type:'web_search_tool_result',content:[{type:'web_search_result',title:'规范',url:'https://www.mohurd.gov.cn/example'+calls}]}]};},readPage:async c=>{if(c.url.endsWith('1'))throw Error('附件不可读');return {url:c.url,text:'官方网页正文',kind:'官方网页摘录'};},onProgress:x=>progress.push(x)});
+ assert.equal(calls,2);assert.equal(sources[0].text,'官方网页正文');assert.ok(progress.some(x=>x.includes('补查')));
+});
+
+test('鉴权失败不重复请求，补查期间停止不再继续',async()=>{
+ let calls=0;
+ await assert.rejects(searchRewrite(input,{}, {request:async()=>{calls++;throw Error('DeepSeek 服务返回 HTTP 401');}}),/401/);assert.equal(calls,1);
+ const c=new AbortController();
+ await assert.rejects(searchRewrite(input,{}, {signal:c.signal,request:async()=>{c.abort(Error('已停止'));throw Error('中止');}}));
+});
+test('响应头已到但正文卡住，也会超时退出',async()=>{
+ const run=createRewriteService({DEEPSEEK_API_KEY:'test-placeholder'},{requestTimeoutMs:10,fetch:async()=>({ok:true,json:()=>new Promise(()=>{})})});
+ await assert.rejects(run(input),/响应超时/);
+});
+test('停止检索后不再发起模型改写',async()=>{
+ const c=new AbortController();const run=createRewriteService({DEEPSEEK_API_KEY:'test-placeholder'},{search:()=>{c.abort();return new Promise(()=>{});},fetch:()=>assert.fail('不应调用模型')});
+ await assert.rejects(run({...input,online:true},c.signal),/停止/);
+});
+test('浏览器接收分块进度与最终结果，中断不伪装完成',async()=>{
+ const {readRewriteResponse}=await import('./response.js');const events=[];
+ const bytes=new TextEncoder().encode(JSON.stringify({type:'progress',message:'正在改写'})+'\n'+JSON.stringify({type:'result',data:{text:'完成'}})+'\n');
+ const body=new ReadableStream({start(c){c.enqueue(bytes.slice(0,25));c.enqueue(bytes.slice(25));c.close();}});
+ assert.equal((await readRewriteResponse(new Response(body,{headers:{'content-type':'application/x-ndjson'}}),x=>events.push(x))).text,'完成');assert.deepEqual(events,['正在改写']);
+ await assert.rejects(readRewriteResponse(new Response('{"type":"progress","message":"等待"}\n',{headers:{'content-type':'application/x-ndjson'}})),/未收到改写正文/);
+});

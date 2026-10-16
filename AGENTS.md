@@ -1,5 +1,9 @@
 # 结构设计 AI 工作库约定
 
+## 2026-10-06 天津重难点示例
+
+原文事实，source_id: USER-20261006-TIANJIN-EXAMPLE。主页面“重难点”新增“查看天津重难点示例”，嵌入 `design/key-decisions/key-decisions-integrated-prototype.html`。保留抗震、绿色与装配式、性能化三组示例；内嵌模式隐藏重复导航，确认按钮仅演示，不保存。iframe 仅允许脚本、不开放同源访问，不把天津固定案例写入当前项目。Vite 构建包含该示例页面。验证：`node --test design/project-integration/modules.test.mjs`、`npm run build`。
+
 ## 项目是什么
 
 使用者昵称：**小香金猪**。
@@ -208,6 +212,14 @@ source_id: USER-20261003-REWRITE-FREE（用户要求，原文事实）。`writin
 
 原文事实，source_id: USER-20261003-PPT-SIMPLIFY。汇报页直接展示“工作台 PPT 模板”，移除重复编辑器入口、复核重难点和核对扩初模型链接。DeepSeek“扩展信息”按已有事实扩写，前后端共用 `report-core.js` 的写作约束；保留数值、单位及未确认状态，最长600字。新版原生表格没有参数标记时，仍传入当前单体的统一措施参数。回归：在 `web-demo` 运行 `node --test design/parallel-tasks/06-ppt-report/report-core.test.mjs design/parallel-tasks/06-ppt-report/cafeteria.test.mjs design/project-integration/modules.test.mjs`。
 
+## 2026-10-02 资料生成闭环试用版
+
+source_id: USER-20261002-WORKFLOW（用户本轮要求，原文事实）。本轮在当前工作树验证第1～3项：顶部项目管理菜单、统一资料窗口、按章更新与人工稿比较、保存去重和导出快照；保留八模块、原ID、expectedRevision及签发锁定。入口新增`workflow-ui.js`，纯逻辑`workflow-core.js`。不得恢复全局点击自动保存或隐藏确认门槛。第4项AI任务统一上下文、Token任务记录尚未扩展；聊天已加项目切换隔离。操作说明、旧入口依赖清单、测试及恢复边界见`web-demo/design/workflow-simplification/操作说明与验收.md`。5302试用端口采用`web-demo/qa/workflow/store`，不写正式603。
+
+## 2026-10-03 闭环与性能改动合入主工作区
+
+source_id: USER-20261003-MAIN-WORKFLOW（用户要求，原文事实）。流程简化和卡顿修复已同步主工作区5190入口，保留楼面荷载、独立段落改写、抗震等级和PPT增量。主入口沿用正式603库，不迁入5302试用数据。性能回归：`node --test design/project-integration/navigation-performance.test.mjs`。
+
 ## 2026-10-03 单体抗震等级自动查表
 
 source_id: USER-SEISMIC-GRADE-20261003（小香金猪要求，原文事实）。①新增单体高度/结构形式查表，联动公共烈度、类别、场地；②表3.3.4按单体读取结果。输入存原 intake.seismicGrades，变更留历史，仍用 expectedRevision。旧隔震层与特殊构件等级预设入口及生成正文行移除，历史数据及签发稿保留。
@@ -215,3 +227,81 @@ source_id: USER-SEISMIC-GRADE-20261003（小香金猪要求，原文事实）。
 - 规则在 `web-demo/seismic-grade-core.js`，界面在 `seismic-grade-workbench.js`；依据本地抗规2016完整正文配合2024局部修订、JGJ3表3.9.3。来源、页码、规则和边界见 `web-demo/design/seismic-grade/抗震等级查表逻辑.md`。
 - 普通现浇混凝土体系支持查表；甲/丁类、B级、减隔震及超适用范围留专项处理。住宅和其他民用建筑分别判断高规范围，不以所有建筑>24m一概套高规；不把消防/规划高度当作房屋高度。
 - 回归：`node --test design/seismic-grade/seismic-grade.test.mjs design/project-integration/intake.test.mjs design/reference-expansion/reference.test.mjs`。浏览器隔离库为 `web-demo/qa/seismic-grade/store`，正式入口仍5190。
+
+## 2026-10-04 Linux宝塔个人试用包
+
+source_id: USER-20261004-BAOTA-LINUX（用户要求，原文事实）。`web-demo/deploy/baota/` 提供独立Node服务、账号保护、安装说明和按依赖白名单打包脚本，静态服务仅开放dist。运行 `npm run build` 后执行 `python deploy/baota/package.py`，包生成于忽略目录 `web-demo/outputs/baota`，不包含密钥、正式项目库、node_modules或QA数据，不自动部署。Linux文档转换使用LibreOffice及Python，保留Windows Word路径；Linux字体和分页须上机核对。回归 `node --test deploy/baota/http-app.test.mjs design/project-integration/legacy-doc.test.mjs design/project-integration/project-store.test.mjs design/reference-expansion/reference.test.mjs`。当前包为个人试用，无多人项目权限隔离，本机E盘、ima桥接与外部方法库未迁移。
+
+## 2026-10-06 新建冲突修复与删除项目
+
+source_id: USER-20261006-PROJECT-MANAGEMENT（用户要求，原文事实）。项目管理新增“删除当前项目”和“恢复刚删除项目”。新建时旧项目409冲突不再阻断：保存其他分区、下载含浏览器恢复稿的备份，再建立独立项目；非冲突错误仍中止。删除先备份，以 lifecycle 分区标记隐藏，不移除原件或历史；服务端拒绝已删除项目的旧窗口写入，恢复保留分区和修订。回归：`node --test design/project-integration/new-project.test.mjs design/project-integration/project-store.test.mjs`。浏览器验证使用5192及`web-demo/qa/new-project-fix/store`隔离库，不删除正式项目。
+
+## 2026-10-06 改写等待状态与超时
+
+source_id: USER-20261006-REWRITE-HANG（用户反馈，原文事实）。段落改写返回 NDJSON 阶段进度，页面显示检索、思考改写及等待秒数。联网阶段限制30秒，失败如实提示后按已有项目资料改写；模型请求连同响应正文限制120秒，前端160秒停止并恢复操作。保留主动请求、预览采用及原文不自动覆盖。回归：`node --test deepseek-rewrite/rewrite.test.mjs`。
+
+### 2026-10-06 删除后启动恢复
+
+source_id: USER-20261006-STARTUP-HANG（用户反馈，原文事实）。`project-startup.js` 在记住的项目已删除或不存在时改为载入保留项目，无保留项目才新建；网络错误不自动新建。专项模块在主项目尚未就绪时不自行发起空编号加载。回归追加 `design/project-integration/project-startup.test.mjs`；主页面实测恢复“云南项目测试1”，正文解除 inert 锁定。
+
+## 2026-10-06 段落改写联网补查
+
+原文事实，source_id: USER-20261006-REWRITE-SEARCH。用户要求优先联网成功、允许延长等待。独立段落改写每轮搜索120秒、官方网页各20秒，无可用内容时换来源补查一次；搜索总预算290秒、前端420秒，停止仍有效。不把模型自述当作检索证据，不改项目参数。实现与回归见 `web-demo/deepseek-rewrite/README.md`。
+
+## 2026-10-06 段落对话体验
+
+原文事实，source_id: USER-20261006-DEEPSEEK-CHAT。用户希望接近普通DeepSeek对话。面板打开不自动发送，先输入要求；新客户端纯文本流式显示回复、深度思考可选且按用户习惯默认开启，保留联网补查及采用后回填。服务端仍保留旧JSON调用兼容；未完成回复不作为最终稿。测试为 `deepseek-rewrite/rewrite.test.mjs` 与 `deepseek-rewrite/stream.test.mjs`，QA页面不保存正式项目。
+
+## 2026-10-14 宝塔 /work/ 更新包
+
+原文事实，source_id: USER-20261014-BAOTA-UPDATE。用户要求移除工作台返回主站的入口，并打包最新功能供手动上传，不自动部署。实际部署依据对话“短视频课程｜结构化 Word 学习笔记”（`01a0aa34-d73c-7032-a6f1-8ca1c9cfcb31`）2026-10-05记录：程序在 `/www/wwwroot/structure-workbench`，由 `structure-workbench.service` 运行，端口5190；现有 Nginx 转发时去掉 `/work/` 前缀，保留该配置。旧整合包注入的 `portal-return` 返回按钮随新 dist 替换而移除。
+
+- 在 `web-demo` 构建后执行 `python deploy/baota/package.py --base-path /work/ --proxy-strips-prefix --name structure-workbench-work-update-20261014.zip`；交付在忽略的 `outputs/baota`。只重写交付副本中的 API 地址，不修改本地5190入口。
+- 包内 `UPDATE.py` 默认预览；显式 `--apply` 才校验清单、备份并更新程序，保留 `.env`、依赖及项目数据。上传到独立临时目录解压，更新与重启步骤见 `web-demo/deploy/baota/更新说明.md`。不要覆盖主站、健康页和日记页。
+- 服务端启动复用 `localDeepSeekConfig`，支持既有环境或外部密钥文件配置；不得把密钥打入包或日志。补齐计算书封面模板依赖。
+- 验证：`node --test deploy/baota/http-app.test.mjs deepseek-rewrite/rewrite.test.mjs deepseek-rewrite/stream.test.mjs design/project-integration/local-deepseek-config.test.mjs`、`python deploy/baota/update.test.py`、`npm run build`；解压包隔离验收使用 `qa/baota-release-20261014`。未在真实服务器验证 Linux Office 版式或真实 DeepSeek 调用。
+
+## 2026-10-14 部署交互修复
+
+原文事实，source_id: USER-20261014-DEPLOYMENT-FIXES。用户要求修复线上抗震等级卡顿、DeepSeek 改写入口无反应、扩初表格不可编辑及联动缺漏，并交付宝塔更新包，不自动部署。
+
+- 抗震等级只读取单体小份条件，本地即时查表，900ms 合并保存；不锁住输入等待网络，不在每次输入时复制或重绘建筑地勘原文。项目切换仍等待分区保存并保存最新主参数版本。
+- 顶部助理不拦截正文点击；改写保留选段，无选段时打开本章首段正文。侧栏互斥，等待期间发送心跳，鉴权失败和代理超时明确显示。真实密钥只沿用服务器配置，不读取、复制或打包用户密钥。
+- 原生扩初表格单元格人工值存于原扩初分区 `tableEdits`，使用原行身份，未改格继续联动；规范正文仍编辑共用规范记录。蓝色加粗表示统一措施联动，人工编辑后取消蓝色；Word 保留模板几何及人工内容。桩基结构安全等级依用户本轮指定与 `pile` 同源，未新增规范判断规则。
+- 验收、命令及边界见 `web-demo/design/deployment-fixes/20261014.md`。交付包 `web-demo/outputs/baota/structure-workbench-work-fix-20261014.zip`；上传后用 Python 解压，避免中文文件名校验问题。`workbench-version.json` 用于核对更新版本。
+
+## 2026-10-15 选段改写与项目操作内测
+
+原文事实，source_id: USER-20261015-INTERACTION-RETEST。用户要求改写直接发送选中文字和要求，修复高度回车联动，并内测新建、删除和示例副本操作。
+
+- 段落改写默认关闭联网检索，保留可选补查和默认深度思考；选区预览、流式响应、采用回填保持原流程。真实 API 凭据仅沿用服务器配置。
+- 抗震高度 input/change/focusout/Enter 均刷新本地结果；相同值回车仍重算显示，焦点在面板内时更新结果，不依赖重选结构形式。查表规则不变。
+- 新项目分区使用 `fresh` 跳过空读；空 intake/modules 建立初始比较值，未编辑时不在离开页面时写入空分区。普通载入和修订冲突保护不变。保存可请求 `?ack=1` 仅返回修订确认；专项只查询 `?prefix=expansion-`，备份仍读取全部分区。
+- 项目操作立即显示进度和耗时，期间锁住编辑，启动资料模块就绪前不开放管理按钮；新建不反复扫描项目列表，删除先备份且可恢复。测试仅用 `qa/interaction-fixes-20261015` 隔离库，不操作正式项目。
+- 验收记录与部署步骤见 `web-demo/design/deployment-fixes/20261015.md`、`web-demo/deploy/baota/更新说明.md`。本轮不自动部署、提交或推送。
+
+## 2026-10-15 项目管理大资料提速
+
+原文事实，source_id: USER-20261015-PROJECT-SPEED。用户反馈删除下载备份、打开旧项目变慢。本段覆盖此前“删除先自动下载备份”的约定。
+
+- 删除先保存修改，再写 lifecycle 标记；不自动下载全量归档。原分区与历史不删除，保留恢复按钮及主动下载备份。保存断线或409冲突中止删除，不跳过失败而丢失当前稿。
+- 切换已在下拉框中的项目不重复扫描清单。专项启动不下载所有扩初正文图片；已有判断通过 `?prefix=expansion-&view=context` 读取 identity/parameters/model/regulations，PPT 打开时才读完整文稿。不能遗漏跨单体判断所用参数和规范。
+- 导入来源正文保持不可变；替换/重新归类生成新来源。`createDocumentComposer` 按来源引用、分类、hash、fragments/blocks 复用派生文档，项目切换或资料变化重新编排。折叠原文在展开时渲染。
+- 回归见 `design/project-integration/management-performance.test.mjs`；浏览器大资料对照仅用 `web-demo/qa/management-speed-20261015` 隔离库。记录在 `web-demo/design/deployment-fixes/20261015-performance.md`；交付 `structure-workbench-work-performance-20261015.zip`，不自动部署。
+
+## 2026-10-15 段落改写等待调整
+
+source_id: USER-20261015-REWRITE-SPEED（用户要求；原文事实）。分条改写约250秒，希望减少等待。本段覆盖此前默认开启深度思考的约定。
+
+- 新选段每次默认关闭联网、深度思考，主动勾选仍可使用。普通润色/分条精简无关上下文，明确要求结合资料、分析或补充时仍附原有资料；模型配置沿用。
+- 模型完整结束标记及前端最终结果均立即结束接收，不等待远端断开。失败和停止有独立未完成回复，采用才回填，保留原有项目/单体/版本检查。
+- 112项相关回归及5项更新器测试通过，隔离浏览器验证默认开关重置、失败恢复、流式预览及采用。真实官方API发生503和无正文超时，尚未通过真实速度验收，不能承诺已降到某一秒数。详见 `web-demo/design/deployment-fixes/20261015-rewrite-speed.md`。
+- 交付 `structure-workbench-work-rewrite-20261015.zip`；安装使用用户已确认存在的 `/www/workbench-fix-20261015`，不自动部署或提交。
+
+## 2026-10-15 计算书 PDF 上传及合并
+
+source_id: USER-20261015-CALCULATION-PDF（用户要求，原文事实）。计算书新增本机文件夹选择，只上传荷载校核、上部、基础、施工图PDF至 `WORKBENCH_DATABASE_ROOT/calculation-uploads/<projectId>/<batch>`，main仍存路径清单。按分组与文件名自然排序合并原页，保留原始尺寸；Linux用pdfunite，Windows用文档Python的pypdf。单份64MB、200份/512MB总量限制，授权过期重新扫描，文件变化先更新清单，不能串项目下载。此目录须随projects备份。
+
+- A3 Word不再依赖未迁移的外部母件目录，采用包内封面与当前目录；外部Excel仍须配置。保留人工确认，按钮显示错误而非静默禁用。生成副本清除历史签章及封面图片，母件不变。
+- 详见 `web-demo/design/deployment-fixes/20261015-calculation.md`；回归为 `calculation-pdfs.test.mjs`、`calculation-deployment.test.mjs`、文档Python运行 `calculation-builder.test.py`。隔离服务5198，不写正式603。
+- 打包指定 `--guide 计算书更新说明.md`，交付 `structure-workbench-work-calculation-20261015.zip`，不自动部署或提交。服务器实际Linux合并需更新后验收。

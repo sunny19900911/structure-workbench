@@ -1210,8 +1210,11 @@ td.stg{font-size:11.5px;color:#7b8794}
           <span class="calcbook-count" id="calcbook-pdf-count"></span>
         </div>
         <div class="calcbook-pdf-path-row">
-          <input id="calcbook-pdf-path" type="text" aria-label="盈建科输出路径" placeholder="E:\600-工作台数据库\610-待处理\模拟yjk路径" spellcheck="false">
+          <input id="calcbook-pdf-path" type="text" aria-label="盈建科输出路径" placeholder="服务所在电脑的盈建科目录；本机文件请点选择文件夹" spellcheck="false">
           <button class="calcbook-reset" id="calcbook-pdf-scan" type="button">读取 PDF</button>
+          <button class="calcbook-reset" id="calcbook-pdf-upload" type="button">选择本机文件夹</button>
+          <input id="calcbook-pdf-folder" type="file" webkitdirectory multiple hidden>
+          <button class="calcbook-export" id="calcbook-pdf-export" type="button" disabled>合并导出 PDF</button>
         </div>
         <div id="calcbook-pdf-list" class="calcbook-pdf-list"></div>
         <p id="calcbook-pdf-status" class="calcbook-pdf-status" role="status"></p>
@@ -1463,7 +1466,11 @@ function applyRole(){
 function setRole(v){ ROLE=v; cstSave(); applyRole(); syncLock(); }
 function setProjStage(v){ PSTAGE=v; cstSave(); applyRole(); syncLock(); }
 /* 已签发的卡片 → 内容只读（不改任何正文，只在卡片首部插一条说明并加锁类） */
+let lastLockSignature;
 function syncLock(){
+  const signature=JSON.stringify([ROLE,PSTAGE,CST,window.WorkbenchProjects?.id,window.WorkbenchProjects?.loading]);
+  if(signature===lastLockSignature)return;
+  lastLockSignature=signature;
   CARDS.forEach(function(c){
     const s=document.getElementById(c.sec); if(!s) return;
     const shut=stOf(c.id)===3;
@@ -4105,8 +4112,8 @@ function xmlBlocksText(txt){
   return {paras:paras,tables:[]};
 }
 function mark(slot,st){
-  document.getElementById('st-'+slot).textContent=st;
-  document.getElementById('box-'+slot).classList.add('done');
+  const label=document.getElementById('st-'+slot);if(label)label.textContent=st;
+  document.getElementById('box-'+slot)?.classList.add('done');
 }
 function commitData(d){
   Object.keys(d).forEach(function(k){
@@ -6072,13 +6079,14 @@ gn7GenerateGeneralOnly();
 <script type="module" src="./deepseek-assistant.js"></script>
 <script src="./calculation-book-catalog.js"></script>
 <script src="./calculation-pdfs.js"></script>
-<script src="./calculation-book.js?v=pdf-directory-2"></script>
+<script src="./calculation-book.js?v=calculation-cloud-20261015"></script>
 <script>
 window.ExpansionHost={
   params:function(){return wbMeasureSnapshot().params;},
   canEdit:kbCanEdit,role:function(){return roleName(ROLE);},goStage:goStage,toast:toast,
   textBlocks:xmlBlocksText,decode:decodeText,readDocx:readDocx,readPdf:readPdf,readPdfJs:readPdfJs,
   extractBldg:extractBldg,extractGeo:extractGeo,parseYJK:parseYJK,
+  modelCompare:function(files){const previous=RCOUT;try{const raw=files.map(f=>f.text).join('\n'),mass=files.find(f=>/wmass/i.test(f.name))?.text||raw;RCOUT={raw,sections:rcSections(mass),files:files.map(f=>f.name)};return RC_ROWS.map(r=>({...r,...rcJudge(r),quote:(RCOUT.sections[r.sec]||'').slice(0,12000)}));}finally{RCOUT=previous;}},
   rcIngest:function(files){rcIngest(files,'② 本次模型批次');},mark:mark
 };
 </script>
@@ -6103,5 +6111,6 @@ import('./expansion-workbench.js').then(()=>import('./word-document-view.js')).c
 </script>
 <script type="module" src="./integrated-modules.js"></script>
 <script type="module" src="./seismic-grade-workbench.js"></script>
+<script type="module" src="./workflow-ui.js"></script>
 </body>
 </html>

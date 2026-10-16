@@ -1,5 +1,5 @@
 import {createRewritePanel} from './panel.js';
-import {paragraphAt,replaceTarget,rewriteContext} from './core.js';
+import {paragraphAt,replaceTarget,rewriteContext,firstRewriteTarget} from './core.js';
 
 export function mountExpansionRewrite({root,read,serialize,resolve,commit,notify}){
   const panel=createRewritePanel();let bookmark=null;
@@ -21,11 +21,16 @@ export function mountExpansionRewrite({root,read,serialize,resolve,commit,notify
     bookmark={sid:editor.dataset.editor,fullText,start,end,original:fullText.slice(start,end),identity:read().identity};
   }
   document.addEventListener('selectionchange',selection);
+  // Keep the text selection before a toolbar button takes focus.
+  function beforeClick(e){if(e.target.closest('[data-action="rewrite-chat"]')){selection();e.preventDefault();}}
+  root.addEventListener('mousedown',beforeClick);
   function click(e){const button=e.target.closest('[data-action="rewrite-chat"]');if(!button)return;
     try{
       const host=read(),sid=button.dataset.section;if(!host.editable)throw Error('当前正文为只读或正在载入');
-      if(!bookmark||bookmark.sid!==sid||bookmark.identity!==host.identity)throw Error('请先选中正文，或将光标放在要改写的段落内');
-      const target={...bookmark},section=host.state.sections[sid];
+      const section=host.state.sections[sid];
+      const selected=bookmark?.sid===sid&&bookmark.identity===host.identity&&bookmark.fullText===section?.text&&bookmark.original.trim();
+      const target=selected?{...bookmark}:firstRewriteTarget(section?.text);
+      if(!target)throw Error('本章尚无可改写文字，请先在正文输入一段内容');
       if(!target.original.trim()||/\[\[(?:table|image|measures):/.test(target.original))throw Error('请选择文字段落，不包含表格或图片');
       if(target.original.length>8000)throw Error('请将选段缩小到8000字以内');
       if(target.fullText!==section?.text)throw Error('正文已更新，请重新选择段落');
@@ -36,5 +41,5 @@ export function mountExpansionRewrite({root,read,serialize,resolve,commit,notify
     }catch(error){notify(error.message);}
   }
   root.addEventListener('click',click);
-  return {destroy(){document.removeEventListener('selectionchange',selection);root.removeEventListener('click',click);panel.destroy();}};
+  return {destroy(){document.removeEventListener('selectionchange',selection);root.removeEventListener('mousedown',beforeClick);root.removeEventListener('click',click);panel.destroy();}};
 }

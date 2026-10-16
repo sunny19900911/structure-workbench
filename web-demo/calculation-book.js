@@ -83,7 +83,7 @@ function calcbookResetConfirmation() {
 function calcbookSyncExportButton() {
   const checked = Boolean(document.getElementById('calcbook-confirmed')?.checked);
   const button = document.getElementById('calcbook-export');
-  if (button) button.disabled = !checked || calcbookState.exporting || !calcbookState.ready || !calcbookItemCount();
+  if (button) button.disabled = calcbookState.exporting;
 }
 
 function calcbookRenderCatalog() {
@@ -317,6 +317,7 @@ function calcbookRenderOutFiles(){
 }
 
 async function calcbookExport() {
+  if (calcbookState.exporting) return;
   const status = document.getElementById('calcbook-status');
   const confirmed = Boolean(document.getElementById('calcbook-confirmed')?.checked);
   if (!confirmed) {
@@ -328,10 +329,16 @@ async function calcbookExport() {
   calcbookSyncExportButton();
   status.textContent = '正在按 A3 版式生成 Word…';
   status.className = 'calcbook-status';
+  const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 240000);
   try {
+    if (!calcbookState.ready) {
+      await calcbookInit();
+      if (!calcbookState.ready) throw Error(document.getElementById('calcbook-ready').textContent);
+    }
     const project = calcbookProject();
     const response = await fetch('/api/calculation-book/export', {
       method: 'POST',
+      signal: controller.signal,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...project, confirmed: true, sections: calcbookState.sections,
@@ -356,9 +363,10 @@ async function calcbookExport() {
     setTimeout(() => URL.revokeObjectURL(url), 1500);
     status.textContent = 'A3 Word 已生成并开始下载。';
   } catch (error) {
-    status.textContent = error?.message || 'Word 生成失败。';
+    status.textContent = error.name === 'AbortError' ? 'Word 生成超时，请重试。' : error?.message || 'Word 生成失败。';
     status.className = 'calcbook-status error';
   } finally {
+    clearTimeout(timer);
     calcbookState.exporting = false;
     calcbookSyncExportButton();
   }
@@ -367,31 +375,35 @@ async function calcbookExport() {
 async function calcbookInit() {
   const badge = document.getElementById('calcbook-ready');
   try {
-    const response = await fetch('/api/calculation-book/status', { cache: 'no-store' });
+    const response = await fetch('/api/calculation-book/status', { cache: 'no-store', signal: AbortSignal.timeout(30000) });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || '计算书资料连接失败');
-    calcbookState.defaults = Array.isArray(payload.sections) ? calcbookNormalizeSections(payload.sections) : calcbookFallbackSections();
-    calcbookState.sections = calcbookCloneSections(calcbookState.defaults);
+    calcbookState.defaults = payload.sections?.some(section => section.items?.length) ? calcbookNormalizeSections(payload.sections) : calcbookFallbackSections();
+    if (!calcbookState.sections.length) calcbookState.sections = calcbookCloneSections(calcbookState.defaults);
     calcbookState.ready = Boolean(payload.ready);
     calcbookState.workbooks = Array.isArray(payload.workbooks) ? payload.workbooks : [];
+    document.querySelectorAll('a[href$="/calculation-book/template/catalog"]').forEach(link => { link.hidden = !payload.templates?.catalog; });
     badge.textContent = calcbookState.ready
-      ? `${payload.word_count} 份 Word · ${calcbookState.workbooks.length} 份 Excel 已连接`
+      ? `Word 生成已就绪 · ${calcbookState.workbooks.length} 份 Excel 已连接`
       : '计算书输入不完整';
     badge.classList.toggle('ok', calcbookState.ready);
     const workbookSelect = document.getElementById('calcbook-workbook');
     workbookSelect.innerHTML = calcbookState.workbooks.map((item) => `<option value="${calcbookEsc(item.key)}">${calcbookEsc(item.label)}</option>`).join('');
     calcbookState.workbookKey = calcbookState.workbooks[0]?.key || '';
     calcbookSelectWorkbook();
+    if (!calcbookState.workbooks.length) {
+      document.getElementById('calcbook-excel-state').textContent = '未配置 Excel 母件';
+      document.getElementById('calcbook-excel-help').textContent = 'Excel 母件尚未放到服务器；不影响 PDF 合并或 Word 封面、目录和 OUT 导出。';
+    }
   } catch (error) {
     calcbookState.defaults = calcbookFallbackSections();
-    calcbookState.sections = calcbookFallbackSections();
+    if (!calcbookState.sections.length) calcbookState.sections = calcbookFallbackSections();
     calcbookState.ready = false;
     badge.textContent = location.protocol === 'file:'
       ? '当前为文件直开；请运行“启动Demo.cmd”使用完整功能'
       : (error?.message || '计算书服务未连接');
   }
   calcbookRenderCatalog();
-  calcbookReadOutFiles([]);
 }
 
 document.getElementById('calcbook-add')?.addEventListener('click', calcbookAdd);

@@ -1,5 +1,5 @@
 // Host-independent contracts: no workbench globals, credentials or DOM.
-export const DEFAULT_INSTRUCTION='结合项目资料和联网结果，深入思考后改写这段话，让内容更合理、表达更专业。可以充分重组、删减或补充。';
+export const DEFAULT_INSTRUCTION='把选中的文字改得简洁一些、条理清楚，保留原意和已有项目事实，直接给出改写正文。';
 export function protectedTokens(text){return String(text).match(/\{\{[^{}]+\}\}|\[\[[^\]]+\]\]/g)||[];}
 export function validateReplacement(original,text){
   if(typeof text!=='string'||!text.trim()||text.length>12000)throw Error('改写稿为空或过长，请继续调整');
@@ -17,6 +17,17 @@ export function paragraphAt(text,offset){
   while(start<end&&/\s/.test(text[start]))start++;
   while(end>start&&/\s/.test(text[end-1]))end--;
   return {start,end};
+}
+export function firstRewriteTarget(text){
+ const fullText=String(text||'');let offset=0;
+ for(const line of fullText.split('\n')){
+  const trimmed=line.trim();
+  if(trimmed&&!/^\d+(?:\.\d+)*\s/.test(trimmed)&&!/^\[\[(?:table|image|measures):/.test(trimmed)){
+   const start=offset+line.indexOf(trimmed);return {fullText,start,end:start+trimmed.length,original:trimmed};
+  }
+  offset+=line.length+1;
+ }
+ return null;
 }
 export function rewriteContext(state,sid){
   // Only bounded text and values: never files, images, binary data or whole source documents.

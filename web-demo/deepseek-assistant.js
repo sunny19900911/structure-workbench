@@ -6,8 +6,22 @@ const state = {
   model: 'DeepSeek',
 };
 
+let chatProject='',requestGeneration=0,chatAbort;
+const projectChats=new Map();
+window.addEventListener('workbuddy:project-changed',()=>{
+ const next=window.WorkbenchProjects?.id||'';if(next===chatProject)return;
+ if(chatProject)projectChats.set(chatProject,state.messages);
+ chatAbort?.abort();requestGeneration++;chatProject=next;state.sending=false;
+ state.messages=projectChats.get(next)||[];
+ document.querySelector('.wb-ai-messages')?.replaceChildren();
+ for(const m of state.messages)appendMessage(m.role,m.content);
+ setComposeDisabled(false);
+});
+
 const topbar = document.querySelector('.topbar');
 if (topbar) initAssistant();
+window.addEventListener('workbuddy:ai-panel-open',e=>{if(e.detail!=='assistant')setOpen(false);});
+document.addEventListener('pointerdown',e=>{if(state.open&&!e.target.closest('.wb-ai-drawer,.wb-ai-toggle'))setOpen(false);},true);
 
 function initAssistant() {
   const toggle = document.createElement('button');
@@ -85,12 +99,13 @@ function initAssistant() {
 }
 
 function setOpen(next) {
+  if(next)window.dispatchEvent(new CustomEvent('workbuddy:ai-panel-open',{detail:'assistant'}));
   state.open = next;
   document.body.classList.toggle('wb-ai-open', next);
   const toggle = document.querySelector('.wb-ai-toggle');
   toggle?.setAttribute('aria-expanded', String(next));
   toggle?.setAttribute('aria-label', next ? '关闭 DeepSeek 助理' : '打开 DeepSeek 助理');
-  if (next) setTimeout(() => document.querySelector('.wb-ai-compose textarea')?.focus(), 180);
+  if (next) setTimeout(() => {if(state.open)document.querySelector('.wb-ai-compose textarea')?.focus();}, 180);
 }
 
 async function checkStatus() {
@@ -154,6 +169,8 @@ function collectContext() {
 }
 
 async function sendMessage(text, includeContext) {
+  if(!window.WorkbenchProjects?.id||window.WorkbenchProjects.loading)return;
+  chatProject=window.WorkbenchProjects.id;const project=chatProject,ticket=++requestGeneration;chatAbort=new AbortController();
   state.sending = true;
   state.messages.push({ role: 'user', content: text });
   appendMessage('user', text);
@@ -162,6 +179,7 @@ async function sendMessage(text, includeContext) {
 
   try {
     const response = await fetch('/api/deepseek/chat', {
+      signal:chatAbort.signal,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -170,6 +188,7 @@ async function sendMessage(text, includeContext) {
       }),
     });
     const data = await response.json().catch(() => ({}));
+    if(ticket!==requestGeneration||project!==window.WorkbenchProjects.id)return;
     if (!response.ok) throw new Error(data.error || `请求失败（HTTP ${response.status}）`);
     state.messages.push({ role: 'assistant', content: data.content });
     pending.querySelector('.wb-ai-bubble').textContent = data.content;
@@ -177,11 +196,13 @@ async function sendMessage(text, includeContext) {
     const tokenCount = data.usage?.total_tokens;
     pending.querySelector('.wb-ai-meta').textContent = `${data.model || state.model}${tokenCount ? ` · ${tokenCount} tokens` : ''}`;
   } catch (error) {
+    if(ticket!==requestGeneration||project!==window.WorkbenchProjects.id)return;
     pending.classList.remove('pending');
     pending.classList.add('error');
     pending.querySelector('.wb-ai-bubble').textContent = error.message;
     pending.querySelector('.wb-ai-meta').textContent = '未完成';
   } finally {
+    if(ticket!==requestGeneration)return;
     state.sending = false;
     setComposeDisabled(false);
   }

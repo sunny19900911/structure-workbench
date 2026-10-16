@@ -35,13 +35,13 @@ export function evidencePassages(text){
   while(offset<input.length){let end=Math.min(offset+750,input.length);if(end<input.length){const stop=input.lastIndexOf('。',end);if(stop>offset+250)end=stop+1;}const quote=input.slice(offset,end);passages.push({passage_id:'P'+(passages.length+1),locator:'网页摘录片段'+(passages.length+1)+'（条文号需结合原件核对）',quote});offset=end;}
   return passages;
 }
-export async function fetchEvidence(candidate,{fetchImpl=fetch,lookupImpl=lookup}={}){
+export async function fetchEvidence(candidate,{fetchImpl=fetch,lookupImpl=lookup,signal}={}){
   let url=candidate.url;
   for(let i=0;i<4;i++){
     if(!officialUrl(url))throw Error('非允许的官方来源');
     const ips=await lookupImpl(new URL(url).hostname,{all:true,family:4});
     if(!ips.length||ips.some(({address:a})=>a.includes(':')||/^(0\.|10\.|127\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.)/.test(a)))throw Error('来源地址不可公开访问');
-    const response=await fetchImpl(url,{redirect:'manual',signal:AbortSignal.timeout(15000),headers:{'User-Agent':'WorkBuddy-DecisionResearch/1.0'}});
+    const response=await fetchImpl(url,{redirect:'manual',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(15000)]):AbortSignal.timeout(15000),headers:{'User-Agent':'WorkBuddy-DecisionResearch/1.0'}});
     if(response.status>=300&&response.status<400){url=new URL(response.headers.get('location'),url).href;continue;}
     if(!response.ok)throw Error('官方页面暂不可读 HTTP '+response.status);
     if(!/text\/html|text\/plain|application\/xhtml/i.test(response.headers.get('content-type')||''))throw Error('PDF或附件须人工核对正文');

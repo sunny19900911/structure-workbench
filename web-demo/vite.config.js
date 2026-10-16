@@ -199,17 +199,20 @@ function calculationBookLocalApi(env) {
       });
       let stdout = '';
       let stderr = '';
+      const builderTimer = setTimeout(() => { child.kill(); reject(new Error('计算书生成超时，请减少本次内容后重试。')); }, 180000);
       child.stdout.setEncoding('utf8');
       child.stderr.setEncoding('utf8');
       child.stdout.on('data', (chunk) => { stdout += chunk; });
       child.stderr.on('data', (chunk) => { stderr += chunk; });
-      child.on('error', reject);
+      child.on('error', (error) => { clearTimeout(builderTimer); reject(error); });
       child.on('close', (code) => {
+        clearTimeout(builderTimer);
         if (code === 0) return resolve(stdout.trim());
         let message = stderr.trim() || stdout.trim() || `计算书生成程序退出（${code}）`;
         try { message = JSON.parse(message).error || message; } catch {}
         reject(new Error(message));
       });
+      child.stdin.on('error', () => {});
       child.stdin.end(input);
     });
   }
@@ -220,9 +223,9 @@ function calculationBookLocalApi(env) {
       try {
         const key = new URL(req.url || '/', 'http://localhost').pathname.replace(/^\/+/, '');
         const catalog = JSON.parse(await runBuilder(['--catalog', sourceDir]));
-        const fileName = key === 'cover' ? catalog.templates?.cover : key === 'catalog' ? catalog.templates?.catalog : '';
+        const fileName = key === 'cover' ? catalog.templates?.cover || 'cover-reference.docx' : key === 'catalog' ? catalog.templates?.catalog : '';
         if (!fileName) return sendJson(res, 404, { error: '未找到 Word 母件。' });
-        const buffer = await readFile(join(sourceDir, fileName));
+        const buffer = await readFile(key === 'cover' && !catalog.templates?.cover ? fileURLToPath(new URL('./assets/calculation-book/cover-reference.docx', import.meta.url)) : join(sourceDir, fileName));
         const isDocx = fileName.toLowerCase().endsWith('.docx');
         res.statusCode = 200;
         res.setHeader('Content-Type', isDocx
@@ -326,6 +329,7 @@ function calculationBookLocalApi(env) {
   };
 }
 
+export {deepSeekLocalApi,calculationBookLocalApi};
 export default defineConfig(({ mode }) => {
   const env = localDeepSeekConfig(loadEnv(mode, process.cwd(), ''));
   return {
@@ -340,6 +344,7 @@ export default defineConfig(({ mode }) => {
           integratedWorkbench: fileURLToPath(new URL('./workbuddy-integrated-studio.html', import.meta.url)),
           methodLab: fileURLToPath(new URL('./design/method-lab/index.html', import.meta.url)),
           pptReport: fileURLToPath(new URL('./design/parallel-tasks/06-ppt-report/prototype.html', import.meta.url)),
+          tianjinExample: fileURLToPath(new URL('./design/key-decisions/key-decisions-integrated-prototype.html', import.meta.url)),
         },
       },
     },

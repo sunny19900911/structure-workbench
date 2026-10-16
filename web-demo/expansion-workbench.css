@@ -62,6 +62,8 @@
 .ev-layout .ev-row-action { width:42px; padding:4px; background:white; }
 .ev-row-action button { padding:3px 5px; font-size:12px; white-space:nowrap; }
 .ev-layout .ev-table td[data-source-kind], .ev-layout .ev-ref[data-source-kind] { color:var(--source-ink); background:var(--source-paper); }
+.ev-layout .ev-table td.ev-linked,.ev-layout .ev-ref.ev-linked{color:#0000ff;font-weight:700;background:#f2f6ff}
+.ev-layout .ev-table td[contenteditable=true]:focus{outline:2px solid #779dbd;outline-offset:-2px;background:#fff}
 .ev-irregularity-measure { margin:18px 0 24px; }
 .ev-irregularity-measure h3 { margin:0 0 8px; font-size:16px; }
 .ev-irregularity-measure select { max-width:100%; padding:5px 8px; color:#536676; }

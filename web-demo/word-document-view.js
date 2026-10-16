@@ -9,8 +9,8 @@ function measuresHTML(){
 }
 const labels={measures:'统一技术措施',expansion:'扩初说明',regulations:'地方规范目录'};
 const content=kind=>kind==='measures'?measuresHTML():kind==='regulations'?window.ExpansionWorkbench.localRegulationHTML():window.ExpansionWorkbench.documentHTML();
-async function request(html,kind,format){
- const r=await fetch('/api/expansion/document',{method:'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'expansion'},body:JSON.stringify({html:kind==='expansion'?'':html,kind,format,...(kind==='expansion'?{template:window.ExpansionWorkbench.documentPackage()}: {})})});
+async function request(html,kind,format,template){
+ const r=await fetch('/api/expansion/document',{method:'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'expansion'},body:JSON.stringify({html:kind==='expansion'?'':html,kind,format,...(kind==='expansion'?{template:template||window.ExpansionWorkbench.documentPackage()}: {})})});
  if(!r.ok)throw Error((await r.json()).error||'Word 排版未完成');
  return format==='preview'?r.json():r.blob();
 }
@@ -33,7 +33,7 @@ function mount(kind,stage,editor){
  editor.before(bar,frame);const [show,editButton]=bar.querySelectorAll('button');
  const v={kind,stage,editor,frame,show,edit:editButton,status:bar.querySelector('span'),ticket:0};views.set(kind,v);
  show.onclick=()=>preview(v);editButton.onclick=()=>edit(v);edit(v);
- const onOpen=()=>{if(!stage.hidden&&window.ExpansionWorkbench.capture()&&kind==='measures')preview(v);};
+ const onOpen=()=>{if(!stage.hidden)edit(v);};
  new MutationObserver(onOpen).observe(stage,{attributes:true,attributeFilter:['hidden']});
  return v;
 }
@@ -41,14 +41,22 @@ const expansion=mount('expansion',document.querySelector('#stage2'),document.que
 mount('regulations',document.querySelector('#stage3'),document.querySelector('#ev-shared-regs'));
 const measures=mount('measures',document.querySelector('#stage1'),document.querySelector('#paper1'));
 for(const [id,v] of [['toc1',measures],['toc2',expansion]])document.getElementById(id)?.addEventListener('click',e=>{const a=e.target.closest('a');if(!a||!v.editor.hidden)return;const target=document.querySelector(a.getAttribute('href'));const label=(target?.textContent||a.textContent).replace(/\s+/g,'');const index=v.pageText?.findIndex(text=>text.includes(label));if(index>=0){e.preventDefault();v.frame.children[index].scrollIntoView({block:'start'});}else{e.preventDefault();v.frame.scrollIntoView({block:'start'});}});
-let refreshTimer;
+let refreshTimer,exportPending=false;
 window.addEventListener('workbuddy:expansion-changed',()=>{
  clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{for(const v of views.values())if(!v.stage.hidden&&!v.frame.hidden)preview(v);},700);
 });
 window.addEventListener('workbuddy:project-changed',()=>{for(const v of views.values()){++v.ticket;v.frame.replaceChildren();v.html=null;}});
 window.WordDocumentView={edit:kind=>edit(views.get(kind)),async export(kind,format='docx'){
- const v=views.get(kind),html=content(kind),name=window.WorkbenchLegacy.params().project_name||'未命名项目';
- v.status.textContent='正在生成 '+(format==='pdf'?'PDF':'Word')+' 文件…';
- try{const blob=await request(html,kind,format);const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name+'_'+labels[kind]+'.'+format;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);v.status.textContent='已导出 '+(format==='pdf'?'PDF':'Word')+'；内容与当前正文一致';}
- catch(e){v.status.textContent='导出未完成：'+e.message;}
+ const W=window.WorkbenchProjects,v=views.get(kind);if(W.exporting||exportPending)return;exportPending=true;
+ const notify=text=>{v.status.textContent=text;window.dispatchEvent(new CustomEvent('workbuddy:task-status',{detail:{projectId:W.id,text}}));};
+ try{
+  notify('正在保存当前内容，准备导出…');await W.flush();W.setExporting(true);
+  const projectId=W.id,unit=window.ExpansionWorkbench.unit,html=content(kind),template=kind==='expansion'?window.ExpansionWorkbench.documentPackage():undefined;
+  const name=window.WorkbenchLegacy.params().project_name||'未命名项目';notify('正在导出 '+(format==='pdf'?'PDF':'Word')+'…');
+  const blob=await request(html,kind,format,template);
+  if(W.id!==projectId||window.ExpansionWorkbench.unit!==unit)throw Error('项目或单体已切换，请在当前稿重新导出');
+  await W.recordExport({at:new Date().toISOString(),projectId,unit,kind,format,parameterVersion:W.parameterVersion,...(template?{template}:{html})});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name+'_'+labels[kind]+'.'+format;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
+  notify('已导出并保存本次内容版本');
+ }catch(e){notify('导出失败：'+e.message+'。可点击导出重试。');}finally{exportPending=false;W.setExporting(false);}
 }};

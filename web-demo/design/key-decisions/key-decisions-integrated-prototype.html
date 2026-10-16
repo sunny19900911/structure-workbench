@@ -164,9 +164,13 @@
     }
 
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+    body.embedded .topbar, body.embedded .tabs, body.embedded .side { display: none; }
+    body.embedded .workspace { display: block; }
+    body.embedded .main { padding: 20px; }
   </style>
 </head>
 <body>
+  <script>if (new URLSearchParams(location.search).get('embedded') === '1') document.body.classList.add('embedded');</script>
   <header class="topbar">
     <div class="brand">结构与技术措施 · 一体化工作台</div>
     <div class="context"><span>角色</span><b>设计人员</b><span>阶段</span><b>扩初阶段</b></div>
@@ -396,7 +400,7 @@
       });
       confirmButton.disabled = false;
       confirmButton.classList.remove('confirmed');
-      confirmButton.textContent = '专业负责人确认';
+      confirmButton.textContent = '演示确认（不保存）';
 
       subSwitch.querySelectorAll('.sub-button').forEach(button => button.addEventListener('click', () => {
         state.topics[state.module] = button.dataset.topic;
@@ -417,10 +421,10 @@
     }));
     document.getElementById('backButton').addEventListener('click', () => notify('正式接入时返回①统一技术措施的参数编辑位置'));
     confirmButton.addEventListener('click', () => {
-      confirmButton.textContent = '已确认采用';
+      confirmButton.textContent = '示例已确认（未保存）';
       confirmButton.classList.add('confirmed');
       confirmButton.disabled = true;
-      notify(`已确认：${finalValue.textContent}`);
+      notify(`示例演示，不写入项目：${finalValue.textContent}`);
     });
 
     render();

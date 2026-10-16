@@ -96,3 +96,17 @@ export function composeDocument(sources=[],unit='项目整体'){
 
 // Editorial output suppresses workflow labels; source status remains in state.
 export function cleanDocumentText(text){return String(text).replace(/【待核】/g,'').replace(/【[^】]*(?:待补|待核|导入)[^】]*】/g,'—');}
+
+// Imported source content is immutable: replacement/reclassification creates a
+// new source. Reuse the derived document across readers without hashing images
+// or rescanning all paragraphs every time a unit picker or grade table renders.
+export function createDocumentComposer(){
+ let previous=[],document;
+ return (sources=[],unit='项目整体')=>{
+  const inputs=sources.map(s=>[s,s.slot,s.hash,s.fragments,s.blocks]);
+  if(!document||inputs.length!==previous.length||inputs.some((row,i)=>row.some((v,j)=>v!==previous[i][j]))){
+   document=composeDocument(sources);previous=inputs;
+  }
+  return unit==='项目整体'?document:{...document,units:document.units.filter(u=>u.name===unit)};
+ };
+}

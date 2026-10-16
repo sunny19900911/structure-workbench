@@ -72,7 +72,7 @@ test('切换项目丢弃迟到扫描，清单按项目恢复且不保存临时�
  const elements=new Map();
  const el=id=>{if(!elements.has(id))elements.set(id,{value:'',textContent:'',innerHTML:'',listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},querySelectorAll:()=>[],removeAttribute(){}});return elements.get(id);};
  let finish;
- const context=vm.createContext({document:{getElementById:el},window:{WorkbenchProjects:{id:'first',scheduleSave(){}}},URL,URLSearchParams,fetch:()=>new Promise(resolve=>{finish=resolve;})});
+ const context=vm.createContext({document:{getElementById:el},window:{WorkbenchProjects:{id:'first',scheduleSave(){}}},URL,URLSearchParams,AbortController,setTimeout,clearTimeout,fetch:()=>new Promise(resolve=>{finish=resolve;})});
  vm.runInContext(await readFile(new URL('../../calculation-pdfs.js',import.meta.url),'utf8'),context);
  el('calcbook-pdf-path').value='C:/model-a';
  const oldRequest=el('calcbook-pdf-scan').listeners.click();

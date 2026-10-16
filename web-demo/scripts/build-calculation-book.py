@@ -111,7 +111,7 @@ def status_payload(source_dir: Path) -> dict:
     missing = [key for key in required if not src.get(key)]
     sections = read_catalog_sections(src["catalog"]) if src.get("catalog") else normalize_sections([])
     return {
-        "ready": not missing,
+        "ready": (Path(__file__).resolve().parents[1] / "assets/calculation-book/cover-reference.docx").is_file(),
         "missing": missing,
         "word_count": sum(1 for key in required if src.get(key)),
         "sections": sections,
@@ -430,8 +430,6 @@ def apply_current_cover(document: Document, payload: dict) -> None:
 
 def build(source_dir: Path, output_dir: Path, payload: dict) -> dict:
     src = sources(source_dir)
-    if not src.get("cover") or not src.get("catalog"):
-        fail("计算书封面或目录母件缺失。")
     sections = normalize_sections(payload.get("sections"))
     if not any(section["items"] for section in sections):
         fail("计算书目录至少需要一个小标题。")
@@ -445,6 +443,18 @@ def build(source_dir: Path, output_dir: Path, payload: dict) -> dict:
     output_path = output_dir / f"{uuid.uuid4().hex}_{filename}"
     shutil.copy2(cover_reference, output_path)
     document = Document(output_path)
+    # The reference cover contains historical signatures/stamps. Keep its text
+    # layout, but never carry those images into a new project's generated draft.
+    for part in [document.part, *document.part.related_parts.values()]:
+        element = getattr(part, "_element", None)
+        if element is None:
+            continue
+        for node in element.xpath(".//*[local-name()='drawing'] | .//*[local-name()='shape'][.//*[local-name()='imagedata']]"):
+            if node.getparent() is not None:
+                node.getparent().remove(node)
+        for rid, rel in list(part.rels.items()):
+            if rel.reltype.endswith('/image') and not element.xpath(f'.//*[@*[local-name()="embed" or local-name()="id"]="{rid}"]'):
+                part.drop_rel(rid)
     apply_current_cover(document, payload)
     add_directory_page(document, sections)
     document.core_properties.title = f"{project_name} 结构计算书"
@@ -482,8 +492,6 @@ def main() -> None:
     args = parse_args()
     if args.catalog:
         source_dir = Path(args.catalog)
-        if not source_dir.is_dir():
-            fail("计算书输入目录不存在。")
         print(json.dumps(status_payload(source_dir), ensure_ascii=False))
         return
     if args.workbook:

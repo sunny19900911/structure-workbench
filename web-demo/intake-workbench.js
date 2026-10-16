@@ -1,4 +1,5 @@
-import {composeDocument} from './document-intake.js';
+import {autoParameterUpdates} from './workflow-core.js';
+import {createDocumentComposer} from './document-intake.js';
 import './project-workspace.js';
 import {projectPart,clone} from './project-store-client.js';
 import {fingerprint} from './expansion-core.js';
@@ -7,8 +8,10 @@ import './intake-workbench.css';
 import {DECISION_CONDITIONS} from './regional-decision-guide.js';
 
 const H=window.ExpansionHost,L=window.WorkbenchLegacy,W=window.WorkbenchProjects;
+const composeDocument=createDocumentComposer();
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let state=freshIntake(),store,loading=true,busy=false,ticket=0,selectedUnit=PROJECT,knowledge=null,importSlot=null;
+let gradeDocument=null,gradeSaveTimer,gradeChangePending=false,gradeSaveSerial=0;
 const panel=document.querySelector('#intake-panel'),fileGrid=panel.querySelector('#intake-files');
 document.querySelector('#stage2').prepend(panel);
 panel.innerHTML=`<h2>建筑与地勘资料</h2>
@@ -24,7 +27,7 @@ q('#intake-files').replaceWith(fileGrid);
 fileGrid.querySelectorAll('input[type=file]').forEach(input=>input.addEventListener('click',()=>{input.value='';}));
 const importPanel=document.querySelector('#box-yjk')?.closest('.panel-card');
 if(importPanel){const title=importPanel.querySelector('h2');if(title)title.textContent='结构模型总信息';const grid=importPanel.querySelector('.upgrid');if(grid)grid.style.gridTemplateColumns='1fr';}
-function note(s,kind='info'){const status=q('#intake-status');status.textContent=s;status.dataset.kind=kind;status.hidden=kind!=='error';if(importSlot){const box=q('#box-'+importSlot),label=q('#st-'+importSlot);label.textContent=s;label.setAttribute('role','status');box.dataset.status=kind;}}
+function note(s,kind='info'){const status=q('#intake-status');status.textContent=s;status.dataset.kind=kind;status.hidden=kind!=='error';if(importSlot){const box=q('#box-'+importSlot),label=q('#st-'+importSlot);if(!label)return;label.textContent=s;label.setAttribute('role','status');box.dataset.status=kind;}}
 const canEdit=()=>!loading&&!W.loading&&!!store&&L.canEditMeasures();
 function ensure(){if(!canEdit())throw Error('请先载入项目；统一措施只读或签发状态下不能修改资料');}
 function controls(){
@@ -32,19 +35,37 @@ function controls(){
   q('#intake-access').textContent=loading||W.loading?'正在载入项目，完成后可选择资料文件。':busy?'正在处理资料，请稍候。':L.cardState('c1')===3?'统一措施已签发，资料导入已锁定；请撤回签发后再修改。':canEdit()?'选择建筑或地勘资料后，自动编入扩初说明；可直接编辑正文。':'当前项目资料只读或尚未载入，暂不能导入。';
 }
 async function api(path,data){const r=await fetch('/api/intake/'+path,{method:data===undefined?'GET':'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'intake'},...(data===undefined?{}:{body:JSON.stringify(data)})});const result=await r.json();if(!r.ok)throw Error(result.error||'处理失败');return result;}
-async function save(){if(loading||!store)return;await store.save(state);}
+async function save(){
+ clearTimeout(gradeSaveTimer);if(loading||!store)return;
+ if(gradeChangePending){gradeChangePending=false;W.contentChanged('更新单体抗震等级查表条件');publish();}
+ const projectId=W.id,serial=++gradeSaveSerial;
+ try{await store.save(state);if(projectId===W.id&&serial===gradeSaveSerial&&!gradeChangePending)gradeStatus('已保存');}
+ catch(e){if(projectId===W.id&&serial===gradeSaveSerial)gradeStatus('未保存：'+e.message);throw e;}
+}
+function gradeStatus(text){window.dispatchEvent(new CustomEvent('workbuddy:seismic-save',{detail:{projectId:W.id,text}}));}
+function seismicInputs(){
+ const doc=gradeDocument||composeDocument(state.sources),global=L.params();
+ return [...new Set([...unitNames(state),...doc.allUnitNames])].filter(name=>name!==PROJECT).map(name=>{
+  const unit=doc.units.find(u=>u.name===name),parameters=combinedParameters(state,name,global);
+  const height=state.facts.find(f=>f.unit===name&&f.key==='height_m'&&f.status==='confirmed')?.value||'';
+  return {name,parameters,config:{height,structure:parameters.struct_sys||unit?.structuralType||'',buildingUse:/住宅/.test(unit?.use||'')?'residential':'other',floors:unit?.floors||'',...state.seismicGrades?.[name]}};
+ });
+}
 function applyDocumentIdentity(){
  const d=composeDocument(state.sources),next={project_name:d.projectName,region:d.location,...Object.fromEntries(['intensity','pga','eq_group','site_class'].filter(k=>d.parameters[k]).map(k=>[k,d.parameters[k]]))},current=L.params(),previous=state.autoDocumentIdentity||{},updates={};
- for(const [key,value] of Object.entries(next))if(value&&(!current[key]||current[key]==='未命名项目'||current[key]===previous[key])&&current[key]!==value)updates[key]=value;
- if(Object.keys(updates).length){L.adoptParameters(updates);state.autoDocumentIdentity={...previous,...updates};}
+ const result=autoParameterUpdates(next,current,previous);state.parameterConflicts=result.conflicts.filter(x=>!state.parameterResolutions?.[JSON.stringify(x)]);
+ Object.assign(updates,result.updates);
+ if(Object.keys(updates).length)L.adoptParameters(updates);
+ state.autoDocumentIdentity={...previous,...updates};
+
 }
 function publish(){window.dispatchEvent(new CustomEvent('workbuddy:intake-changed',{detail:{projectId:W.id,revision:state.revision}}));}
-async function action(run){if(busy)return;try{ensure();busy=true;controls();await run();render();await save();publish();return true;}catch(e){note(e.message,'error');await save().catch(()=>{});return false;}finally{busy=false;controls();}}
+async function action(run,propagate=false){if(busy)return;try{ensure();busy=true;controls();await run();render();await save();publish();return true;}catch(e){note(e.message,'error');if(propagate)throw e;return false;}finally{busy=false;controls();}}
 function queryUnit(){return {name:selectedUnit,...Object.fromEntries(state.facts.filter(f=>f.status==='confirmed'&&f.unit===selectedUnit).map(f=>[f.key,f.value])),geotechnical:state.facts.filter(f=>f.status==='confirmed'&&f.slot==='geo'&&(f.unit===PROJECT||f.unit===selectedUnit)).map(({key,value,source_id,locator,statement})=>({key,value,source_id,locator,statement}))};}
 function querySignature(){return fingerprint({unit:queryUnit(),parameters:L.params()});}
 function render(){
-  const doc=composeDocument(state.sources);q('#intake-document-notes-body').innerHTML=doc.notes.map(t=>'<p>'+esc(t)+'</p>').join('');q('#intake-document-notes').hidden=true;
-  q('#intake-source-list').innerHTML=state.sources.map(s=>`<div class="intake-source-row" data-source-kind="${s.slot==='geo'?'geo':s.slot==='bldg'?'bldg':''}"><details><summary>${esc(s.name)} · ${s.slot==='geo'?'地勘':s.slot==='lookup'?'地点查表':'建筑'} · ${s.fragments.length} 段</summary><p>${esc(s.source_id)}</p><button data-source-ai="${esc(s.source_id)}" ${s.slot==='lookup'?'hidden':''}>AI 重新识别此份资料</button><pre>${esc(s.fragments.map(f=>f.locator+'\n'+f.text).join('\n\n'))}</pre></details><button class="intake-remove" data-remove-source="${esc(s.source_id)}" aria-label="移除资料：${esc(s.name)}">移除资料</button></div>`).join('')||'<p>尚未导入本项目资料。</p>';
+  const doc=composeDocument(state.sources);gradeDocument=doc;q('#intake-document-notes-body').innerHTML=doc.notes.map(t=>'<p>'+esc(t)+'</p>').join('');q('#intake-document-notes').hidden=true;
+  q('#intake-source-list').innerHTML=state.sources.map(s=>`<div class="intake-source-row" data-source-kind="${s.slot==='geo'?'geo':s.slot==='bldg'?'bldg':''}"><details><summary>${esc(s.name)} · ${s.slot==='geo'?'地勘':s.slot==='lookup'?'地点查表':'建筑'} · ${s.fragments.length} 段</summary><p>${esc(s.source_id)}</p>${s.slot==='lookup'?'':`<label>资料归类 <select data-reclassify="${esc(s.source_id)}"><option value="bldg" ${s.slot==='bldg'?'selected':''}>建筑说明</option><option value="geo" ${s.slot==='geo'?'selected':''}>地勘报告</option></select></label>`}<button data-source-ai="${esc(s.source_id)}" ${s.slot==='lookup'?'hidden':''}>AI 重新识别此份资料</button><pre data-source-preview="${esc(s.source_id)}"></pre></details><button data-replace-source="${esc(s.source_id)}" ${s.slot==='lookup'?'hidden':''}>替换</button><button class="intake-remove" data-remove-source="${esc(s.source_id)}" aria-label="移除资料：${esc(s.name)}">移除资料</button></div>`).join('')||'<p>尚未导入本项目资料。</p>';
   if(state.removedSources?.length)q('#intake-source-list').insertAdjacentHTML('beforeend',`<details><summary>已移除资料（${state.removedSources.length}）· 可恢复</summary>${state.removedSources.map(r=>`<p>${esc(r.name)} <button data-restore-source="${esc(r.id)}">恢复为待确认资料</button></p>`).join('')}<small>恢复后重新核对采用，不自动恢复已确认参数。</small></details>`);
   const conflictIds=new Set(conflicts(state.facts).flatMap(a=>a.map(f=>f.id)));
   q('#intake-facts').innerHTML=state.facts.length?'<div class="intake-table"><table><thead><tr><th>范围／字段</th><th>候选值与采用值</th><th>原文依据</th><th>操作</th></tr></thead><tbody>'+state.facts.map(f=>`<tr data-fact="${f.id}"><td>${esc(f.unit)}<br><b>${esc(f.label)}</b><br>${f.status==='confirmed'?'已采用':f.status==='rejected'?'未采用':'待确认'} ${conflictIds.has(f.id)?'<strong class="intake-conflict">取值冲突</strong>':''}</td><td><textarea data-value aria-label="${esc(f.unit+' '+f.label+'采用值')}">${esc(f.value)}</textarea><input data-reason aria-label="${esc(f.unit+' '+f.label+'修改理由')}" placeholder="更正或解决冲突时填写理由" value="${esc(f.reason||'')}"></td><td><details><summary>${esc(f.filename)} · ${esc(f.locator)}</summary><p>${esc(f.quote)}</p><small>${esc(f.statement)} · ${esc(f.source_id)}</small></details>${f.slot==='lookup'?'<small>内置地点表候选，标准原文及适用版本待核对。</small>':''}</td><td><button data-adopt="${f.id}">${conflictIds.has(f.id)?'按此值解决冲突':'确认采用'}</button><button data-reject="${f.id}">不采用</button></td></tr>`).join('')+'</tbody></table></div>':'<p>导入后显示候选值，不用历史示例填空。</p>';
@@ -53,18 +74,21 @@ function render(){
   q('#intake-unit').innerHTML=[PROJECT,...names].map(n=>`<option ${n===selectedUnit?'selected':''}>${esc(n)}</option>`).join('');
   renderKnowledge();renderSuggestions();renderMeasures();refreshGeo();controls();
 }
+// Populate collapsed original text only when the user opens that source.
+panel.addEventListener('toggle',event=>{const details=event.target;if(!details.open)return;const preview=details.querySelector?.('[data-source-preview]');if(!preview||preview.dataset.loaded)return;const source=state.sources.find(s=>s.source_id===preview.dataset.sourcePreview);if(source){preview.textContent=source.fragments.map(f=>f.locator+'\n'+f.text).join('\n\n');preview.dataset.loaded='true';}},true);
 function refreshGeo(){const el=document.querySelector('#gc-res');if(!el)return;const facts=state.facts.filter(f=>f.key==='site_class'&&f.slot==='geo'&&f.status!=='rejected');el.textContent=facts.length?'本项目地勘候选：'+facts.map(f=>f.unit+' '+f.value+'（'+(f.status==='confirmed'?'已采用':'待确认')+'）').join('；')+'。当前公共参数：'+(L.params().site_class||'未采用')+'。请在上方候选表核对原文及适用范围。':'请在②扩初说明导入地勘资料，采用后自动计入统一措施。';}
 function renderMeasures(){const paper=document.querySelector('#paper1');if(!paper)return;let section=paper.querySelector('[data-intake-summary]');if(!section){section=document.createElement('section');section.dataset.intakeSummary='true';paper.append(section);}const names=[...new Set([...unitNames(state),...(state.facts.some(f=>f.unit===PROJECT&&f.status==='confirmed'&&DECISION_CONDITIONS.some(([key])=>key===f.key))?[PROJECT]:[])])];section.innerHTML=names.length?'<h1>本项目单体资料与方案采用记录</h1>'+names.map(n=>'<h2>'+esc(n)+'</h2><table><tbody>'+state.facts.filter(f=>f.status==='confirmed'&&f.unit===n).map(f=>'<tr><td>'+esc(f.label)+'</td><td>'+esc(f.value)+'</td><td>'+esc(f.filename+' · '+f.locator)+'</td></tr>').join('')+'</tbody></table>').join(''):'';}
 function renderKnowledge(){q('#intake-knowledge').innerHTML=!knowledge?'':`<p>${esc(knowledge.authority)}</p><p>方法检查缺项：${esc(knowledge.missing.map(k=>({name:'单体名称',use:'用途',floors_above:'地上层数',floors_below:'地下层数',structural_height_m:'结构高度',first_floor_height_m:'首层层高',typical_floor_height_m:'标准层层高',plan_length_m:'平面长度',plan_width_m:'平面宽度',typical_span_m:'主要跨度',basement:'地下室条件',irregularity_features:'不规则特征'})[k]||k).join('、')||'已填写所需字段')} ${knowledge.complexCandidate?'· 有复杂结构线索，需专项核对':''}</p>${knowledge.warnings.map(w=>'<p>'+esc(w)+'</p>').join('')}${knowledge.cases.map(c=>`<details><summary>历史案例 ${esc(c.case_id)} · ${esc(c.system)}</summary><p>用途：${esc(c.use||'未登记')}；地点：${esc(c.location?.city||'未登记')}</p><p>${esc(JSON.stringify(c.evidence))}</p><p>仅供比选，不自动带入参数或截面。</p></details>`).join('')}${knowledge.cards.map(c=>`<details><summary>${esc(c.title)} · ${esc(c.review_status)}</summary><p>${esc(c.source_id)}</p><pre>${esc(c.body)}</pre></details>`).join('')}`;}
 function renderSuggestions(){const item=state.suggestions[selectedUnit];const stale=item&&item.signature!==querySignature();q('#intake-suggestions').innerHTML=item?`<p>${stale?'资料或参数已变化，请重新生成建议。':'AI 推断 · 待核对采用'}</p>${item.options.map((o,i)=>`<article><h4>${esc(o.system)}</h4><p>${esc(o.reasons.join('；'))}</p><p>待验证：${esc(o.checks.join('；'))}</p><small>${esc(o.source_ids.join('、'))}</small><p><button data-plan="${i}" ${stale?'disabled':''}>采用为该单体体系方案</button></p></article>`).join('')}`:'';}
 async function digest(bytes){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');}
-async function ingest(slot,name,blocks,hash){
+async function ingest(slot,name,blocks,hash,replaceSource){
   const parts=fragments(blocks);if(!parts.length)throw Error('未提取到可读文字，请使用文字版或粘贴摘录');
   // Local import is independent of the model's per-request context limit.
   if(parts.length>30000||new TextEncoder().encode(JSON.stringify(parts)).length>8*1024*1024)throw Error('提取文字超过本地单份资料容量（8MB或30000段），请按章节拆分；原文件未修改');
   const source={source_id:'CURRENT-'+slot+'-'+hash.slice(0,20),name,slot,hash,fragments:parts,blocks,at:new Date().toISOString()};
   if(state.sources.some(s=>s.source_id===source.source_id)){note('该资料版本已经导入，可选择AI重新识别');return;}
-  const local=extractLocal(source);mergeCandidates(state,source,local.facts);applyDocumentIdentity();let warnings=local.warnings;
+  const local=extractLocal(source);if(replaceSource&&replaceSource!==source.source_id){const plan=sourceRemoval(state,replaceSource,L.params());removeSource(state,plan);if(Object.keys(plan.clear).length)L.adoptParameters(plan.clear);}
+  mergeCandidates(state,source,local.facts);applyDocumentIdentity();let warnings=local.warnings;
 
   updateLocations();for(const query of state.locationQueries)if(query.matches.length===1)addLocation(query.matches[0]);const count=state.facts.filter(f=>f.source_id===source.source_id).length;note('已读取「'+name+'」，内容已自动编入扩初说明。'+warnings.join('；'),'success');
 }
@@ -77,8 +101,8 @@ async function readLegacyDoc(bytes){
   if(doc.querySelector('parsererror'))throw Error('DOC解析结果格式异常，请另存为DOCX重试');
   return {paras:[...doc.querySelectorAll('para')].filter(p=>!p.closest('entry')).map(p=>p.textContent),tables:[...doc.querySelectorAll('informaltable,table')].map(t=>[...t.querySelectorAll('row')].map(r=>[...r.querySelectorAll('entry')].map(e=>e.textContent)))};
 }
-async function readFiles(slot,files){
-  if(!files.length||busy)return;
+async function readFiles(slot,files,{replaceSource}={}){
+  if(!files.length)return;if(busy)throw Error('正在处理资料，请稍候');
   importSlot=slot;
   try{await action(async()=>{
     const project=W.id;
@@ -92,18 +116,21 @@ async function readFiles(slot,files){
         else if(/\.(txt|md)$/i.test(file.name))blocks=H.textBlocks(H.decode(bytes));
         else throw Error('支持DOC、DOCX、文字PDF、TXT、MD');
         if(project!==W.id)throw Error('项目已切换，未写入资料');
-        await ingest(slot,file.name,blocks,await digest(bytes));
+        window.dispatchEvent(new CustomEvent('workbuddy:task-status',{detail:{projectId:project,text:'整理中 · '+file.name,phase:'整理中'}}));
+        await ingest(slot,file.name,blocks,await digest(bytes),replaceSource);
       }catch(e){throw Error('「'+file.name+'」导入失败：'+e.message);}
     }
-  });}finally{importSlot=null;}
+  },true);}finally{importSlot=null;}
 }
-document.addEventListener('change',e=>{const input=e.target.closest('input[data-imp]');if(input&&['bldg','geo'].includes(input.dataset.imp)){e.stopImmediatePropagation();const files=[...input.files];readFiles(input.dataset.imp,files);}},true);
+document.addEventListener('change',e=>{const input=e.target.closest('input[data-imp]');if(input&&['bldg','geo'].includes(input.dataset.imp)){e.stopImmediatePropagation();const files=[...input.files];readFiles(input.dataset.imp,files).catch(e=>note(e.message,'error'));}},true);
 
 q('#intake-unit').onchange=()=>{selectedUnit=q('#intake-unit').value;state.activeUnit=selectedUnit;save().catch(e=>note(e.message));knowledge=null;renderKnowledge();renderSuggestions();};
 q('#intake-retrieve').onclick=()=>action(async()=>{knowledge=await api('knowledge',{parameters:L.params(),unit:queryUnit()});note('已按当前单体查找本地方法与历史案例');});
 q('#intake-suggest').onclick=()=>action(async()=>{if(selectedUnit===PROJECT)throw Error('请先确认单体信息并选择单体');const signature=querySignature();note('正在结合当前单体与本地方法提出比选建议…');const result=await api('suggest',{parameters:L.params(),unit:queryUnit(),consent:true});if(signature!==querySignature())throw Error('资料已变化，请重新生成');knowledge=result.knowledge;state.suggestions[selectedUnit]={...result,signature,at:new Date().toISOString()};note('已形成候选方案，请核对建筑条件与待验证事项');});
 q('#intake-open-expansion').onclick=()=>action(async()=>{if(!window.ExpansionWorkbench)throw Error('扩初模块尚未就绪');await save();await window.ExpansionWorkbench.selectUnit(selectedUnit);H.goStage(2);});
+panel.addEventListener('change',e=>{if(!e.target.dataset.reclassify)return;const source=state.sources.find(s=>s.source_id===e.target.dataset.reclassify),slot=e.target.value;action(()=>ingest(slot,source.name,source.blocks,source.hash,source.source_id));});
 panel.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.replaceSource){window.WorkbenchFlow?.replace(b.dataset.replaceSource);return;}
   if(b.dataset.removeSource){
     if(!canEdit())return;
     const plan=sourceRemoval(state,b.dataset.removeSource,L.params());
@@ -113,7 +140,7 @@ panel.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)retu
     action(async()=>{
       const current=sourceRemoval(state,b.dataset.removeSource,L.params());
       if(Object.keys(current.clear).length)L.adoptParameters(current.clear);
-      removeSource(state,current);knowledge=null;updateLocations();
+      removeSource(state,current);applyDocumentIdentity();knowledge=null;updateLocations();
       const input=q('input[data-imp="'+current.source.slot+'"]');if(input)input.value='';
       const box=q('#box-'+current.source.slot),label=q('#st-'+current.source.slot);if(box)delete box.dataset.status;if(label)label.textContent='已移除「'+current.source.name+'」，可选择新资料';
       W.contentChanged('移除资料：'+current.source.name);
@@ -127,16 +154,20 @@ panel.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)retu
   if(b.dataset.location)action(async()=>{const [i,j]=b.dataset.location.split(':').map(Number);addLocation(state.locationQueries[i].matches[j]);note('已生成参数候选；采用前核对标准版本及项目适用性');});
   if(b.dataset.plan!==undefined)action(async()=>{const s=state.suggestions[selectedUnit];if(!s||s.signature!==querySignature())throw Error('资料已变化，请重新生成建议');const o=s.options[+b.dataset.plan],sid='DECISION-'+crypto.randomUUID();const f={id:sid,key:'struct_sys',value:o.system,unit:selectedUnit,label:FIELD_LABELS.struct_sys,slot:'bldg',source_id:sid,filename:'当前单体方案决定',locator:'体系比选',quote:o.reasons.join('；'),statement:'AI推断（人工采用，待模型验证）',status:'candidate'};state.sources.push({source_id:sid,name:f.filename,slot:'bldg',hash:sid,fragments:[{id:'F1',text:f.quote,locator:f.locator}],evidence:o.source_ids});state.facts.push(f);adoptFact(state,sid,{reason:'人工采用本次体系比选建议',resolve:true});W.contentChanged('采用单体体系候选');note('已记录单体方案，后续以当前模型验证');});
 });
-async function load({remoteOnly=false}={}){const t=++ticket;loading=true;controls();try{const next=projectPart(W.id,'intake',text=>{if(/失败|冲突|未保存|未连接/.test(text))note(text);});const data=await next.load({remoteOnly});if(t!==ticket)return;store=next;state=data||freshIntake();selectedUnit=state.activeUnit||PROJECT;knowledge=null;updateLocations();loading=false;applyDocumentIdentity();render();note(data?'已读取资料并编入扩初说明，可直接编辑正文':'新项目：请先导入建筑与地勘资料');publish();}finally{if(t===ticket){loading=false;controls();}}}
-window.WorkbenchIntake={async importBundle(converted,metadata){ensure();if(state.history.some(h=>h.bundle_id===metadata.bundle_id))throw Error('此成果包已导入本项目');for(const s of converted.sources)mergeCandidates(state,s,converted.facts.filter(f=>f.source_id===s.source_id));state.history.push({...metadata,event:'导入已有清洗成果包',unmapped:converted.unmapped,issues:converted.issues,previous_confirmations:converted.confirmations});state.revision++;updateLocations();await save();render();publish();note('清洗成果已进入候选表，请在本项目重新核对采用');},get busy(){return busy},get units(){return [...new Set([...unitNames(state),...composeDocument(state.sources).allUnitNames])]},unitParameters:unit=>combinedParameters(state,unit,L.params()),parameters:unit=>combinedParameters(state,unit,L.params()),evidence:(unit,preview=false)=>({...expansionEvidence(state,unit,L.params(),preview),document:composeDocument(state.sources,unit)}),capture:()=>clone(state),refreshGeo,refresh:()=>{controls();renderMeasures();}};
+async function load({remoteOnly=false,fresh=false}={}){clearTimeout(gradeSaveTimer);gradeChangePending=false;gradeDocument=null;gradeSaveSerial++;const t=++ticket;loading=true;controls();try{const next=projectPart(W.id,'intake',text=>{if(t===ticket&&/失败|冲突|未保存|未连接/.test(text))note(text,'error');});const data=await next.load({remoteOnly,fresh});if(t!==ticket)return;store=next;state=data||freshIntake();selectedUnit=state.activeUnit||PROJECT;knowledge=null;updateLocations();loading=false;applyDocumentIdentity();render();if(!data)store.initializeEmpty(state);note(data?'已读取资料并编入扩初说明，可直接编辑正文':'新项目：请先导入建筑与地勘资料');publish();}finally{if(t===ticket){loading=false;controls();}}}
+window.WorkbenchIntake={readFiles,async resolveParameter(key,useSource){await action(async()=>{const item=state.parameterConflicts?.find(x=>x.key===key);if(!item)return;state.parameterResolutions??={};state.parameterResolutions[JSON.stringify(item)]=true;if(useSource){L.adoptParameters({[key]:item.proposed});state.autoDocumentIdentity[key]=item.proposed;}state.parameterConflicts=state.parameterConflicts.filter(x=>x.key!==key);W.contentChanged('处理资料与措施差异');},true);},async importBundle(converted,metadata){ensure();if(state.history.some(h=>h.bundle_id===metadata.bundle_id))throw Error('此成果包已导入本项目');for(const s of converted.sources)mergeCandidates(state,s,converted.facts.filter(f=>f.source_id===s.source_id));state.history.push({...metadata,event:'导入已有清洗成果包',unmapped:converted.unmapped,issues:converted.issues,previous_confirmations:converted.confirmations});state.revision++;updateLocations();await save();render();publish();note('清洗成果已进入候选表，请在本项目重新核对采用');},get busy(){return busy},get units(){return [...new Set([...unitNames(state),...composeDocument(state.sources).allUnitNames])]},unitParameters:unit=>combinedParameters(state,unit,L.params()),parameters:unit=>combinedParameters(state,unit,L.params()),facts:unit=>expansionEvidence(state,unit,L.params()).facts,history:()=>clone(state.history),evidence:(unit,preview=false)=>({...expansionEvidence(state,unit,L.params(),preview),document:composeDocument(state.sources,unit)}),capture:()=>clone(state),refreshGeo,refresh:()=>{controls();renderMeasures();}};
 W.register('intake',{save,load,busy:()=>busy,capture:()=>clone(state)});
-window.WorkbenchIntake.saveSeismicGrade=async(unit,values)=>action(async()=>{
+window.WorkbenchIntake.seismicInputs=seismicInputs;
+window.WorkbenchIntake.saveSeismicGrade=(unit,values)=>{
+ ensure();if(busy)throw Error('正在导入资料，请稍后修改');
  if(!unit||typeof unit!=='string'||unit.length>120||['__proto__','constructor','prototype'].includes(unit))throw Error('单体名称不正确');
  const allowed=['height','structure','basis','category','intensity','pga','site','span','special','frameMomentPercent','coreAsDual','mainFrame','mainWall','basementFixed','basements','reduceSiteI','heightClass','buildingUse','floors'];
  if(Object.keys(values).some(k=>!allowed.includes(k)))throw Error('未知抗震等级字段');
  state.seismicGrades||={};if(state.seismicGrades[unit])state.history.push({event:'更新单体抗震查表条件',unit,previous:{...state.seismicGrades[unit]},at:new Date().toISOString()});state.seismicGrades[unit]={...state.seismicGrades[unit],...values,source_id:'USER-SEISMIC-GRADE-'+W.id+'-'+unit,statement:'我的观点（用户输入）；等级为规范规则推导',updatedAt:new Date().toISOString()};
- state.revision++;W.contentChanged('更新'+unit+'抗震等级查表条件');
-});
+ state.revision++;gradeChangePending=true;gradeStatus('等待保存');
+ clearTimeout(gradeSaveTimer);gradeSaveTimer=setTimeout(()=>save().catch(e=>note(e.message,'error')),900);
+ return true;
+};
 
 // Explicit confirmation in the conditions form uses the existing intake partition,
 // source history and event bus; it does not create a second parameter store.

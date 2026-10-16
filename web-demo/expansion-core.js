@@ -33,7 +33,7 @@ export function references(s) {
   return refs;
 }
 export function resolveText(text,s) { const refs=references(s); return String(text).replace(/\{\{([pfmrt]):([^{}]+)\}\}/g,(_,kind,key)=>refs[kind][key]??(kind==='f'&&s.facts.find(f=>f.id===key&&f.status==='candidate')?'【待核】'+textValue(s.facts.find(f=>f.id===key).value):'【待核引用】')); }
-export function dependencies(s) { return fingerprint({identity:s.identity,measuresVersion:s.measuresVersion,parameters:s.parameters,confirmed:s.parametersConfirmed,templateText:s.templateText,templateTables:s.templateTables,regularity:s.regularity,unitTable:s.unitTable,referenceNorms:s.referenceNorms,reportImages:s.reportImages,unitParameters:s.unitParameters,document:s.document,facts:s.facts,model:s.model,regulations:s.regulations,regulationDocument:s.regulationDocument,criteria:s.criteria}); }
+export function dependencies(s) { return fingerprint({identity:s.identity,measuresVersion:s.measuresVersion,parameters:s.parameters,confirmed:s.parametersConfirmed,templateText:s.templateText,templateTables:s.templateTables,regularity:s.regularity,unitTable:s.unitTable,tableEdits:s.tableEdits,referenceNorms:s.referenceNorms,reportImages:s.reportImages,unitParameters:s.unitParameters,document:s.document,facts:s.facts,model:s.model,regulations:s.regulations,regulationDocument:s.regulationDocument,criteria:s.criteria}); }
 export function requestStamp(s,id) { const d=s.sections[id];return fingerprint({deps:dependencies(s),section:d?{text:d.text||'',hidden:!!d.hidden}:null}); }
 export function isCurrent(s,id,stamp) { return requestStamp(s,id)===stamp; }
 export function validateDraft(draft,s,original='') {

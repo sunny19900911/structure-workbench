@@ -338,6 +338,7 @@ button.mini.add{border-color:#bbced9;background:var(--wb-primary-soft);color:var
 .wb-ai-toggle:focus-visible{outline:3px solid rgba(231,240,245,.7);outline-offset:2px}
 .wb-ai-spark{font-size:15px;color:#eef7f1}
 .wb-ai-shade{
+  pointer-events:none;
   position:fixed;
   z-index:104;
   inset:var(--wb-topbar-height) 0 0;
