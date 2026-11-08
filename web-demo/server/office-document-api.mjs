@@ -1,5 +1,6 @@
 import {createOfficeDocumentStore} from './office-document-store.mjs';
-import {inspectOfficePackage,editOfficePackage,generateWorkbook} from './office-package.mjs';
+import {generateWorkbook} from './office-package.mjs';
+import {inspectPackage,editPackage} from './office-package-router.mjs';
 
 const json=(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
 const mime={docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation'};
@@ -8,7 +9,7 @@ const decode=value=>{try{return decodeURIComponent(value||'');}catch{throw Error
 const parameterVersion=value=>{const raw=decode(value);if(!raw)return undefined;if(/^[+-]?\d+$/.test(raw)){const number=Number(raw);if(!Number.isSafeInteger(number)||number<0)throw Error('来源参数版本无效');return number;}return raw;};
 export function officeDocumentApi(env={},dependencies={}){
  const store=dependencies.store||createOfficeDocumentStore(env);
- const inspect=dependencies.inspect||inspectOfficePackage,edit=dependencies.edit||editOfficePackage,generate=dependencies.generate||generateWorkbook;
+ const inspect=dependencies.inspect||inspectPackage,edit=dependencies.edit||editPackage,generate=dependencies.generate||generateWorkbook;
  function register(server){server.middlewares.use('/api/office-documents',async(req,res)=>{
   try{
    if(env.WORKBENCH_PORTABLE!=='1')return json(res,404,{error:'本机办公文档接口未启用'});

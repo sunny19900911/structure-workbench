@@ -58,7 +58,7 @@
   return {templateText:{permanent:section('s1ch3_1').filter(n=>n.tagName==='P'&&(!n.textContent.includes('河北地区')||/河北/.test(wbMeasureSnapshot().params.region||''))).map(n=>n.textContent.trim()).join('\n'),wall:text('s1ch3_2'),reinforcement:text('s1ch4_2'),steel:text('s1ch4_3'),masonry:table('s1ch4_4').slice(1).map(row=>row.filter(Boolean).join('：')).join('；')},templateTables:{concrete:table('s1ch4_1'),durability:table('s1durability'),floor:table('s1ch3_3'),roof:table('s1ch3_4'),equipment:table('s1ch3_5')}};
  }
  window.WorkbenchLegacy={templateContent,capture,apply,blank,sample,loadExample,params:()=>wbMeasureSnapshot().params,
-   role:()=>ROLE,cardState:id=>stOf(id),permission:id=>permOf(cOf(id)),
+   role:()=>ROLE,stage:()=>PSTAGE,cardState:id=>stOf(id),permission:id=>permOf(cOf(id)),
    canEdit(id){return !!cOf(id)&&cardVisible(cOf(id))&&!['看','—'].includes(permOf(cOf(id)))&&stOf(id)!==3;},
    touchCard(id){if(stOf(id)!==1)CST[id]=1;renderWall();syncLock();cstSave();},
    registerCard(card){if(!cOf(card.id))CARDS.push(card);applyRole();syncLock();},

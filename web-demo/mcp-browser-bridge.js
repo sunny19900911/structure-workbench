@@ -1,5 +1,5 @@
 import './integrated-modules.js';
-import {BROWSER_OPERATIONS,OFFICE_COMMAND_ARGUMENTS} from './mcp-browser-operations.js';
+import {BROWSER_OPERATIONS,OFFICE_COMMAND_ARGUMENTS,officeCommandType} from './mcp-browser-operations.js';
 import {bridgeError,validateBridgeRequest,validateBridgeValue,validateRevisionSnapshot,checkedImage,validateSeismicUpdate} from './mcp-browser-core.js';
 import {projectRequest} from './project-store-client.js';
 import {measureTextBlocks,editMeasureText} from './mcp-measures.js';
@@ -72,8 +72,8 @@ async function invoke(task){const a=task.args||{},unit=task.unit||E.unit;switch(
   const record=await officeDocument(a.documentId,unit);
   if(record.fileRevision!==a.expectedRevision)throw bridgeError('文档已有新版本，请重新读取','REVISION_CONFLICT',409);
   const schema=OFFICE_COMMAND_ARGUMENTS[a.name];if(!schema)throw bridgeError('不支持的文档命令');validateBridgeValue(a.args,schema,'command.args');
-  const type={'cell.set':'xlsx','shape.text':'pptx','shape.move':'pptx'}[a.name]||'docx';
-  if(record.type!==type)throw bridgeError('命令与文档类型不匹配');
+  const type=officeCommandType(a.name);
+  if(type&&record.type!==type)throw bridgeError('命令与文档类型不匹配');
   if(Object.hasOwn(a.args,'targetText')&&!a.args.targetText.trim())throw bridgeError('请提供文档中唯一的目标文字');
   if(a.name==='image.insert'){checkedImage(a.args.data);if(!/^data:image\/(png|jpeg);/i.test(a.args.data))throw bridgeError('Word图片只支持PNG或JPEG');}
   const result=await window.WorkbenchOffice.command(a.documentId,{name:a.name,args:a.args,expectedRevision:a.expectedRevision});

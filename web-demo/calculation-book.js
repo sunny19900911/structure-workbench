@@ -52,7 +52,7 @@ function calcbookParam(key, fallback = '') {
 }
 
 function calcbookProject() {
-  const stage = document.getElementById('pstage-sel')?.value || '施工图';
+  const stage = window.WorkbenchLegacy?.stage?.() || '扩初';
   const disciplineRaw = calcbookParam('discipline', '结构');
   return {
     project_name: calcbookParam('project_name', '待填写项目名称'),

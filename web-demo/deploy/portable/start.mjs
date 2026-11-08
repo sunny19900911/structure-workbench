@@ -1,3 +1,4 @@
+import {officePptHistoryApi} from '../../server/office-ppt-document-api.mjs';
 import {createServer} from 'node:http';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
@@ -51,7 +52,7 @@ const localSettings={configurePreviewServer(adapter){adapter.middlewares.use('/a
   service=build();return json(res,200,{ok:true,aiConfigured:Boolean(preferences.apiKey)});
  }catch(e){return json(res,400,{error:e.message});}
  });}};
-function build(){const config=aiEnvironment();return createApplication({publicDir:join(appRoot,'dist'),localOnly:true,transformHTML:portableHTML,plugins:[localSettings,mcpBridge.plugin,officeDocumentApi(config),documentFormatApi(config),portableProjectApi(config),deepSeekLocalApi(config),calculationBookLocalApi(config),expansionApi(config),projectStoreApi(config),intakeApi(config),calculationPdfApi(config),rewriteApi(config)]});}
+function build(){const config=aiEnvironment();return createApplication({publicDir:join(appRoot,'dist'),localOnly:true,transformHTML:portableHTML,plugins:[localSettings,mcpBridge.plugin,officeDocumentApi(config),officePptHistoryApi(config),documentFormatApi(config),portableProjectApi(config),deepSeekLocalApi(config),calculationBookLocalApi(config),expansionApi(config),projectStoreApi(config),intakeApi(config),calculationPdfApi(config),rewriteApi(config)]});}
 service=build();
 const index=process.argv.indexOf('--port'),port=index>=0?Number(process.argv[index+1]):58720;
 if(!Number.isInteger(port)||port<1024||port>65535)throw Error('本机端口无效');

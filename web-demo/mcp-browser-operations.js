@@ -1,3 +1,7 @@
+import {WORD_COMMAND_ARGUMENTS} from './office-word-commands.js';
+import {EXTENDED_COMMAND_ARGUMENTS} from './office-word-extended-schema.js';
+import {EXCEL_COMMAND_SCHEMAS} from './office-excel-commands.js';
+import {PPT_COMMAND_ARGUMENTS} from './office-ppt-commands.js';
 // Shared catalogue: executable business operations, never arbitrary JavaScript.
 const text=(description,maxLength=20000)=>({type:'string',description,maxLength});
 const object=(properties={},required=[])=>({type:'object',properties,required,additionalProperties:false});
@@ -29,6 +33,8 @@ export const OFFICE_COMMAND_ARGUMENTS={
  'history.undo':object(),
  'history.redo':object()
 };
+Object.assign(OFFICE_COMMAND_ARGUMENTS,WORD_COMMAND_ARGUMENTS,EXTENDED_COMMAND_ARGUMENTS,EXCEL_COMMAND_SCHEMAS,PPT_COMMAND_ARGUMENTS);
+export const officeCommandType=name=>name.startsWith('history.')?null:Object.hasOwn(EXCEL_COMMAND_SCHEMAS,name)?'xlsx':Object.hasOwn(PPT_COMMAND_ARGUMENTS,name)?'pptx':'docx';
 const officeCommandSchema=object({documentId,name:{enum:Object.keys(OFFICE_COMMAND_ARGUMENTS)},expectedRevision:fileRevision,args:{type:'object'}},['documentId','name','expectedRevision','args']);
 officeCommandSchema.allOf=Object.entries(OFFICE_COMMAND_ARGUMENTS).map(([name,args])=>({if:{properties:{name:{const:name}}},then:{properties:{args}}}));
 export const BROWSER_OPERATIONS=[
@@ -71,7 +77,7 @@ export const BROWSER_OPERATIONS=[
  op('office.generate','按自然语言确定的当前项目和单体，使用同一参数版本一次生成一组真实DOCX、PPTX、XLSX，登记共同batchId；文件可在工作台直接编辑或下载。原文档与人工稿保留，生成成功不表示专业审签。',false,['main','intake','expansion','modules','ppt'],object()),
  op('office.open','在工作台打开指定本机原生Office文档；保存原编辑器的修改后切换，不更换项目或单体。',false,['main'],object({documentId},['documentId'])),
  op('office.read','读取指定Office文档的可编辑文字、单元格或形状及文件修订；目标须属于明确项目和单体，打开同源编辑器读取。',true,[],object({documentId},['documentId'])),
- op('office.command','通过页面同一编辑器修改并保存原生文档：Word文字、格式、段落、表格、图片、撤销重做；Excel单元格；PPT文字或位置。Word格式和插入操作必须提供唯一targetText，需原内容/坐标及文件expectedRevision。不会回写工程参数，不代表验算或审签。',false,['main'],officeCommandSchema),
+ op('office.command','通过页面同一编辑器修改并保存原生文档：Word文字、格式、段落、表格、图片、撤销重做；Excel表格、公式及工作表；PPT幻灯片、文本、图片和布局。Word格式和插入操作必须提供唯一targetText，需原内容/坐标及文件expectedRevision。不会回写工程参数，不代表验算或审签。',false,['main'],officeCommandSchema),
  op('office.save','保存指定文档在当前编辑器中的修改，返回实际已保存的文件修订；不生成新项目、不代替专业审签。',false,['main'],object({documentId,expectedRevision:fileRevision},['documentId','expectedRevision'])),
 ];
 export const browserOperation=name=>BROWSER_OPERATIONS.find(item=>item.name===name);

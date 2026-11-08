@@ -121,7 +121,7 @@ try{
  if(!/^[a-f0-9]{32}$/.test(projectId||'')||!/^[a-zA-Z0-9-]{16,64}$/.test(documentId||''))throw Error('文档地址无效，请从项目工作台打开。');
  metadata=(await(await request(base)).json()).document;title();
  if(metadata.type==='docx')controller=await mountWord(new File([await(await request(base+'/content')).blob()],(metadata.title||'项目文档')+'.docx',{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}));
- else{const {mountSimpleEditor}=await import('./office-simple-editors.js');const {view}=await(await request(base+'/view')).json();controller=await mountSimpleEditor({element:$('office-editor'),document:metadata,view,onSaved:next=>{metadata=next;title();status('已保存到本机 · 版本 '+metadata.fileRevision);notifySaved();}});status('已打开本机文件 · 版本 '+metadata.fileRevision);}
+ else{const mountEditor=metadata.type==='xlsx'?(await import('./office-excel-editor.js')).mountExcelEditor:(await import('./office-ppt-editor.js')).mountPptEditor;if(metadata.type==='pptx')await import('./office-ppt-editor.css');const {view}=await(await request(base+'/view')).json();controller=await mountEditor({element:$('office-editor'),document:metadata,view,onSaved:next=>{metadata=next;title();status('已保存到本机 · 版本 '+metadata.fileRevision);notifySaved();}});status('已打开本机文件 · 版本 '+metadata.fileRevision);}
  window.WorkbenchOfficeEditor=controller;
  $('office-save').disabled=false;$('office-download').disabled=false;
  window.parent.postMessage({type:'workbench:office-ready',projectId,documentId},location.origin);

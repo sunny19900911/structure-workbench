@@ -7,7 +7,7 @@ import vm from 'node:vm';
 import {Client} from '@modelcontextprotocol/sdk/client/index.js';
 import {InMemoryTransport} from '@modelcontextprotocol/sdk/inMemory.js';
 import {createWorkbenchMCP} from '../../server/mcp-server.mjs';
-import {BROWSER_OPERATIONS, OFFICE_COMMAND_ARGUMENTS} from '../../mcp-browser-operations.js';
+import {BROWSER_OPERATIONS, OFFICE_COMMAND_ARGUMENTS, officeCommandType} from '../../mcp-browser-operations.js';
 import {bridgeError, validateBridgeRequest, validateBridgeValue, validateRevisionSnapshot, checkedImage} from '../../mcp-browser-core.js';
 
 const projectId = '1234567890abcdef1234567890abcdef', documentId = 'abcdef1234567890abcdef1234567890', unit = '教学楼';
@@ -104,7 +104,7 @@ function adapter({record = {...metadata}, office = {}, dirty = false} = {}) {
   const service = {read: async id => {calls.push(['read', id]); return current();}, command: async (id, command) => {calls.push(['command', id, command]); saved.fileRevision++; return {result: {modified: 1}};}, save: async () => {calls.push(['save']); saved.fileRevision++;}, open: async id => {calls.push(['open', id]); return current();}, generate: async () => {calls.push(['generate']); return {documents: [], sourceParameterVersion: 7};}, ...office};
   const scope = {window: {WorkbenchOffice: service}, W: {id: projectId, mcp: {run: fn => fn()}, flush: async () => {}}, E: {unit, mcp: {part: 'expansion-test'}}, M: {},
     fetch: async () => ({ok: true, json: async () => ({document: {...saved}})}),
-    bridgeError, validateBridgeRequest, validateBridgeValue, validateRevisionSnapshot, checkedImage, OFFICE_COMMAND_ARGUMENTS,
+    bridgeError, validateBridgeRequest, validateBridgeValue, validateRevisionSnapshot, checkedImage, OFFICE_COMMAND_ARGUMENTS, officeCommandType,
     revisions: async () => ({main: 5}), localRevisions: () => ({main: 5}), dirty: () => dirty, context: async () => ({projectId, unit})};
   vm.runInNewContext(implementation, scope); return {execute: scope.executeTask, calls, saved};
 }
@@ -141,3 +141,10 @@ test('Office MCP读文档保留形状位置及图片存在信息，不向模型�
   const shape=result.result.view.slides[0].shapes[0];assert.equal(shape.hasImage,true);assert.equal(shape.x,4);assert.equal(shape.text,'标题');assert.ok(!Object.hasOwn(shape,'imageDataUrl'));
   assert.match(view.slides[0].shapes[0].imageDataUrl,/KEEP_IN_BROWSER/,'sanitization must not remove the actual UI preview');
 });
+
+ test('新增Excel与PPT命令按真实文档类型分流，三类文档均可撤销',async()=>{
+ for(const [type,name,args] of [['xlsx','range.clear',{sheet:'荷载',range:'A1:B2'}],['pptx','slide.duplicate',{slide:1}],['docx','paragraph.right',{targetText:'概况'}],...['docx','xlsx','pptx'].map(type=>[type,'history.undo',{}])]){
+ const a=adapter({record:{...metadata,type}});const result=await a.execute(commandTask(name,args));assert.equal(result.result.document.fileRevision,4);assert.equal(a.calls[0][0],'command');
+ }
+ const a=adapter({record:{...metadata,type:'docx'}});await assert.rejects(a.execute(commandTask('slide.duplicate',{slide:1})));assert.equal(a.calls.length,0);
+ });
