@@ -4,6 +4,7 @@ import {mkdir,open,realpath,stat,readFile,writeFile} from 'node:fs/promises';
 import {basename,extname,isAbsolute,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash,randomUUID} from 'node:crypto';
+import {readService,verifyService} from '../deploy/portable/portable-service-lock.mjs';
 import {portablePaths,RELEASE} from '../deploy/portable/runtime.mjs';
 
 export const appRoot=fileURLToPath(new URL('../',import.meta.url));
@@ -14,30 +15,41 @@ export function localURL(value){
 }
 const samePath=(a,b)=>resolve(a).toLowerCase()===resolve(b).toLowerCase();
 export function createLocalClient({env=process.env,fetchImpl=fetch,root=appRoot}={}){
- const paths=portablePaths(root,env);let current='',starting;
+ const paths=portablePaths(root,env);let starting;
  async function health(url){try{const r=await fetchImpl(url+'/api/portable/health',{signal:AbortSignal.timeout(500),redirect:'error'});return r.ok?await r.json():null;}catch{return null;}}
  function compatible(h){return h?.app==='structure-workbench-portable'&&samePath(h.dataRoot||'',paths.data)&&h.version===RELEASE;}
+ async function discover(){
+  const info=await readService(paths.data);
+  if(info){if(env.WORKBENCH_MCP_URL&&info.url&&localURL(env.WORKBENCH_MCP_URL)!==info.url)throw Object.assign(Error('指定端口与同数据目录服务不一致'),{code:'SERVICE_MISMATCH'});const verified=await verifyService(info,paths.data,RELEASE,fetchImpl);return verified||{state:'starting'};}
+  // Compatibility discovery for packages predating the service lock.
+  const urls=env.WORKBENCH_MCP_URL?[localURL(env.WORKBENCH_MCP_URL)]:Array.from({length:20},(_,i)=>'http://127.0.0.1:'+(58720+i));
+  const found=await Promise.all(urls.map(async url=>({url,health:await health(url)})));
+  const match=found.find(x=>compatible(x.health));if(match){if(!match.health.instanceId||!Number.isInteger(match.health.pid))throw Object.assign(Error('已有服务缺少进程实例身份，请保存并关闭旧服务后启动新版'),{code:'SERVICE_MISMATCH'});return match;}
+  if(env.WORKBENCH_MCP_URL||found.some(x=>x.health?.app==='structure-workbench-portable'&&samePath(x.health.dataRoot||'',paths.data)))throw Object.assign(Error('指定工作台的版本或数据目录不匹配'),{code:env.WORKBENCH_MCP_URL?'SERVICE_MISMATCH':'OLDER_SERVICE_RUNNING'});
+  return null;
+ }
+ async function status(){
+  const found=await discover();if(!found?.url)return {state:found?.state||'stopped',health:null,browser:null};
+  const response=await fetchImpl(found.url+'/api/mcp-browser/status',{signal:AbortSignal.timeout(2000),redirect:'error'});
+  if(!response.ok)throw Object.assign(Error('网页连接状态暂不可读'),{code:'SERVICE_UNRESPONSIVE'});
+  return {state:'running',health:found.health,browser:await response.json()};
+ }
  async function connect(){
-  if(current){const h=await health(current);if(compatible(h))return current;current='';}
-  if(env.WORKBENCH_MCP_URL){const url=localURL(env.WORKBENCH_MCP_URL),h=await health(url);if(!compatible(h))throw Object.assign(Error('指定工作台的版本或数据目录不匹配，请启动同一离线包'),{code:'SERVICE_MISMATCH'});return current=url;}
-  const ports=Array.from({length:20},(_,i)=>58720+i),found=await Promise.all(ports.map(async p=>({url:'http://127.0.0.1:'+p,h:await health('http://127.0.0.1:'+p)})));
-  const active=found.find(x=>compatible(x.h));if(active)return current=active.url;
-  if(found.some(x=>x.h?.app==='structure-workbench-portable'&&samePath(x.h.dataRoot||'',paths.data)))throw Object.assign(Error('同一数据目录已有旧版工作台运行，请先保存并关闭旧服务，再启动新版'),{code:'OLDER_SERVICE_RUNNING'});
-  await mkdir(paths.data,{recursive:true});
-  for(const {url,h} of found){
-   if(h)continue;
-   const log=await open(join(paths.data,'MCP启动.log'),'a');
-   const child=spawn(process.execPath,[join(root,'deploy/portable/start.mjs'),'--port',new URL(url).port],{cwd:root,env:{...env,WORKBENCH_PORTABLE_DATA:paths.data},detached:true,windowsHide:true,stdio:['ignore',log.fd,log.fd]});
-   let failed=false;child.on('error',()=>{failed=true;});child.on('exit',()=>{failed=true;});child.unref();await log.close();
-   for(let i=0;i<100;i++){const result=await health(url);if(compatible(result))return current=url;if(failed)break;await new Promise(r=>setTimeout(r,200));}
-   if(!failed)throw Object.assign(Error('本机工作台启动超时，请查看 MCP启动.log'),{code:'START_TIMEOUT'});
+  const found=await discover();if(found?.url)return found.url;
+  let child,failed=false;
+  if(!found){
+   await mkdir(paths.data,{recursive:true});const log=await open(join(paths.data,'MCP启动.log'),'a');
+   try{child=spawn(process.execPath,[join(root,'deploy/portable/start.mjs')],{cwd:root,env:{...env,WORKBENCH_PORTABLE_DATA:paths.data},detached:true,windowsHide:true,stdio:['ignore',log.fd,log.fd]});child.on('error',()=>{failed=true;});child.on('exit',code=>{if(code!==0)failed=true;});child.unref();}finally{await log.close();}
   }
-  throw Object.assign(Error('未找到可用本机端口，请先双击启动工作台'),{code:'SERVICE_UNAVAILABLE'});
+  for(let i=0;i<150;i++){const active=await discover();if(active?.url)return active.url;if(failed)throw Object.assign(Error('本机工作台启动失败，请查看 MCP启动.log'),{code:'START_FAILED'});await new Promise(r=>setTimeout(r,200));}
+  throw Object.assign(Error('本机工作台启动超时，请查看 MCP启动.log'),{code:'START_TIMEOUT'});
  }
  async function base(){if(!starting)starting=connect().finally(()=>{starting=null;});return starting;}
  async function request(path,{method='GET',body,header,headers={},binary=false,timeout=180000,maxBytes=512*1024*1024}={}){
   if(!path.startsWith('/api/')||path.includes('://'))throw Error('接口路径无效');
-  const url=await base(),raw=Buffer.isBuffer(body)||body instanceof Uint8Array;
+  // All ordinary reads and writes require an explicitly started service.
+  const found=await discover();if(!found?.url)throw Object.assign(Error('请先调用 workbench_open 启动本机工作台'),{code:'SERVICE_NOT_RUNNING'});
+  const url=found.url,raw=Buffer.isBuffer(body)||body instanceof Uint8Array;
   const response=await fetchImpl(url+path,{method,headers:{...(body&&!raw?{'Content-Type':'application/json'}:{}),...(header?{'x-workbench-request':header}:{}),...headers},body:body===undefined?undefined:raw?body:JSON.stringify(body),signal:AbortSignal.timeout(timeout),redirect:'error'});
   if(!response.ok){const value=await response.json().catch(()=>({}));throw Object.assign(Error(value.error||'本机接口返回 HTTP '+response.status),{code:value.code||(response.status===409?'REVISION_CONFLICT':'HTTP_ERROR'),status:response.status,details:value});}
   if(!binary)return response.json();
@@ -56,7 +68,7 @@ export function createLocalClient({env=process.env,fetchImpl=fetch,root=appRoot}
   if(process.platform==='win32')await new Promise((done,reject)=>{const p=spawn('explorer.exe',[page],{windowsHide:true,stdio:'ignore'});p.once('error',reject);p.once('spawn',()=>{p.unref();done();});});
   return {url:page,opened:process.platform==='win32',note:'网页需要保持打开，扩初与 PPT 使用同一页面的编排逻辑。'};
  }
- return {base,request,artifact,openBrowser,paths};
+ return {base,status,request,artifact,openBrowser,paths};
 }
 
 const DOCUMENTS=new Set(['.doc','.docx','.docm','.dot','.dotx','.dotm','.xls','.xlsx','.xlsm','.xlsb','.xlt','.xltx','.xltm','.ppt','.pptx','.pptm','.pot','.potx','.potm','.pps','.ppsx','.ppsm','.pdf','.out','.txt','.csv','.png','.jpg','.jpeg','.webp','.zip']);

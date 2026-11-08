@@ -12,7 +12,7 @@ const run=promisify(execFile),root=fileURLToPath(new URL('../../',import.meta.ur
 const [base,packageRoot]=process.argv.slice(2);
 assert.match(base||'',/^http:\/\/127\.0\.0\.1:\d+$/);
 const health=await (await fetch(base+'/api/portable/health')).json();
-assert.ok(resolve(health.dataRoot).replaceAll('\\','/').startsWith(resolve(root,'qa/portable-release/mcp').replaceAll('\\','/')+'/'),'QA store required');
+assert.ok(resolve(health.dataRoot).replaceAll('\\','/').startsWith(resolve(root,'qa/parallel-hardening/mcp').replaceAll('\\','/')+'/'),'QA store required');
 const output=join(health.dataRoot,'acceptance');await mkdir(output,{recursive:true});
 const python=join(packageRoot,'runtime/python/python.exe'),node=join(packageRoot,'runtime/node/node.exe');
 const fixtureScript=`from pathlib import Path\nfrom docx import Document\nfrom pypdf import PdfWriter\nimport sys\np=Path(sys.argv[1]);d=Document();d.add_heading('MCP离线验收建筑说明',0);d.add_paragraph('本项目位于云南省昆明市经济技术开发区。');t=d.add_table(rows=2,cols=5)\nfor c,v in zip(t.rows[0].cells,['单体名称','地上层数','建筑高度(m)','建筑面积(㎡)','主要功能']):c.text=v\nfor c,v in zip(t.rows[1].cells,['测试教学楼','5','23.70','1234.56','教学']):c.text=v\nd.save(p/'建筑测试.docx')\nfor i in range(2):\n f=p/'盈建科测试'/'计算书'/'上部'/('原图'+str(i)+'.pdf');f.parent.mkdir(parents=True,exist_ok=True);w=PdfWriter();w.add_blank_page(width=595,height=842);w.write(f)\n`;

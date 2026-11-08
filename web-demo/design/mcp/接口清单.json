@@ -3,7 +3,7 @@
   "tools": [
     {
       "name": "workbench_status",
-      "description": "读取离线工作台和网页连接状态；自动启动同一用户本机服务，不读取API密钥。",
+      "description": "读取离线工作台和网页连接状态；纯读取，不启动服务；未运行时请调用 workbench_open。",
       "inputSchema": {
         "type": "object",
         "properties": {},
@@ -14,6 +14,22 @@
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "workbench_start",
+      "description": "显式启动或复用同数据目录、同版本的本机服务；不打开网页。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
         "openWorldHint": false
       }
     },

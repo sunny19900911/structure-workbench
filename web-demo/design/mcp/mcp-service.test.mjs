@@ -11,7 +11,7 @@ import {createLocalClient,localURL,sourceFile} from '../../server/mcp-local-clie
 import {RELEASE} from '../../deploy/portable/runtime.mjs';
 
 const projectId='1234567890abcdef1234567890abcdef';
-const root=fileURLToPath(new URL('../../qa/portable-release/mcp/',import.meta.url));
+const root=fileURLToPath(new URL('../../qa/parallel-hardening/mcp/',import.meta.url));
 const text=result=>JSON.parse(result.content.find(c=>c.type==='text').text);
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json'}});
 const browserEnvelope=result=>({ok:true,result:{result,context:{projectId,unit:'教学楼',expectedRevisions:{main:4}}}});
@@ -157,17 +157,17 @@ test('本地URL拒绝远程、凭据、路径和非HTTP地址',()=>{
 
 test('指定端口只有应用、版本、数据目录均匹配才连接，未知服务不误认',async()=>{
  const data=await folder(),base='http://127.0.0.1:58998';
- for(const health of [{app:'other-app',version:RELEASE,dataRoot:data},{app:'structure-workbench-portable',version:'old',dataRoot:data},{app:'structure-workbench-portable',version:RELEASE,dataRoot:data+'other'}]){
+ for(const health of [{app:'other-app',version:RELEASE,dataRoot:data,pid:123,instanceId:'fixture-instance'},{app:'structure-workbench-portable',version:'old',dataRoot:data},{app:'structure-workbench-portable',version:RELEASE,dataRoot:data+'other',pid:123,instanceId:'fixture-instance'}]){
   const client=createLocalClient({env:{WORKBENCH_MCP_URL:base,WORKBENCH_PORTABLE_DATA:data},fetchImpl:async()=>json(health)});
   await assert.rejects(client.base(),error=>error.code==='SERVICE_MISMATCH');
  }
- const client=createLocalClient({env:{WORKBENCH_MCP_URL:base,WORKBENCH_PORTABLE_DATA:data},fetchImpl:async()=>json({app:'structure-workbench-portable',version:RELEASE,dataRoot:data})});
+ const client=createLocalClient({env:{WORKBENCH_MCP_URL:base,WORKBENCH_PORTABLE_DATA:data},fetchImpl:async()=>json({app:'structure-workbench-portable',version:RELEASE,dataRoot:data,pid:123,instanceId:'fixture-instance'})});
  assert.equal(await client.base(),base);
 });
 
 test('端口扫描选择同一用户匹配版本，旧版同库明确拒绝，不启动额外服务',async()=>{
  const data=await folder(),requests=[];
- const fetchImpl=async url=>{requests.push(url);return json(url.includes(':58723/')?{app:'structure-workbench-portable',version:RELEASE,dataRoot:data}:{app:'unrelated'});};
+ const fetchImpl=async url=>{requests.push(url);return json(url.includes(':58723/')?{app:'structure-workbench-portable',version:RELEASE,dataRoot:data,pid:123,instanceId:'fixture-instance'}:{app:'unrelated'});};
  const client=createLocalClient({env:{WORKBENCH_PORTABLE_DATA:data},fetchImpl});assert.equal(await client.base(),'http://127.0.0.1:58723');assert.equal(requests.length,20);
  const old=createLocalClient({env:{WORKBENCH_PORTABLE_DATA:data},fetchImpl:async url=>json(url.includes(':58724/')?{app:'structure-workbench-portable',version:'previous',dataRoot:data}:{app:'unrelated'})});
  await assert.rejects(old.base(),error=>error.code==='OLDER_SERVICE_RUNNING');
@@ -176,7 +176,7 @@ test('端口扫描选择同一用户匹配版本，旧版同库明确拒绝，�
 test('本机HTTP wrapper 保留业务请求头与冲突，拒绝重定向策略，不跟随未知地址',async()=>{
  const data=await folder(),base='http://127.0.0.1:58998',requests=[];
  const client=createLocalClient({env:{WORKBENCH_MCP_URL:base,WORKBENCH_PORTABLE_DATA:data},fetchImpl:async(url,options)=>{
-  requests.push({url,options});if(url.endsWith('/health'))return json({app:'structure-workbench-portable',version:RELEASE,dataRoot:data});
+  requests.push({url,options});if(url.endsWith('/health'))return json({app:'structure-workbench-portable',version:RELEASE,dataRoot:data,pid:123,instanceId:'fixture-instance'});
   return json({error:'别处已修改'},409);
  }});
  await assert.rejects(client.request('/api/workbench-projects/'+projectId+'/main',{method:'POST',header:'project-store',body:{expectedRevision:4,data:{}}}),error=>error.code==='REVISION_CONFLICT'&&error.status===409);

@@ -12,7 +12,8 @@ const fileRevision={type:'integer',minimum:1,description:'明确文件历史版�
 const tool=(name,description,inputSchema,readOnly=true)=>({name:'workbench_'+name,description,inputSchema,annotations:{readOnlyHint:readOnly,destructiveHint:false,idempotentHint:readOnly,openWorldHint:false}});
 
 export const SERVICE_TOOLS=[
- tool('status','读取离线工作台和网页连接状态；自动启动同一用户本机服务，不读取API密钥。',obj()),
+ tool('status','读取离线工作台和网页连接状态；纯读取，不启动服务；未运行时请调用 workbench_open。',obj()),
+ tool('start','显式启动或复用同数据目录、同版本的本机服务；不打开网页。',obj(),false),
  tool('open','打开本机工作台；浏览器编排操作需要此页面保持打开。',obj({projectId:pid}),false),
  tool('project_list','列出本机未删除项目与main修订号。',obj()),
  tool('project_read','读取已保存的项目分区，默认summary不返回图片和大段原文。写操作前另读project.context取得网页当前修订。',obj({projectId:pid,part:s('main/intake/ppt/modules/expansion-单体等；留空取概要',80),view:{enum:['summary','full']},offset:{type:'integer',minimum:0},limit:{type:'integer',minimum:100,maximum:100000}},['projectId'])),
@@ -80,7 +81,8 @@ export async function callServiceTool(client,name,input={}){
  const operation=BROWSER_OPERATIONS.find(x=>'workbench_'+x.name.replaceAll('.','_')===name);
  if(operation)return browserCall(client,operation.name,input);
  switch(name){
-  case 'workbench_status':return {health:await client.request('/api/portable/health'),browser:await client.request('/api/mcp-browser/status'),dataPolicy:'本机存储；MCP工具返回内容会进入调用方AI上下文。',knowledge:'先读 workbench://engineering/workflow'};
+  case 'workbench_status':return {...await client.status(),dataPolicy:'本机存储；MCP工具返回内容会进入调用方AI上下文。',knowledge:'先读 workbench://engineering/workflow'};
+  case 'workbench_start':await client.base();return client.status();
   case 'workbench_open':return client.openBrowser(input.projectId);
   case 'workbench_project_list':return client.request('/api/workbench-projects');
   case 'workbench_project_read':{
