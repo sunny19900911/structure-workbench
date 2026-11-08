@@ -8,15 +8,18 @@ const bar=document.createElement('section');
 bar.className='wp-bar';
 const barStyle=document.createElement('style');barStyle.textContent='.wp-bar button,.wp-bar input,.wp-bar select{font:inherit;padding:6px 9px;border:1px solid #b8c8d1;border-radius:5px;background:white;color:#263e50}.wp-bar button{cursor:pointer}.wp-bar select{max-width:320px}.wp-bar [role=status]{font-size:12px}.wp-bar #wp-changes{max-height:230px;overflow:auto}@media print{.wp-bar{display:none!important}}';document.head.append(barStyle);
 bar.style.cssText='margin:12px 24px;padding:14px 18px;background:#eef3f6;border:1px solid #b8c8d1;border-radius:10px;color:#263e50;font-size:13px';
-bar.innerHTML='<div class="wp-primary"><b>当前项目</b><select id="wp-project" aria-label="切换项目"></select><span id="wp-status" role="status">正在载入…</span><button id="wp-intake">导入资料</button><button id="wp-export">导出</button><details class="wp-management"><summary>项目管理</summary><div><span id="wp-mode"></span><input id="wp-name" placeholder="新项目名称" aria-label="新项目名称"><button id="wp-new">新建空白项目</button><button id="wp-sample">载入示例副本</button><button id="wp-save">保存全部</button><button id="wp-delete">删除当前项目</button><button id="wp-restore" hidden>恢复刚删除项目</button><button id="wp-backup">下载项目备份</button><button id="wp-reload">载入最新保存</button></div></details><button id="wp-retry" hidden>重试保存</button></div><details style="margin-top:8px"><summary>参数变更与联动复核 <span id="wp-count"></span></summary><div id="wp-changes"></div></details>';
+bar.innerHTML='<div class="wp-primary"><b>当前项目</b><select id="wp-project" aria-label="切换项目"></select><span id="wp-status" role="status">正在载入…</span><button id="wp-intake">导入资料</button><button id="wp-export">导出</button><details class="wp-management"><summary>项目管理</summary><div><span id="wp-mode"></span><input id="wp-name" placeholder="新项目名称" aria-label="新项目名称"><button id="wp-new">新建空白项目</button><button id="wp-sample">载入示例副本</button><button id="wp-save">保存全部</button><button id="wp-delete">删除当前项目</button><button id="wp-restore" hidden>恢复刚删除项目</button><button id="wp-backup">下载项目备份</button><button id="wp-reload">载入最新保存</button><button id="wp-settings" hidden>设置</button></div></details><button id="wp-retry" hidden>重试保存</button></div>';
 
 document.body.prepend(bar);
 const q=s=>bar.querySelector(s);
+q('#wp-settings').hidden=!window.WORKBENCH_PORTABLE;
+q('#wp-settings').onclick=()=>window.WorkbenchPortable?.openSettings();
 bar.querySelectorAll('button,select,input').forEach(e=>e.disabled=true);
 const status=s=>{q('#wp-status').textContent=s;q('#wp-retry').hidden=!/失败|未保存|未连接|载入未完成/.test(s);q('#wp-retry').textContent=loading||!modules.has('workflow')?'重试载入':'重试保存';if(!q('#wp-retry').hidden&&!busy)q('#wp-retry').disabled=false;};
 const startupReadyTimer=setTimeout(()=>{if(!modules.has('workflow'))status('资料模块载入未完成，请点击重试载入。');},20000);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function render(){q('#wp-mode').textContent=mode==='sample'?'示例项目 · 不作为实际工程依据':'独立项目';q('#wp-count').textContent=changes.length?'（'+changes.length+' 条）':'';q('#wp-changes').innerHTML=changes.length?'<p>蓝色引用字段自动更新。人工正文、图片、Excel 和已脱离联动的内容保留原稿，需重新核对。</p>'+changes.slice(-30).reverse().map(c=>'<p>'+esc(c.at)+' · '+esc(c.label)+'：'+esc(c.before||'空')+' → '+esc(c.after||'空')+'<br><small>影响：统一措施、扩初说明、PPT、反校核、计算书 · 参数版本 '+c.version+'</small></p>').join(''):'尚无参数变更。';}
+function render(){q('#wp-mode').textContent=mode==='sample'?'示例项目 · 不作为实际工程依据':'独立项目';}
+
 async function list(projects=null){q('#wp-restore').hidden=!localStorage.getItem('wb:last-deleted-project');if(!projects)({projects}=await projectRequest('/'));q('#wp-project').innerHTML=projects.map(p=>'<option value="'+p.id+'">'+esc(p.name)+(p.mode==='sample'?'（示例）':'')+'</option>').join('');q('#wp-project').value=id;}
 function capture(){return {...legacy.capture(),mode,parameterVersion,changes,exportHistory,calculation:window.CalculationBook?.capture()};}
 function scheduleSave(){if(loading||!part)return;status('有修改 · 等待保存');clearTimeout(timer);timer=setTimeout(()=>save().catch(()=>{}),700);}

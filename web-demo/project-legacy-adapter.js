@@ -46,7 +46,7 @@
   ['steel-ta','st-sts2','st-diff','rc-diff'].forEach(id=>{const e=document.getElementById(id);if(e){if(e.tagName==='TEXTAREA')e.value='';else e.textContent='待重新生成';}});
   document.querySelectorAll('[data-k]').forEach(e=>{const v=s.parameters?.[e.dataset.k]??'';if(e.tagName==='SELECT'&&![...e.options].some(o=>o.value===String(v)))e.add(new Option(v||'— 待确认 —',v));e.value=v;});
   provSel.value=s.province||'';onProv();cntSel.value=s.county||'';try{curCounty=s.county?JSON.parse(s.county):null;}catch{curCounty=null;}deriveAll();applyParams();refreshGeoCk();
-  document.getElementById('role-sel').value=ROLE;document.getElementById('pstage-sel').value=PSTAGE;renderWall();applyRole();syncLock();
+  renderWall();applyRole();syncLock();
   document.querySelectorAll('input[type=file]').forEach(e=>e.value='');document.querySelectorAll('[id^="st-"],[id^="rc-"]').forEach(e=>{if(/^(TBODY|TEXTAREA)$/.test(e.tagName)){if(e.tagName==='TEXTAREA')e.value='';else e.replaceChildren();}});
   if(RCLAST){rcRenderIn(RCLAST.inRows||[]);rcRenderLim();rcBuildDiff();}else{document.getElementById('rc-sum').textContent='本项目尚无有效反校核结果。';}
   if(STLAST){stRenderA();stRenderB();stRenderD();}stRenderSeg();stStatus();snapRender();goStage(0);

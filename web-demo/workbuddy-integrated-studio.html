@@ -330,12 +330,7 @@ td.stg{font-size:11.5px;color:#7b8794}
     <button id="tab9" onclick="goStage(9)">计算书</button>
   </div>
   <div class="sp"></div>
-  <div class="rolebar">
-    <label>角色</label>
-    <select id="role-sel" onchange="setRole(this.value)"></select>
-    <label>阶段</label>
-    <select id="pstage-sel" onchange="setProjStage(this.value)"></select>
-  </div>
+
   <button class="act" onclick="if(window.WordDocumentView&amp;&amp;(curStage===1||curStage===2||curStage===3)){window.WordDocumentView.export(curStage===1?'measures':curStage===3?'regulations':'expansion','pdf')}else{window.print()}">打印 / 存 PDF</button>
   <button class="act" onclick="copyDoc()">复制全文</button>
   <button class="act" onclick="wbOpenPptReport()">汇报 PPT</button>
@@ -2821,7 +2816,7 @@ function wbMeasureSnapshot(vals){
     project_id:window.WorkbenchProjects?.id||null,
     parameter_version:window.WorkbenchProjects?.parameterVersion||0,
     source_id:'workbuddy:unified-measures',
-    context:{role:document.getElementById('role-sel')?.selectedOptions[0]?.textContent||'',stage:document.getElementById('pstage-sel')?.selectedOptions[0]?.textContent||''},
+    context:{role:'设计人员',stage:PSTAGE},
     updated_at:new Date().toISOString(),
     params:Object.assign({},vals)
   };
@@ -6094,7 +6089,7 @@ gn7GenerateGeneralOnly();
 </script>
 <script src="./local-regulation-pilot.js"></script>
 <script type="module" src="./integrated-workbench-polish.js"></script>
-<script type="module" src="./deepseek-assistant.js"></script>
+
 <script src="./calculation-book-catalog.js"></script>
 <script src="./calculation-pdfs.js"></script>
 <script src="./calculation-book.js?v=calculation-cloud-20261015"></script>
