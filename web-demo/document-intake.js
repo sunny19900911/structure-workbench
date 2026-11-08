@@ -7,7 +7,18 @@ const unique=a=>[...new Set(a.filter(Boolean))];
 const sentences=s=>clean(s).split(/(?<=[。；])/).map(tidy).filter(Boolean);
 const escape=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const number=s=>/^\d[\d,]*(?:\.\d+)?$/.test(tidy(s));
-function rows(source){return source.fragments.filter(f=>/表\s*\d+/.test(f.locator||'')).map(f=>({...f,cells:f.cells||f.text.split('；').map(c=>c.replace(/^[^：]*：/,''))}));}
+function rows(source){
+ // Fact fragments deliberately omit headers. The original table retains them,
+ // so document composition must use that table before falling back to old data.
+ if(source.blocks?.tables?.length){
+  const byLocator=new Map((source.fragments||[]).map(f=>[f.locator,f]));
+  return source.blocks.tables.flatMap((table,t)=>(Array.isArray(table)?table:[]).map((cells,r)=>{
+   const locator='提取表 '+(t+1)+' 行 '+(r+1),fragment=byLocator.get(locator);
+   return {...(fragment||{id:'TABLE-'+(t+1)+'-ROW-'+(r+1),text:cells.map(c=>String(c??'')).join('；'),locator}),cells};
+  }));
+ }
+ return source.fragments.filter(f=>/表\s*\d+/.test(f.locator||'')).map(f=>({...f,cells:f.cells||f.text.split('；').map(c=>c.replace(/^[^：]*：/,''))}));
+}
 function paragraphSource(source){return (source?.fragments||[]).filter(f=>! /表\s*\d+/.test(f.locator||'')&&f.text.length>15);}
 export function composeDocument(sources=[],unit='项目整体'){
  const docs=sources.filter(s=>['bldg','geo'].includes(s.slot)&&s.fragments?.length);

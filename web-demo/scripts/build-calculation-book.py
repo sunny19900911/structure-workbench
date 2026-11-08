@@ -7,6 +7,7 @@ import argparse
 import base64
 import json
 import math
+import os
 import re
 import shutil
 import sys
@@ -28,6 +29,24 @@ WORKBOOKS = {
     "jump-column": {"pattern": "*跃层柱*.xlsx", "label": "跃层柱计算长度分析"},
     "stair": {"pattern": "*楼梯构件库计算表*.xlsm", "label": "楼梯构件库计算表"},
 }
+VERIFIED_JUMP_FORMULAS = {
+    "B6": '=SQRT(PI()*PI()*3*10^4*1/12*B2*B3^3/(B4*B5*1000))/1000',
+    "B8": '=B6/B7', "B10": '=IF(B8<B9,"满足","不满足")',
+}
+
+
+def portable_mode():
+    return os.environ.get("WORKBENCH_PORTABLE") == "1"
+
+
+def formula_text(cell):
+    if cell.data_type != "f":
+        return ""
+    return cell.value if isinstance(cell.value, str) else getattr(cell.value, "text", "[不支持的数组公式]")
+
+
+def normalized_formula(value):
+    return re.sub(r"\s+", "", str(value or "")).replace("$", "").upper()
 SECTION_TITLES = ["计算书目录", "上部结构", "基础", "其他（需要自行补充）"]
 SECTION_NUMERALS = ["一", "二", "三", "四"]
 
@@ -161,15 +180,22 @@ def read_workbook(source_dir: Path, key: str, sheet_name: str) -> dict:
     rows = []
     formula_count = 0
     has_custom = False
+    missing_cache = []
+    formula_errors = []
+    can_recalculate = key == "jump-column" and all(normalized_formula(formula_text(sheet[cell])) == normalized_formula(formula) for cell, formula in VERIFIED_JUMP_FORMULAS.items())
     for row_index in range(min_row, max_row + 1):
         cells = []
         for column_index in range(min_col, max_col + 1):
             cell = sheet.cell(row_index, column_index)
             cached = value_sheet.cell(row_index, column_index).value
-            formula = cell.value if isinstance(cell.value, str) and cell.value.startswith("=") else ""
+            formula = formula_text(cell)
             if formula:
                 formula_count += 1
                 has_custom = has_custom or bool(re.search(r"=\s*(getslabas|getslabbar)\s*\(", formula, re.I))
+                if cached is None:
+                    missing_cache.append(cell.coordinate)
+                elif value_sheet.cell(row_index, column_index).data_type == "e" or isinstance(cached, (float, int)) and not math.isfinite(cached):
+                    formula_errors.append(cell.coordinate)
             display = cell_display(cached if formula and cached is not None else cell.value)
             cells.append({
                 "coordinate": cell.coordinate,
@@ -192,6 +218,9 @@ def read_workbook(source_dir: Path, key: str, sheet_name: str) -> dict:
         "column_count": max_col - min_col + 1,
         "formula_count": formula_count,
         "has_custom_formulas": has_custom,
+        "can_recalculate": can_recalculate,
+        "missing_formula_cache": missing_cache,
+        "formula_errors": formula_errors,
         "rows": rows,
     }
 
@@ -312,9 +341,23 @@ def workbook_values_with_edits(source_dir: Path, block: dict) -> tuple[dict, lis
     path = workbook_path(source_dir, key)
     workbook = load_workbook(path, data_only=True, read_only=False, keep_vba=path.suffix.lower() == ".xlsm")
     sheet = workbook[sheet_name]
+    if portable_mode():
+        formulas = {cell["coordinate"]: cell["formula"] for row in data["rows"] for cell in row["cells"] if cell["formula"]}
+        recalculated = set(VERIFIED_JUMP_FORMULAS) if data["can_recalculate"] else set()
+        missing = [cell for cell in data["missing_formula_cache"] if cell not in recalculated]
+        errors = [cell for cell in data["formula_errors"] if cell not in recalculated]
+        if missing or errors:
+            workbook.close()
+            fail("Excel 公式缺少可用计算结果或含错误值：" + "、".join((missing + errors)[:20]) + "。请在 Excel 中完成复算并保存，再重新导入母件；未将其按空白导出。")
+        if any(coordinate in formulas for coordinate in edits):
+            workbook.close()
+            fail("公式单元格不能由网页编辑值覆盖，请重新联动 Excel。")
+        if set(formulas) - recalculated and any(sheet[coordinate].value != value for coordinate, value in edits.items()):
+            workbook.close()
+            fail("此表含本地版不能重算的公式，修改输入后原缓存可能失效。请在 Excel 中复算保存并重新导入母件。")
     for coordinate, value in edits.items():
         sheet[coordinate] = value
-    if key == "jump-column":
+    if key == "jump-column" and (not portable_mode() or data["can_recalculate"]):
         def number(coordinate: str) -> float:
             value = edits.get(coordinate, sheet[coordinate].value)
             try:
@@ -346,8 +389,8 @@ def add_excel_block(document: Document, source_dir: Path, block: dict) -> None:
     heading = document.add_paragraph()
     heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
     set_run_font(heading.add_run(f"{data['workbook_label']}｜{data['sheet']}"), "黑体", 12, True)
-    max_columns = min(10, data["column_count"])
-    display_rows = rows[:35]
+    max_columns = data["column_count"] if portable_mode() else min(10, data["column_count"])
+    display_rows = rows if portable_mode() else rows[:35]
     table = document.add_table(rows=1, cols=max_columns + 1)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(table)
@@ -369,7 +412,10 @@ def add_excel_block(document: Document, source_dir: Path, block: dict) -> None:
                     set_run_font(run, "宋体", 6.5)
     note = document.add_paragraph()
     note.paragraph_format.space_after = Pt(5)
-    set_run_font(note.add_run("原始 Excel 只读；本页记录网页编辑值。宏表自定义公式沿用工作簿已有计算结果。"), "宋体", 7)
+    notice = "原始 Excel 只读；本页记录网页编辑值。宏表自定义公式沿用工作簿已有计算结果。"
+    if portable_mode():
+        notice = f"原始 Excel 只读；输出范围为网页所示 {data['used_range']}。" + ("已核对的跃层柱三个公式按当前输入重算。" if data["can_recalculate"] else "公式采用该文件已保存的计算结果，未运行宏或重算其他公式。")
+    set_run_font(note.add_run(notice), "宋体", 7)
 
 
 def decode_out(file: dict) -> tuple[str, str]:

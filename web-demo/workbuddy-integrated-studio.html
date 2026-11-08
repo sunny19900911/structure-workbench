@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>结构与技术措施 · 一体化工作台</title>
+<script src="./portable-mode.js"></script>
+<script src="./data/portable-regulation-links.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Source Han Serif SC","Noto Serif SC","SimSun",serif;background:#eceff3;color:#232933;line-height:1.75}
@@ -1322,7 +1324,7 @@ function toast(s){const t=document.getElementById('toast');t.textContent=s;t.cla
    —— 每个模块声明为一张卡片（元数据 + 状态），页签与卡片墙都由声明渲染
    ══════════════════════════════════════════════════ */
 const ROLES=[['d','设计人员']];
-const WORKSPACE_NAV=[[1,'统一措施'],[3,'整理地方规范'],[2,'扩充说明'],[11,'汇报的 PPT'],[5,'用钢量'],[9,'计算书'],[10,'重难点'],[4,'反校核']];
+const WORKSPACE_NAV=[[1,'统一措施'],[3,'整理地方规范'],[2,'扩充说明'],[11,'汇报的 PPT'],[5,'用钢量'],[9,'计算书'],[10,'重难点'],[4,'反校核']].filter(([n])=>!window.WORKBENCH_PORTABLE||![4,10].includes(n));
 function arrangeWorkspaceNav(){
   const nav=document.querySelector('.topbar .tabs');
   for(const [n,label] of WORKSPACE_NAV){const b=document.getElementById('tab'+n);if(b){b.textContent=label;nav.append(b);}}
@@ -1367,7 +1369,7 @@ function cOf(id){ for(let i=0;i<CARDS.length;i++){ if(CARDS[i].id===id) return C
 function roleName(r){ for(let i=0;i<ROLES.length;i++){ if(ROLES[i][0]===r) return ROLES[i][1]; } return r; }
 function permOf(c){ return (c.roles&&c.roles[ROLE])||'—'; }
 function stageOk(c){ return WORKSPACE_NAV.some(([n])=>n===c.n); }
-function cardVisible(c){ return permOf(c)!=='—'&&stageOk(c); }
+function cardVisible(c){ return (!window.WORKBENCH_PORTABLE||![4,10].includes(c.n))&&permOf(c)!=='—'&&stageOk(c); }
 function whyNot(c){
   if(permOf(c)==='—') return '当前角色「'+roleName(ROLE)+'」无这张卡的权限';
   return '本卡属「'+c.stage.join(' / ')+'」阶段，当前阶段为「'+PSTAGE+'」';
@@ -1846,6 +1848,7 @@ function stParseUp(text){
   const lines=String(text).replace(/\ufeff/g,'').split(/\r?\n/);
   const floors=[]; let cur=null;
   lines.forEach(function(ln){
+    if(/^[\s>]*全楼统计\s*[:：]/.test(ln)){ cur=null; return; }
     const fm=ln.match(/^[\s>]*第\s*(-?\d+)\s*自然层/);
     if(fm){ cur={floor:parseInt(fm[1],10),area:0,unit:null,grades:[],comp:[],total:0}; floors.push(cur); return; }
     if(!cur) return;
@@ -1970,7 +1973,7 @@ function stParseRebarText(text,srcName){
 function loadSheetJS(){
   if(window.XLSX) return Promise.resolve(window.XLSX);
   return new Promise(function(res,rej){
-    const urls=['https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+    const urls=window.WorkbenchPortable?[window.WorkbenchPortable.resources.xlsx]:['https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
                 'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'];
     let i=0;
@@ -2072,9 +2075,15 @@ async function xlsxGrids(buf){
   return outs;
 }
 async function stReadXlsx(file){
+  if(window.WorkbenchPortable)await window.WorkbenchPortable.inspectFile(file,'excel');
   const buf=await file.arrayBuffer();
   let grids=null;
-  try{ grids=await xlsxGrids(buf); }
+  if(window.WorkbenchPortable){
+    const M=await loadSheetJS(),wb=M.read(new Uint8Array(buf),{type:'array',cellFormula:true});
+    for(const name of wb.SheetNames){const ws=wb.Sheets[name];for(const [address,cell] of Object.entries(ws||{})){if(!address.startsWith('!')&&cell?.f&&(cell.v===undefined||cell.v===null))throw Error('工作表「'+name+'」'+address+'的公式没有保存计算结果，请在 Excel 中重新计算并保存后导入');}}
+    grids=wb.SheetNames.map(name=>({sheet:name,grid:wb.Sheets[name]?.['!ref']?sheetGrid(wb.Sheets[name],M):[]}));
+  }
+  try{ if(!grids)grids=await xlsxGrids(buf); }
   catch(e){
     const M=await loadSheetJS();                      /* 兜底：老式 .xls 等交给 SheetJS */
     const wb=M.read(new Uint8Array(buf),{type:'array'});
@@ -2094,7 +2103,7 @@ async function stIngest(slot, files){
   const projectId=window.WorkbenchProjects?.id;
   for(const f of files){
     try{
-      if(slot==='sts'&&/\.(xlsx|xls)$/i.test(f.name)){
+      if(slot==='sts'&&/\.(xlsx|xls|xlsm|xlsb|xlt|xltx|xltm)$/i.test(f.name)){
         const add=await stReadXlsx(f);
         if(projectId!==window.WorkbenchProjects?.id)return;
         stMergeRebar(add);
@@ -2603,6 +2612,7 @@ function fx(v,d){ const n=parseFloat(v); return isNaN(n)?'—':n.toFixed(d); }
 
 /* ── 阶段切换 ── */
 function goStage(n){
+  if(window.WORKBENCH_PORTABLE&&[4,10].includes(n))n=1;
   if(n===0||n===6)n=1;
   if(n===7||n===8){toast('本阶段暂不开放台账与施工总说明');return;}
   curStage = n;
@@ -3450,6 +3460,7 @@ function findPdfStreams(buf){
   return out;
 }
 async function readPdf(file){
+  if(window.WorkbenchPortable){const text=await readPdfJs(file);return {text,cjk:countCJK(text),cmaps:0,dropped:0,streams:0,contents:0,inflated:0};}
   const buf=new Uint8Array(await file.arrayBuffer());
   const segs=findPdfStreams(buf);
   const cmaps=[], contents=[];
@@ -3477,7 +3488,7 @@ async function readPdf(file){
 /* pdf.js 兜底（仅在需要时按需加载，失败不影响离线使用）*/
 function loadPdfJs(){
   if(window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
-  const urls=['https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+  const urls=window.WorkbenchPortable?[window.WorkbenchPortable.resources.pdf]:['https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
               'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js',
               'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'];
   return new Promise(function(res,rej){
@@ -3499,13 +3510,17 @@ function loadPdfJs(){
   });
 }
 async function readPdfJs(file){
+  if(window.WorkbenchPortable)await window.WorkbenchPortable.inspectFile(file,'pdf');
   const lib=await loadPdfJs();
   const buf=new Uint8Array(await file.arrayBuffer());
-  const doc=await lib.getDocument({data:buf,useSystemFonts:true}).promise;
-  let out='';
+  const localPdf=window.WorkbenchPortable?{cMapUrl:window.WorkbenchPortable.resources.pdfCmaps,cMapPacked:true,standardFontDataUrl:window.WorkbenchPortable.resources.pdfFonts,isEvalSupported:false}:{};
+  const doc=await lib.getDocument({data:buf,useSystemFonts:true,...localPdf}).promise;
+  let out='';const pagesWithoutText=[];
+  try{
   for(let p=1;p<=doc.numPages;p++){
     const page=await doc.getPage(p);
     const tc=await page.getTextContent();
+    if(!tc.items.some(it=>String(it.str||'').trim()))pagesWithoutText.push(p);
     let lastY=null, line='';
     tc.items.forEach(function(it){
       const y=it.transform?it.transform[5]:null;
@@ -3516,7 +3531,9 @@ async function readPdfJs(file){
     if(line.trim()) out+=line.trim()+'\n';
     out+='\n';
   }
+  if(window.WorkbenchPortable)window.WorkbenchPortable.pdfReadReport(file,{pageCount:doc.numPages,pagesWithoutText,warnings:pagesWithoutText.length?['第 '+pagesWithoutText.slice(0,30).join('、')+(pagesWithoutText.length>30?' 等':'')+' 页未提取到文字（可能为图纸、扫描页或空白页），这些页未作为文字资料编入说明']:[]});
   return out.replace(/\n{3,}/g,'\n\n');
+  }finally{await doc.destroy();}
 }
 
 /* 表头匹配：找同时命中全部关键词的表（可按 minRows 过滤过小的表）*/
@@ -4386,7 +4403,7 @@ function clearSpecRows(){
 }
 
 /* ── 本地 OCR：Tesseract.js 按需加载（多 CDN 兜底，语言包走 jsdelivr） ── */
-const TESS_SRC=['https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
+const TESS_SRC=window.WorkbenchPortable?[window.WorkbenchPortable.resources.tesseract]:['https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
                 'https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js'];
 function loadScript(u){
@@ -4403,15 +4420,16 @@ async function loadTesseract(){
     try{ await loadScript(u); if(window.Tesseract) return window.Tesseract; }
     catch(e){ last=e; }
   }
-  throw new Error('识别组件加载失败（首次使用需联网一次）'+(last?('：'+last.message):''));
+  throw new Error((window.WorkbenchPortable?'离线识别组件缺失，请重新解压完整工作台包':'识别组件加载失败（首次使用需联网一次）')+(last?('：'+last.message):''));
 }
 let TESS_WORKER=null;
 async function getOcrWorker(){
   const T=await loadTesseract();
   if(TESS_WORKER) return TESS_WORKER;
   TESS_WORKER=await T.createWorker('chi_sim+eng',1,{
-    workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
-    langPath:'https://cdn.jsdelivr.net/gh/naptha/tessdata@gh-pages/4.0.0',
+    workerPath:window.WorkbenchPortable?window.WorkbenchPortable.resources.worker:'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
+    langPath:window.WorkbenchPortable?window.WorkbenchPortable.resources.languages:'https://cdn.jsdelivr.net/gh/naptha/tessdata@gh-pages/4.0.0',
+    ...(window.WorkbenchPortable?{corePath:window.WorkbenchPortable.resources.core}:{}),
     logger:function(m){
       if(!m||!m.status) return;
       const p=(typeof m.progress==='number')?m.progress:0;
@@ -6104,7 +6122,7 @@ if(location.protocol==='file:'){
 }
 </script>
 <script type="module">
-import('./expansion-workbench.js').then(()=>import('./word-document-view.js')).catch(()=>{
+import('./expansion-workbench.js').then(()=>import('./word-document-view.js')).then(()=>import('./office-workbench.js')).then(module=>module.mountOfficeWorkbench()).catch(()=>{
   const status=document.getElementById('intake-access');
   if(status)status.textContent='资料模块加载失败，请刷新页面；若仍未恢复，请通过启动Demo.cmd重新打开工作台。';
 });
@@ -6112,5 +6130,6 @@ import('./expansion-workbench.js').then(()=>import('./word-document-view.js')).c
 <script type="module" src="./integrated-modules.js"></script>
 <script type="module" src="./seismic-grade-workbench.js"></script>
 <script type="module" src="./workflow-ui.js"></script>
+<script type="module" src="./mcp-browser-bridge.js"></script>
 </body>
 </html>

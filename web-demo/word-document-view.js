@@ -46,7 +46,7 @@ window.addEventListener('workbuddy:expansion-changed',()=>{
  clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{for(const v of views.values())if(!v.stage.hidden&&!v.frame.hidden)preview(v);},700);
 });
 window.addEventListener('workbuddy:project-changed',()=>{for(const v of views.values()){++v.ticket;v.frame.replaceChildren();v.html=null;}});
-window.WordDocumentView={edit:kind=>edit(views.get(kind)),async export(kind,format='docx'){
+window.WordDocumentView={createBlob:kind=>request(content(kind),kind,'docx',kind==='expansion'?window.ExpansionWorkbench.documentPackage():undefined),edit:kind=>edit(views.get(kind)),async export(kind,format='docx'){
  const W=window.WorkbenchProjects,v=views.get(kind);if(W.exporting||exportPending)return;exportPending=true;
  const notify=text=>{v.status.textContent=text;window.dispatchEvent(new CustomEvent('workbuddy:task-status',{detail:{projectId:W.id,text}}));};
  try{

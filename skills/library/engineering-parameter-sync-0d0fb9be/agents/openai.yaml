@@ -1,0 +1,4 @@
+interface:
+  display_name: "工程参数来源与成果联动"
+  short_description: "将历史实践转成可复用流程，明确证据来源、适用边界与实际验收方法"
+  default_prompt: "使用 $engineering-parameter-sync 检查工作台的参数和文档联动，重点验证更换资料不覆盖人工稿、切换项目不串数据。"

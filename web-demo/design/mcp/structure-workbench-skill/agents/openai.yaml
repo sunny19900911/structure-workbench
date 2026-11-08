@@ -1,0 +1,6 @@
+interface:
+  display_name: "结构工作台 MCP 编制"
+  short_description: "调用本机结构工作台，按资料来源和统一措施联动编制扩初、汇报与计算书"
+  default_prompt: "用 $structure-workbench-skill 读取当前项目资料，保留人工稿并更新结构初步设计说明。"
+policy:
+  allow_implicit_invocation: true

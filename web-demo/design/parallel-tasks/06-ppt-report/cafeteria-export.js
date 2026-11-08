@@ -57,6 +57,32 @@ export async function cafeteriaBlob(slides,images=new Map()){
   }
   zip.file('[Content_Types].xml',xml(types));return zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation',compression:'DEFLATE'});
 }
+let currentDownload=null;
+function releaseDownload(){if(!currentDownload)return;currentDownload.link.remove();currentDownload.urlAPI.revokeObjectURL(currentDownload.url);currentDownload=null;}
+globalThis.window?.addEventListener('pagehide',releaseDownload);
+function downloadOwner(){
+  // A same-origin host owns the download so embedded WebViews can handle it
+  // as a top-level download. Accessing a cross-origin parent safely falls back.
+  try{if(window.parent&&window.parent!==window&&window.parent.document?.body)return {doc:window.parent.document,urlAPI:window.parent.URL,embedded:true};}catch{}
+  return {doc:document,urlAPI:URL,embedded:false};
+}
+export function offerCafeteriaDownload(blob,project){
+  releaseDownload();
+  const {doc,urlAPI,embedded}=downloadOwner(),url=urlAPI.createObjectURL(blob),link=doc.createElement('a');
+  link.href=url;link.download=(project||'结构设计').replace(/[\\/:*?"<>|]/g,'_')+'_扩初汇报.pptx';
+  link.id='cafeteria-download-ready';link.className='cafeteria-download-ready';link.textContent='保存已生成的 PPT';
+  link.setAttribute('aria-label','保存已生成的 PPT：'+link.download);
+  if(embedded){
+    link.style.cssText='display:inline-block;margin:8px 0 12px;padding:9px 14px;background:#edf7f1;color:#245b40;border:1px solid #b8d8c6;border-radius:7px;font:600 14px sans-serif;text-decoration:underline;text-underline-offset:3px';
+    const host=doc.querySelector('#im-ppt-host');if(host)host.before(link);else doc.body.prepend(link);
+  }else{
+    const generate=doc.querySelector('#generate-btn');if(generate)generate.after(link);else doc.body.append(link);
+  }
+  // Keep one generated file available for an explicit user click. Embedded
+  // browsers may block downloads after asynchronous work loses user activation.
+  currentDownload={url,link,urlAPI};link.click();
+  return {filename:link.download};
+}
 export async function downloadCafeteria(slides,images,project){
-  const blob=await cafeteriaBlob(slides,images),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(project||'结构设计').replace(/[\\/:*?"<>|]/g,'_')+'_扩初汇报.pptx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  return offerCafeteriaDownload(await cafeteriaBlob(slides,images),project);
 }

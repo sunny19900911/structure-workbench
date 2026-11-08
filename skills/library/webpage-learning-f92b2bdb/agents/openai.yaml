@@ -1,0 +1,4 @@
+interface:
+  display_name: "用网页学习"
+  short_description: "将学习理解内容做成有来源的图文网页，深度学习时选择交互看板流程"
+  default_prompt: "用 $webpage-learning 把这个主题用网页形式展示，帮助我理解并应用。"

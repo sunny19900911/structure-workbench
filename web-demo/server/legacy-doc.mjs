@@ -4,6 +4,7 @@ import {mkdtemp,writeFile,readFile,unlink,rmdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {inspectDocument} from './document-format-api.mjs';
 const exec=promisify(execFile);
 
 export function legacyDocCopy(bytes){
@@ -18,6 +19,8 @@ export function legacyDocCopy(bytes){
 
 // Only an uploaded copy is read. The Word compatibility reader disables macros.
 export async function extractLegacyDoc(bytes){
+  const format=await inspectDocument(bytes,'input.doc');
+  if(format.family!=='word'||format.format!=='doc')throw Error('此入口需要旧版 Word DOC 文件');
   const copy=legacyDocCopy(bytes);
   if(copy!==bytes&&process.platform!=='win32')throw Error('此DOC需Microsoft Word兼容读取，请先另存为DOCX副本后导入');
   const dir=await mkdtemp(join(tmpdir(),'workbench-doc-')),file=join(dir,'input.doc');

@@ -9,7 +9,7 @@ import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {officeConvert} from './linux-office.mjs';
 const run=promisify(execFile);
-const root=fileURLToPath(new URL('../outputs/word-preview/',import.meta.url));
+const root=process.env.WORKBENCH_CACHE_ROOT?join(process.env.WORKBENCH_CACHE_ROOT,'word-preview'):fileURLToPath(new URL('../outputs/word-preview/',import.meta.url));
 let queue=Promise.resolve();
 export function cleanDocumentHTML(html){
  if(typeof html!=='string'||html.length>1500000)throw Error('文档内容无效或过长');
@@ -29,12 +29,22 @@ export async function wordLayout(raw,kind='expansion',format='pdf',template=null
  ? 'body{font-size:12pt}p{line-height:150%;text-indent:24pt;margin:0}h1,h2{font-size:14pt;line-height:150%;margin:0}'
  : 'body{font-size:9.5pt}p{line-height:100%;margin:0 0 1pt 18pt}h1{font-size:13pt;margin:10pt 0 4pt}h2{font-size:10.5pt;margin:6pt 0 2pt 6pt}';
  const document='<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:"Times New Roman","SimSun";color:black}p{text-align:justify}h1,h2,h3{font-family:SimSun;color:black;page-break-after:avoid}'+css+'.document-title{font:700 18pt SimSun;text-align:center;margin:0 0 2pt}.document-subtitle{font:10.5pt SimSun;text-align:center;margin:0 0 4pt}table{border-collapse:collapse;width:100%;font-size:9pt;margin:4pt 0}td,th{border:0.5pt solid black;padding:2pt;text-align:left}td p,th p{margin:0;text-indent:0}th{font-weight:bold}'+REGULATION_WORD_CSS+'</style></head><body>'+html+'</body></html>';
- const key=createHash('sha256').update('native-word-reference-regulations-v3'+process.platform+kind+document+JSON.stringify(template)).digest('hex').slice(0,32);
+ const key=createHash('sha256').update('native-word-reference-regulations-v4'+process.platform+(process.env.WORKBENCH_PORTABLE||'')+kind+document+JSON.stringify(template)).digest('hex').slice(0,32);
  const dir=join(root,key),path=join(dir,'document.'+(format==='preview'?'pdf':format));
  const job=queue.catch(()=>{}).then(async()=>{
   if(!existsSync(path)){
    await mkdir(dir,{recursive:true});await writeFile(join(dir,'document.html'),document,'utf8');
-   if(process.platform!=='win32'){
+   if(process.env.WORKBENCH_PORTABLE==='1'){
+    const python=process.env.WORKBENCH_PYTHON;
+    if(template){
+     await writeFile(join(dir,'template.json'),JSON.stringify(template),'utf8');
+     await run(python,[fileURLToPath(new URL('./reference-docx.py',import.meta.url)),join(dir,'template.json'),join(dir,'document.docx')],{windowsHide:true,timeout:60000,maxBuffer:20000});
+    }else await run(python,[fileURLToPath(new URL('./portable-html-docx.py',import.meta.url)),join(dir,'document.html'),join(dir,'document.docx'),kind],{windowsHide:true,timeout:60000,maxBuffer:20000});
+    if(format!=='docx'){
+     try{await run('powershell.exe',['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',fileURLToPath(new URL('./word-render-native.ps1',import.meta.url)),'-InputDocx',join(dir,'document.docx'),'-OutputPdf',join(dir,'document.pdf')],{windowsHide:true,timeout:90000,maxBuffer:20000});}
+     catch{throw Error('本机 Word 未完成分页转换。请先导出 Word 文件，在 Word 或 WPS 中打开；未改动正文。精确分页预览需可用的 Microsoft Word。');}
+    }
+   }else if(process.platform!=='win32'){
     const python=process.env.WORKBENCH_PYTHON||'python3';
     if(template){await writeFile(join(dir,'template.json'),JSON.stringify(template),'utf8');await run(python,[fileURLToPath(new URL('./reference-docx.py',import.meta.url)),join(dir,'template.json'),join(dir,'document.docx')],{timeout:60000,maxBuffer:20000});}
     else{await officeConvert(join(dir,'document.html'),dir,'docx');await run(python,[fileURLToPath(new URL('./linux-page-setup.py',import.meta.url)),join(dir,'document.docx'),kind],{timeout:30000,maxBuffer:20000});}
@@ -43,7 +53,7 @@ export async function wordLayout(raw,kind='expansion',format='pdf',template=null
     await writeFile(join(dir,'template.json'),JSON.stringify(template),'utf8');
     const python=process.env.WORKBENCH_PYTHON||join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe');
     await run(python,[fileURLToPath(new URL('./reference-docx.py',import.meta.url)),join(dir,'template.json'),join(dir,'document.docx')],{windowsHide:true,timeout:60000,maxBuffer:20000});
-    await run('powershell.exe',['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',fileURLToPath(new URL('./word-render-native.ps1',import.meta.url)),'-InputDocx',join(dir,'document.docx'),'-OutputPdf',join(dir,'document.pdf')],{windowsHide:true,timeout:90000,maxBuffer:20000});
+    if(format!=='docx')await run('powershell.exe',['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',fileURLToPath(new URL('./word-render-native.ps1',import.meta.url)),'-InputDocx',join(dir,'document.docx'),'-OutputPdf',join(dir,'document.pdf')],{windowsHide:true,timeout:90000,maxBuffer:20000});
    }else await run('powershell.exe',['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',fileURLToPath(new URL('./word-layout.ps1',import.meta.url)),'-InputHtml',join(dir,'document.html'),'-OutputDocx',join(dir,'document.docx'),'-OutputPdf',join(dir,'document.pdf'),'-Kind',kind],{windowsHide:true,timeout:90000,maxBuffer:20000});
   }
   if(format==='preview'){
@@ -55,8 +65,10 @@ export async function wordLayout(raw,kind='expansion',format='pdf',template=null
     if(!names.length)throw Error('Word 页面渲染未生成图片');
     const pages=[];for(const name of names)pages.push('data:image/png;base64,'+(await readFile(join(dir,name))).toString('base64'));
     const pdftotext=bundledPoppler.replace('pdftoppm.exe','pdftotext.exe');
-    const extracted=await run(process.env.WORKBENCH_PDFTOTEXT||(process.platform!=='win32'?'pdftotext':existsSync(pdftotext)?pdftotext:'pdftotext.exe'),['-layout','-enc','UTF-8',join(dir,'document.pdf'),'-'],{windowsHide:true,timeout:30000,maxBuffer:3000000});
-    const pageText=extracted.stdout.split('\f').map(t=>t.replace(/\s+/g,''));
+    const extracted=process.env.WORKBENCH_PORTABLE==='1'
+     ?await run(process.env.WORKBENCH_PYTHON,[fileURLToPath(new URL('./pdf-page-text.py',import.meta.url)),join(dir,'document.pdf')],{windowsHide:true,timeout:30000,maxBuffer:3000000})
+     :await run(process.env.WORKBENCH_PDFTOTEXT||(process.platform!=='win32'?'pdftotext':existsSync(pdftotext)?pdftotext:'pdftotext.exe'),['-layout','-enc','UTF-8',join(dir,'document.pdf'),'-'],{windowsHide:true,timeout:30000,maxBuffer:3000000});
+    const pageText=process.env.WORKBENCH_PORTABLE==='1'?JSON.parse(extracted.stdout):extracted.stdout.split('\f').map(t=>t.replace(/\s+/g,''));
     await writeFile(manifest,JSON.stringify({pages,pageText}),'utf8');
    }
    return JSON.parse(await readFile(manifest,'utf8'));

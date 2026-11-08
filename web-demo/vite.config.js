@@ -15,6 +15,8 @@ import { intakeApi } from './server/intake-api.mjs';
 import { regulationDiscoveryApi } from './server/regulation-discovery-api.mjs';
 import { decisionResearchApi } from './server/decision-research-api.mjs';
 import { localDeepSeekConfig } from './server/local-deepseek-config.mjs';
+import { calculationSourceForProject } from './server/portable-calculation-sources.mjs';
+import { portableCalculationUploadApi } from './server/portable-calculation-upload.mjs';
 
 function sendJson(res, status, payload) {
   res.statusCode = status;
@@ -178,7 +180,7 @@ function calculationBookLocalApi(env) {
   const sourceDir = env.CALCBOOK_SOURCE_DIR?.trim()
     || 'E:\\600-工作台数据库\\610-待处理\\01-计算书';
   const scriptPath = fileURLToPath(new URL('./scripts/build-calculation-book.py', import.meta.url));
-  const outputDir = fileURLToPath(new URL('./.tmp/task6-calculation-book', import.meta.url));
+  const outputDir = env.WORKBENCH_CACHE_ROOT?join(env.WORKBENCH_CACHE_ROOT,'calculation-book'):fileURLToPath(new URL('./.tmp/task6-calculation-book', import.meta.url));
   const bundledPython = join(
     homedir(),
     '.cache',
@@ -195,7 +197,7 @@ function calculationBookLocalApi(env) {
       const child = spawn(python, [scriptPath, ...args], {
         cwd: process.cwd(),
         windowsHide: true,
-        env: { ...process.env, PYTHONUTF8: '1' },
+        env: { ...process.env, PYTHONUTF8: '1', WORKBENCH_PORTABLE: env.WORKBENCH_PORTABLE || '' },
       });
       let stdout = '';
       let stderr = '';
@@ -218,14 +220,25 @@ function calculationBookLocalApi(env) {
   }
 
   const register = (server) => {
+    if (env.WORKBENCH_PORTABLE === '1') portableCalculationUploadApi(env, {validate: async (directory, key) => {
+      const catalog = JSON.parse(await runBuilder(['--catalog', directory]));
+      const workbook = catalog.workbooks?.find(item => item.key === key);
+      if (!workbook?.sheets?.length) throw Error('Excel 母件没有可用工作表');
+      const sheet = JSON.parse(await runBuilder(['--workbook', directory, '--workbook-key', key, '--sheet', workbook.sheets[0].name]));
+      if (key === 'jump-column' && !sheet.can_recalculate) throw Error('此文件的首个工作表不符合已核对的跃层柱母件（B6、B8、B10 公式），未套用固定算法。');
+      const relevant = (sheet.missing_formula_cache || []).concat(sheet.formula_errors || []).filter(cell => !(sheet.can_recalculate && ['B6','B8','B10'].includes(cell)));
+      return {warnings: relevant.length ? ['Excel 公式缺少可用结果：' + relevant.slice(0, 20).join('、') + '。请在 Excel 复算保存后重新导入，否则包含该表的导出会停止。'] : []};
+    }}).configureServer(server);
     server.middlewares.use('/api/calculation-book/template', async (req, res) => {
       if (req.method !== 'GET') return sendJson(res, 405, { error: 'Method Not Allowed' });
       try {
-        const key = new URL(req.url || '/', 'http://localhost').pathname.replace(/^\/+/, '');
-        const catalog = JSON.parse(await runBuilder(['--catalog', sourceDir]));
+        const url = new URL(req.url || '/', 'http://localhost');
+        const key = url.pathname.replace(/^\/+/, '');
+        const source = await calculationSourceForProject(env, sourceDir, url.searchParams.get('project'));
+        const catalog = JSON.parse(await runBuilder(['--catalog', source.directory]));
         const fileName = key === 'cover' ? catalog.templates?.cover || 'cover-reference.docx' : key === 'catalog' ? catalog.templates?.catalog : '';
         if (!fileName) return sendJson(res, 404, { error: '未找到 Word 母件。' });
-        const buffer = await readFile(key === 'cover' && !catalog.templates?.cover ? fileURLToPath(new URL('./assets/calculation-book/cover-reference.docx', import.meta.url)) : join(sourceDir, fileName));
+        const buffer = await readFile(key === 'cover' && !catalog.templates?.cover ? fileURLToPath(new URL('./assets/calculation-book/cover-reference.docx', import.meta.url)) : join(source.directory, fileName));
         const isDocx = fileName.toLowerCase().endsWith('.docx');
         res.statusCode = 200;
         res.setHeader('Content-Type', isDocx
@@ -243,8 +256,10 @@ function calculationBookLocalApi(env) {
     server.middlewares.use('/api/calculation-book/status', async (req, res) => {
       if (req.method !== 'GET') return sendJson(res, 405, { error: 'Method Not Allowed' });
       try {
-        const output = await runBuilder(['--catalog', sourceDir]);
-        return sendJson(res, 200, JSON.parse(output));
+        const url = new URL(req.url || '/', 'http://localhost');
+        const source = await calculationSourceForProject(env, sourceDir, url.searchParams.get('project'));
+        const output = await runBuilder(['--catalog', source.directory]);
+        return sendJson(res, 200, {...JSON.parse(output), sourceWarnings: source.warnings, assetsRevision: source.revision});
       } catch (error) {
         return sendJson(res, 503, { error: `计算书资料连接失败：${error?.message || '未知错误'}` });
       }
@@ -257,7 +272,8 @@ function calculationBookLocalApi(env) {
         const workbook = String(url.searchParams.get('workbook') || '').slice(0, 80);
         const sheet = String(url.searchParams.get('sheet') || '').slice(0, 120);
         if (!workbook || !sheet) return sendJson(res, 400, { error: '请选择工作簿和工作表。' });
-        const output = await runBuilder(['--workbook', sourceDir, '--workbook-key', workbook, '--sheet', sheet]);
+        const source = await calculationSourceForProject(env, sourceDir, url.searchParams.get('project'), {requiredKeys: [workbook]});
+        const output = await runBuilder(['--workbook', source.directory, '--workbook-key', workbook, '--sheet', sheet]);
         return sendJson(res, 200, JSON.parse(output));
       } catch (error) {
         return sendJson(res, 500, { error: error?.message || 'Excel 读取失败。' });
@@ -300,8 +316,9 @@ function calculationBookLocalApi(env) {
           out_files: outFiles,
           excel_blocks: excelBlocks,
         };
+        const source = await calculationSourceForProject(env, sourceDir, body.project_id, {requiredKeys: excelBlocks.map(block => block.workbook)});
         const output = await runBuilder(
-          ['--build', sourceDir, '--output-dir', outputDir],
+          ['--build', source.directory, '--output-dir', outputDir],
           JSON.stringify(payload),
         );
         const result = JSON.parse(output);
@@ -331,9 +348,10 @@ function calculationBookLocalApi(env) {
 
 export {deepSeekLocalApi,calculationBookLocalApi};
 export default defineConfig(({ mode }) => {
-  const env = localDeepSeekConfig(loadEnv(mode, process.cwd(), ''));
+  const portableBuild=process.env.WORKBENCH_PORTABLE_BUILD==='1';
+  const env = portableBuild?{}:localDeepSeekConfig(loadEnv(mode, process.cwd(), ''));
   return {
-    plugins: [react(), deepSeekLocalApi(env), calculationBookLocalApi(env), calculationPdfApi(env), expansionApi(env), projectStoreApi(env), intakeApi(env), regulationDiscoveryApi(), decisionResearchApi(env), rewriteApi(env)],
+    plugins: portableBuild?[react()]:[react(), deepSeekLocalApi(env), calculationBookLocalApi(env), calculationPdfApi(env), expansionApi(env), projectStoreApi(env), intakeApi(env), regulationDiscoveryApi(), decisionResearchApi(env), rewriteApi(env)],
     server: { watch: { ignored: ['**/qa/**','**/outputs/**','**/design/template-restoration/backup-*/**'] } },
     base: './',
     build: {
@@ -342,6 +360,7 @@ export default defineConfig(({ mode }) => {
           main: fileURLToPath(new URL('./index.html', import.meta.url)),
           workbuddy: fileURLToPath(new URL('./workbuddy-unified-measures.html', import.meta.url)),
           integratedWorkbench: fileURLToPath(new URL('./workbuddy-integrated-studio.html', import.meta.url)),
+          officeEditor: fileURLToPath(new URL('./office-editor.html', import.meta.url)),
           methodLab: fileURLToPath(new URL('./design/method-lab/index.html', import.meta.url)),
           pptReport: fileURLToPath(new URL('./design/parallel-tasks/06-ppt-report/prototype.html', import.meta.url)),
           tianjinExample: fileURLToPath(new URL('./design/key-decisions/key-decisions-integrated-prototype.html', import.meta.url)),

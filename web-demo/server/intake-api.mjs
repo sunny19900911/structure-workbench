@@ -53,7 +53,8 @@ export function intakeApi(env={},dependencies={}){
       if(req.method!=='POST'||req.headers['x-workbench-request']!=='intake')return reply(403,{error:'请求来源无效'});
       if(path==='/read-word'){
         let chunks=[],size=0;for await(const c of req){size+=c.length;if(size>30*1024*1024)return reply(413,{error:'文件超过30MB'});chunks.push(c);}
-        return reply(200,await readWordSource(Buffer.concat(chunks),req.headers['x-word-format']==='doc'));
+        let filename='';try{filename=decodeURIComponent(req.headers['x-file-name']||'');}catch{throw Error('文件名编码无效');}
+        return reply(200,await readWordSource(Buffer.concat(chunks),req.headers['x-word-format']==='doc',filename,env));
       }
       if(path==='/read-doc'){
         let chunks=[],size=0;for await(const c of req){size+=c.length;if(size>30*1024*1024)return reply(413,{error:'DOC超过30MB，请拆分'});chunks.push(c);}

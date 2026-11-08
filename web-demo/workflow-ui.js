@@ -1,4 +1,5 @@
 import './integrated-modules.js';
+import './portable-projects-ui.js';
 import './workflow-ui.css';
 const W=window.WorkbenchProjects,I=window.WorkbenchIntake,E=window.ExpansionWorkbench;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -14,7 +15,7 @@ document.querySelector('.topbar #word-export-btn')?.remove();
 for(const button of document.querySelectorAll('.topbar .act'))if(['打印 / 存 PDF','复制全文'].includes(button.textContent.trim()))document.querySelector('.wp-management>div').append(button);
 const guide=document.querySelector('.side .flow');if(guide)guide.textContent='导入资料 → 自动生成草稿 → 处理问题 → 导出成果';
 const task=document.createElement('span');task.id='flow-task';task.setAttribute('role','status');document.querySelector('.wp-primary').append(task);
-function controls(){const disabled=running||W.loading||I.busy||E.busy;dialog.querySelectorAll('.flow-upload input,.flow-upload select,.flow-upload button').forEach(e=>e.disabled=disabled);q('#flow-kind').disabled=disabled||Boolean(replacement);q('#flow-files').multiple=!replacement;q('#flow-files').accept=q('#flow-kind').value==='yjk'?'.out,.txt,.dat':'.doc,.docx,.pdf,.txt,.md,.out,.dat';q('#flow-unit').parentElement.hidden=!['yjk','auto'].includes(q('#flow-kind').value);}
+function controls(){const disabled=running||W.loading||I.busy||E.busy;dialog.querySelectorAll('.flow-upload input,.flow-upload select,.flow-upload button').forEach(e=>e.disabled=disabled);q('#flow-kind').disabled=disabled||Boolean(replacement);q('#flow-files').multiple=!replacement;q('#flow-files').accept=q('#flow-kind').value==='yjk'?'.out,.txt,.dat':'.doc,.docx,.docm,.dot,.dotx,.dotm,.pdf,.txt,.md,.out,.dat';q('#flow-unit').parentElement.hidden=!['yjk','auto'].includes(q('#flow-kind').value);}
 function render(){
  const current=jobs.filter(j=>j.project===W.id);
  q('#flow-jobs').innerHTML=current.map(j=>'<p>'+esc(({bldg:'建筑',geo:'地勘',yjk:'模型'})[j.slot]+' · '+j.name)+' · '+esc(j.status)+(j.error?'：'+esc(j.error)+' <button data-retry="'+j.id+'">仅重试此项</button>':'')+'</p>').join('');

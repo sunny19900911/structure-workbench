@@ -44,3 +44,6 @@ credentials.json
 credentials.*.json
 .credentials/
 .secrets/
+
+# Local skill hook bookkeeping
+/skills/.state/

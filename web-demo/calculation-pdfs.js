@@ -73,7 +73,8 @@
    let root='';
    for(let index=0;index<files.length;index++){
     if(ticket!==scanTicket||project!==window.WorkbenchProjects?.id)return;
-    const file=files[index];status(`正在上传 ${index+1}/${files.length}：${file.name}`);
+    const file=files[index];status(`正在${window.WorkbenchPortable?'读取':'上传'} ${index+1}/${files.length}：${file.name}`);
+    if(window.WorkbenchPortable)await window.WorkbenchPortable.inspectFile(file,'pdf');
     const result=await request('/api/calculation-pdfs/upload?'+new URLSearchParams({project,batch,path:file.webkitRelativePath}),{method:'POST',headers:{'Content-Type':'application/pdf','X-Workbench-Request':'calculation-pdfs'},body:file});root=result.root;
    }
    if(ticket!==scanTicket||project!==window.WorkbenchProjects?.id)return;

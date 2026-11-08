@@ -1,5 +1,28 @@
 # 结构设计 AI 工作库约定
 
+## 2026-11-08 三工作树并行改进
+
+source_id: USER-PARALLEL-HARDENING-20261108（用户授权，原文事实）。当前源码先提交到 GitHub main，三个新工作树分别负责保存可靠性、MCP 稳定性、资料提取准确度。开始前必读 `web-demo/design/parallel-hardening-20261108/README.md` 的文件归属与验收要求；该约定优先于历史任务分工。各组仅在自己的工作树提交，不自行合并或推送 main；主对话统一验收、合并、推送和离线打包。现有正式数据与运行包不由子任务操作，测试只用各自 qa 隔离库。公共配置和技能索引由主对话汇总。
+
+## 2026-11-08 工程办公成果初版
+
+source_id: USER-OFFICE-WORKFLOW-20261108（小香金猪要求院内工程流程驱动 Word、PPT、Excel，并向 AI 开放同一套操作；原文事实）。入口仍是原工作台，本机版新增“Word · PPT · Excel”。界面只保留生成、打开、编辑、保存和下载，不增加候选确认、填写理由或说明卡片。
+
+- `office-workbench.js` 生成同项目、同单体、同参数版本的成果集；复用扩初/PPT编排和统一措施。生成新文件保留已有人工文件，不回写工程参数。
+- `office-editor.js` 使用锁定的 SuperDoc 1.47.2 编辑实际 DOCX；`office-simple-editors.js` 和 `server/office-package.*` 修改 XLSX/PPTX 原生部件。Excel 当前不在网页重算公式；PPT 基础预览不完整绘制母版/图表，原包部件保留。不要承诺完整 Office 或完全一致分页。
+- `server/office-document-store.mjs` 将不可变文件版本存入原项目库的 `.office-documents`，沿用稳定项目ID；保存使用文件修订和原文检查，备份包含全部文档历史。网页与 MCP 共用命令入口。
+- Word/PPT/Excel 文件操作使用 `office.*` MCP，工程约定位于 `workbench://engineering/office`。规范判定仍用原有规则，生成完成不代表专业审签。
+- 测试限 `web-demo/qa/portable-release/mcp/office*`；脚本及实际能力记录在 `web-demo/design/office-editor/`。本轮为本机开发试用，不提交或部署；分发前按实际锁定组件整理许可证和对应源码。
+
+## 2026-11-08 离线 MCP 接入
+
+source_id: USER-MCP-20261108（小香金猪要求开放工作台业务接口并让 AI 理解初步结构设计流程；原文事实）。本轮仍在主工作区开发，不提交、不推送、不部署。
+
+- `web-demo/server/mcp-server.mjs` 提供本机 STDIO MCP；复用离线服务、项目 ID 和原分区，不建立第二套项目库。配置生成器只输出 WorkBuddy JSON / Codex TOML，不读取或覆盖客户端配置、密钥。
+- `mcp-browser-operations.js` 为业务接口清单，`mcp-browser-bridge.js` 复用网页编排/联动；写入必须携带 `expectedRevisions`，单体操作必须明确 `unit`。只读不保存，人工稿/图表标记/已签发稿保持保护；无网页、修订冲突、执行超时分别报告，不伪报成功。
+- `server/mcp-engineering.mjs` 提供版本化资源、任务提示词和只读检查；本轮复用现有抗震查表实现，没有重新核验规范现行版本。Skill 位于 `design/mcp/structure-workbench-skill`，属于流程说明，不是模型权重训练或结构求解器。
+- 所有测试数据限 `web-demo/qa/portable-release/mcp`。命令、完整接口和验收见 `web-demo/design/mcp/`；交付继续由 `deploy/portable/package.py` 白名单打包，保留六模块及用户数据独立存储。
+
 ## 2026-10-06 天津重难点示例
 
 原文事实，source_id: USER-20261006-TIANJIN-EXAMPLE。主页面“重难点”新增“查看天津重难点示例”，嵌入 `design/key-decisions/key-decisions-integrated-prototype.html`。保留抗震、绿色与装配式、性能化三组示例；内嵌模式隐藏重复导航，确认按钮仅演示，不保存。iframe 仅允许脚本、不开放同源访问，不把天津固定案例写入当前项目。Vite 构建包含该示例页面。验证：`node --test design/project-integration/modules.test.mjs`、`npm run build`。
@@ -201,6 +224,10 @@ source_id: USER-20261002-RETURN-MAIN（用户明确要求，原文事实）。�
 ## 2026-10-03 楼面活荷载清单
 
 source_id: USER-LIVE-LOADS-20261003（用户要求，原文事实）。`floor-live-loads.js` 按用户提供清单生成17行楼面活荷载，只保留序号、类别、标准值；支持直接编辑、删除及一键重排序号。沿用 `main.paper` 和扩初表格联动，迁移标记防止删除后重新补回；人工取值及已签发稿保留。来源差异及回归见 `web-demo/design/template-restoration/楼面活荷载清单.md`。
+
+## 2026-10-30 同事使用的本地版
+
+source_id: USER-PORTABLE-20261030（原文事实）。`web-demo/deploy/portable` 生成 Windows x64 离线包；默认当前用户 `%LOCALAPPDATA%/StructureWorkbench`，只监听 127.0.0.1，不加载作者 `.env`、密钥或 603 项目。保留六模块，隐藏重难点/反校核和未核验通过的规范链接。入口、构建、数据迁移与验收见 `web-demo/design/portable/README.md`。测试存储必须位于 `web-demo/qa/portable-release`；不得用正式项目验收。文件格式预检不等于所有 Office/WPS 版本实测；旧 DOC 转换及精确 Word 分页仍有本机 Word 依赖。
 
 ## 2026-10-03 独立 DeepSeek 段落改写模块
 

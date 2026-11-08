@@ -61,6 +61,8 @@ button { cursor: pointer; }
 .header-actions .secondary.confirmed { background: #edf7f1; border-color: #edf7f1; color: #2f6c4a; }
 .header-actions .primary { color: var(--header-deep); background: #fff; }
 .header-actions button:hover { filter: brightness(1.04); }
+.cafeteria-download-ready { display: inline-flex; align-items: center; min-height: 38px; padding: 0 12px; color: #fff; border: 1px solid rgba(255,255,255,.7); border-radius: 7px; font-size: 13px; white-space: nowrap; text-decoration: underline; text-underline-offset: 3px; }
+.cafeteria-download-ready:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
 .app-shell { min-height: calc(100vh - 68px); display: grid; grid-template-columns: 240px minmax(0, 1fr); }
 

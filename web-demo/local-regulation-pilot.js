@@ -550,13 +550,19 @@
       statusCell.appendChild(statusReplacement);
     }
     var linkCell = document.createElement('td');
-    var link = document.createElement('a');
-    link.href = record.source_url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.textContent = '打开官网';
-    link.setAttribute('aria-label', '打开《' + record.title + '》的权威原始网页');
-    linkCell.appendChild(link);
+    var availableLink = window.WorkbenchPortable ? window.WorkbenchPortable.regulationLink(record) : {url:record.source_url,label:'打开官网'};
+    if (availableLink) {
+      var link = document.createElement('a');
+      link.href = availableLink.url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = availableLink.label;
+      link.setAttribute('aria-label', availableLink.label + '《' + record.title + '》');
+      if (availableLink.checkedAt) link.title = '链接核验：' + availableLink.checkedAt;
+      linkCell.appendChild(link);
+    } else if (window.WorkbenchPortable) {
+      linkCell.textContent = '—';
+    }
     var selectButton = document.createElement('button');
     selectButton.type = 'button';
     selectButton.textContent = '添加到规范';
@@ -606,6 +612,12 @@
   }
 
   window.queryLocalRegulations = queryLocalRegulations;
+  window.WorkbenchLocalRegulations={search:function(args){
+    var match=provinceFor(args.region),keyword=String(args.keyword||'').trim().toLowerCase();
+    if(!match)return {region:args.region,asOf:dataset.as_of_date,items:[],offline:true,note:'本地目录未匹配该地区，请使用省、市或省会名称；未进行联网检索'};
+    var rows=match[1].records.filter(function(record){return !keyword||(record.title+' '+record.code).toLowerCase().includes(keyword);});
+    return {region:match[0],asOf:dataset.as_of_date,offline:true,note:'本地目录快照；收录状态不等于本项目适用性或当前有效性确认，未进行联网检索。',items:rows.map(function(record){var item=Object.assign({},record),link=window.WorkbenchPortable?.regulationLink(record);delete item.source_url;item.catalogueStatus=record.status;item.catalogueStatusLabel=record.status_label;item.status='unknown';item.review='candidate';if(link)item.source_url=link.url;return item;})};
+  }};
   function refreshSelection() {
     var selection = window.ExpansionWorkbench?.regulationSelection();
     var addAll = byId('local-regulation-add-all');

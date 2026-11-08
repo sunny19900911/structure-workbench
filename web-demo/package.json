@@ -11,12 +11,15 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "@vitejs/plugin-react": "6.1.1",
+    "ajv": "8.17.1",
     "docx": "^9.7.1",
-    "lucide-react": "latest",
+    "lucide-react": "1.46.0",
     "pptxgenjs": "4.0.1",
-    "react": "latest",
-    "react-dom": "latest",
-    "vite": "latest"
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "superdoc": "1.47.2",
+    "vite": "8.3.0"
   }
 }

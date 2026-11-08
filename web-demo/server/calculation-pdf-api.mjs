@@ -10,7 +10,7 @@ const run = promisify(execFile);
 const blocked = path => path.split(/[\\/]/).includes('03_盈建科参数导出样本');
 const inside = (root, path) => {const rel=relative(root,path);return !isAbsolute(rel)&&rel!=='..'&&!rel.startsWith('..'+sep);};
 const groupFor = name => /^荷载校核/.test(name)?'荷载校核':['上部','基础','施工图'].includes(name)?name:'';
-const cacheRoot = fileURLToPath(new URL('../outputs/calculation-pdf/',import.meta.url));
+const cacheRoot = process.env.WORKBENCH_CACHE_ROOT?join(process.env.WORKBENCH_CACHE_ROOT,'calculation-pdf'):fileURLToPath(new URL('../outputs/calculation-pdf/',import.meta.url));
 
 function binary(name, env){
  const configured=env[{pdfinfo:'WORKBENCH_PDFINFO',pdftoppm:'WORKBENCH_PDFTOPPM',pdfunite:'WORKBENCH_PDFUNITE'}[name]];

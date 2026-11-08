@@ -10,6 +10,8 @@ const value=(s,k)=>String(s.parameters?.[k]||s.parameters?.[aliases[k]]||s.docum
 const tok=(s,k)=>s.parameters?.[k]?`{{p:${k}}}`:s.document?.parameters?.[k]||'';
 const marker=k=>'[[table:'+k+']]';
 const image=k=>'[[image:'+k+']]';
+// Reuse the explicit architectural use; never infer a design or seismic category.
+const unitUse=u=>String(u.use||'').trim().replace(/^(?:(?:主要|建筑)?(?:使用)?功能\s*(?:为|是|[:：])\s*)+/,'').replace(/[。；;\s]+$/,'');
 export function imageSlots(s){return [
  {id:'site-plan',caption:'图1.1 各层总平面图',section:'overview'},
  {id:'site-bird',caption:'图1.2 项目总体鸟瞰图',section:'overview'},
@@ -33,7 +35,7 @@ export function referenceText(s,id){
  materials:['6.1 混凝土',marker('concrete'),'6.2 钢筋','{{t:reinforcement}}','6.3 钢材','{{t:steel}}','6.4 填充墙体','{{t:masonry}}'].join('\n\n'),
  review:'7.1 装配式要求\n'+(s.facts||[]).filter(f=>f.origin==='decisions'&&f.status==='confirmed'&&/装配/.test(f.value)).map(f=>`{{f:${f.id}}}`).join('\n'),
  foundation:'8.1 地基基础\n'+(d.foundation||'').replace(/^5\.3[^\n]*\n/,'').replace(/\n\n5\.4[\s\S]*$/,'')+'\n'+units.filter(u=>/连廊/.test(u.name)).map((u,i)=>`8.1.${i+1} ${u.name}基础\n`).join('\n')+'\n'+figs('foundation'),
- selection:'8.2 地下室结构\n'+(p('basement_description')||'')+'\n'+image('basement-model')+'\n\n8.3 上部结构\n'+mainUnits.map((u,i)=>`8.3.${i+1} ${u.name}\n`+[u.floors?`${u.name}层数为${u.floors}。`:'',u.height?`建筑高度${u.height}m。`:'',u.use?`主要功能为${u.use}。`:'',`结构类型：${s.unitParameters?.[u.name]?.struct_sys||u.structuralType||p('struct_sys')}。`].join('')+'\n'+image('model-'+u.name)).join('\n\n'),
+ selection:'8.2 地下室结构\n'+(p('basement_description')||'')+'\n'+image('basement-model')+'\n\n8.3 上部结构\n'+mainUnits.map((u,i)=>`8.3.${i+1} ${u.name}\n`+[u.floors?`${u.name}层数为${u.floors}。`:'',u.height?`建筑高度${u.height}m。`:'',unitUse(u)?`主要功能为${unitUse(u)}。`:'',`结构类型：${s.unitParameters?.[u.name]?.struct_sys||u.structuralType||p('struct_sys')}。`].join('')+'\n'+image('model-'+u.name)).join('\n\n'),
  model:['9.1 计算程序',p('software')?`结构计算分析与设计采用${p('software')}。`:'','9.2 计算分析主要参数',`抗震设防烈度${p('intensity')}度，设计基本地震加速度${p('pga')}，设计地震分组${p('eq_group')}，场地类别${p('site_class')}，特征周期${p('tg')}s。`,marker('parameters'),'9.3 主要计算结果汇总',marker('metrics')].join('\n\n'),
  special:'10.1 多层建筑规则性判断\n'+marker('regularity')+'\n'+(s.facts||[]).filter(f=>f.origin==='decisions'&&f.status==='confirmed'&&!/装配/.test(f.value)).map(f=>`{{f:${f.id}}}`).join('\n')+'\n\n10.2 结构不规则应对措施\n[[measures:regularity]]'
  };
@@ -50,7 +52,7 @@ function rawReportTable(s,key){
   return t;
  }
  if(key==='units'){
-  const t=repeated(1,'表1 结构单体性质和基本信息',2,u.map(x=>[x.name,x.floors,x.length||'',x.width||'',x.height||[x.planningHeight?x.planningHeight+'（规划）':'',x.fireHeight?x.fireHeight+'（消防）':''].filter(Boolean).join('\n'),x.span||'',x.basementStorey||'',(x.storeys||'').replace(/^共\d+层[，,]/,'').replace(/隔震层[^；。]*[；。]?/g,''),x.nature||'']),2);
+  const t=repeated(1,'表1 结构单体性质和基本信息',2,u.map(x=>[x.name,x.floors,x.length||'',x.width||'',x.height||[x.planningHeight?x.planningHeight+'（规划）':'',x.fireHeight?x.fireHeight+'（消防）':''].filter(Boolean).join('\n'),x.span||'',x.basementStorey||'',(x.storeys||'').replace(/^共\d+层[，,]/,'').replace(/隔震层[^；。]*[；。]?/g,''),x.nature||unitUse(x)]),2);
   t.rows=t.rows.map((r,i)=>{const unitKey=i<2?'header:'+i:u[i-2].name;const edits=s.unitTable?.cells?.[unitKey]||{};return {...r,unitKey,manual:r.values.map((_,j)=>Object.hasOwn(edits,j)),values:r.values.map((v,j)=>Object.hasOwn(edits,j)?edits[j]:v)};}).filter(r=>r.source<2||!s.unitTable?.deleted?.includes(r.unitKey));
   return t;
  }

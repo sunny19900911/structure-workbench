@@ -21,6 +21,7 @@ window.addEventListener('workbuddy:project-changed',()=>{
 const topbar = document.querySelector('.topbar');
 if (topbar) initAssistant();
 window.addEventListener('workbuddy:ai-panel-open',e=>{if(e.detail!=='assistant')setOpen(false);});
+window.addEventListener('workbuddy:ai-settings-changed',()=>checkStatus());
 document.addEventListener('pointerdown',e=>{if(state.open&&!e.target.closest('.wb-ai-drawer,.wb-ai-toggle'))setOpen(false);},true);
 
 function initAssistant() {
@@ -53,7 +54,7 @@ function initAssistant() {
       <button type="button" data-prompt="请根据当前页面内容，整理一份项目关键参数清单。按“已知事实、待确认项、AI建议”三部分输出。">提取关键参数</button>
       <button type="button" data-prompt="请检查当前页面中可能存在的参数冲突、缺项和需要人工确认的内容，并按风险高低排序。">检查冲突缺项</button>
       <button type="button" data-prompt="请根据当前项目上下文，列出应进一步核对的规范类别和条文方向。不要编造具体条文编号。">规范核对建议</button>
-      <button type="button" id="wb-ai-region-research">地区重难点研判</button>
+      ${window.WORKBENCH_PORTABLE ? '' : '<button type="button" id="wb-ai-region-research">地区重难点研判</button>'}
     </div>
     <div class="wb-ai-messages" aria-live="polite"></div>
     <form class="wb-ai-compose">
@@ -73,7 +74,8 @@ function initAssistant() {
   toggle.addEventListener('click', () => setOpen(!state.open));
   closeButton.addEventListener('click', () => setOpen(false));
   shade.addEventListener('click', () => setOpen(false));
-  drawer.querySelector('#wb-ai-region-research').onclick=()=>{if(!window.WorkbenchModules?.openResearch){appendMessage('assistant','请在一体化工作台载入项目后使用地区研判。');return;}setOpen(false);window.WorkbenchModules.openResearch();};
+  const researchButton=drawer.querySelector('#wb-ai-region-research');
+  if(researchButton)researchButton.onclick=()=>{if(!window.WorkbenchModules?.openResearch){appendMessage('assistant','请在一体化工作台载入项目后使用地区研判。');return;}setOpen(false);window.WorkbenchModules.openResearch();};
   drawer.querySelectorAll('[data-prompt]').forEach((button) => {
     button.addEventListener('click', () => {
       textarea.value = button.dataset.prompt;
@@ -118,9 +120,10 @@ async function checkStatus() {
     status.classList.toggle('ready', state.configured);
     status.classList.toggle('missing', !state.configured);
     status.querySelector('span').textContent = state.configured
-      ? `已连接 · ${state.model}`
-      : '尚未配置 API Key · 请查看面板内说明';
+      ? `${window.WORKBENCH_PORTABLE?'已配置':'已连接'} · ${state.model}`
+      : window.WORKBENCH_PORTABLE?'AI 未启用 · 可在“本机状态”配置':'尚未配置 API Key · 请查看面板内说明';
     if (!state.configured) renderSetupHint();
+    else document.querySelector('.wb-ai-setup')?.remove();
   } catch {
     status.classList.add('missing');
     status.querySelector('span').textContent = '本地 AI 接口未启动';
@@ -135,7 +138,10 @@ function renderSetupHint() {
   if (document.querySelector('.wb-ai-setup')) return;
   const box = document.createElement('div');
   box.className = 'wb-ai-setup';
-  box.innerHTML = '<b>首次配置</b><ol><li>复制 <code>web-demo/.env.example</code> 为 <code>.env.local</code></li><li>填入 <code>DEEPSEEK_API_KEY</code></li><li>关闭并重新启动 Demo</li></ol>';
+  if(window.WORKBENCH_PORTABLE){
+    box.innerHTML = '<b>可选 AI 改写</b><p>在“本机状态”中填入你自己的 DeepSeek API Key 即可，无需重启。未启用也能使用离线基础功能。</p><button type="button">打开本机 AI 设置</button>';
+    box.querySelector('button').onclick=()=>{setOpen(false);window.WorkbenchPortable?.openSettings();};
+  }else box.innerHTML = '<b>首次配置</b><ol><li>复制 <code>web-demo/.env.example</code> 为 <code>.env.local</code></li><li>填入 <code>DEEPSEEK_API_KEY</code></li><li>关闭并重新启动 Demo</li></ol>';
   document.querySelector('.wb-ai-messages')?.appendChild(box);
 }
 

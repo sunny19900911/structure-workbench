@@ -1,6 +1,6 @@
 import {templatePages,buildCafeteriaSlides} from './cafeteria-core.js';
 import {cafeteriaHTML} from './cafeteria-view.js';
-import {downloadCafeteria} from './cafeteria-export.js';
+import {downloadCafeteria,cafeteriaBlob} from './cafeteria-export.js';
 import { validateRewrite, parameterEvidence, rewriteGuidance } from './report-core.js';
 import {projectPart} from '../../../project-store-client.js';
 let draftStore, snapshotQueue=Promise.resolve(), draftLoading=false;
@@ -356,7 +356,7 @@ els.generate.addEventListener('click', async () => {
   const current = state.current;
   try {
     await downloadCafeteria(buildCafeteriaSlides(state.snapshot,els.unitName.value,state.edits),state.images,els.projectName.value);
-    showToast('PPT 草稿已下载，文字与表格可编辑');
+    showToast('PPT 草稿已生成；若未开始下载，请点击“保存已生成的 PPT”');
   } catch (error) {
     showToast(`导出失败：${error.message}`);
   } finally {
@@ -500,6 +500,14 @@ document.addEventListener('keydown', (event) => {
 });
 
 window.WorkbenchPpt={canSign:()=>state.confirmed,busy:()=>draftLoading||imageLoading||state.exporting||state.rewriting,async flush(){await snapshotQueue;await saveDraft();await draftStore?.flush();}};
+window.WorkbenchPpt.mcp={
+ get ready(){return !!draftStore&&!!state.snapshot&&!draftLoading;},get revision(){return draftStore?.revision||0;},get dirty(){if(!draftStore)return false;const drafts={...unitDrafts,[els.unitName.value]:{edits:state.edits,provenance:state.provenance,images:Object.fromEntries(state.images)}};return draftStore.hasChanges({layoutVersion:3,edits:state.edits,provenance:state.provenance,unit:els.unitName.value,images:Object.fromEntries(state.images),unitDrafts:drafts,parameterVersion:state.snapshot?.parameter_version});},
+ async selectUnit(unit){await snapshotQueue;if(!state.snapshot?.units?.some(u=>u.name===unit))throw Error('PPT单体不存在');if(els.unitName.value===unit)return;if(window.WorkbenchPpt.busy())throw Error('PPT正在处理');if(renderedUnit)unitDrafts[renderedUnit]={edits:state.edits,provenance:state.provenance,images:Object.fromEntries(state.images)};els.unitName.value=unit;const saved=unitDrafts[unit]||{};state.edits=saved.edits||{};state.provenance=saved.provenance||{};state.images=new Map(Object.entries(saved.images||{}));invalidateReview();renderSlide();renderImageManager();},
+ read(){const slides=buildCafeteriaSlides(state.snapshot,els.unitName.value,state.edits);return {projectId:state.snapshot?.project_id,parameterVersion:state.snapshot?.parameter_version,outputVersion:state.snapshot?.output_version,unit:els.unitName.value,revision:draftStore?.revision||0,edits:{...state.edits},pages:slides.map(page=>({number:page.number,title:page.title,fields:page.shapes.flatMap(shape=>shape.kind==='text'?[{id:shape.editId,text:shape.text,editable:shape.editable,linked:!!shape.linked}]:shape.kind==='table'?shape.rows.flatMap(row=>row.filter(cell=>!cell.skip).map(cell=>({id:cell.editId,text:cell.text,editable:cell.editable,linked:!!cell.linked}))):[])})),images:imageRequirements.map(r=>({key:imageKey(r.pageIndex,r.name),name:r.name,page:r.pageIndex+1,present:state.images.has(imageKey(r.pageIndex,r.name))})),draft:true};},
+ async edit({edits,expectedEdits}){if(state.snapshot?.context?.canEdit===false||window.WorkbenchPpt.busy())throw Error('PPT只读或正在处理');const editable=new Set(this.read().pages.flatMap(p=>p.fields.filter(f=>f.editable).map(f=>f.id)));for(const [key,value]of Object.entries(edits)){if(!editable.has(key)||typeof value!=='string')throw Error('PPT字段不可编辑：'+key);if((state.edits[key]||'')!==expectedEdits[key])throw Object.assign(Error('PPT人工文字已变化，请重新读取'),{code:'TEXT_CONFLICT',status:409});}const before={edits:{...state.edits},provenance:{...state.provenance}};for(const [key,value]of Object.entries(edits)){state.edits[key]=value;state.provenance[key]={statement_type:'AI推断（MCP编辑，待复核）',source_id:projectKey()+':'+key,updated_at:new Date().toISOString()};}invalidateReview();state.undo=before;document.querySelector('#rewrite-undo').disabled=false;await saveDraft();renderSlide();return this.read();},
+ async image({key,data}){if(state.snapshot?.context?.canEdit===false||window.WorkbenchPpt.busy())throw Error('PPT只读或正在处理');if(!imageRequirements.some(r=>imageKey(r.pageIndex,r.name)===key))throw Error('PPT图位不存在');state.images.set(key,data);invalidateReview();await saveDraft();renderSlide();renderImageManager();},
+ async export(expected={}){if(window.WorkbenchPpt.busy())throw Error('PPT正在处理');await snapshotQueue;const identity={projectId:state.snapshot?.project_id,parameterVersion:state.snapshot?.parameter_version,outputVersion:state.snapshot?.output_version,unit:els.unitName.value};for(const key of ['projectId','parameterVersion','outputVersion','unit'])if(expected[key]!==undefined&&expected[key]!==identity[key])throw Object.assign(Error('PPT 参数快照已变化，请重新生成'),{status:409,code:'PPT_VERSION_MISMATCH'});state.exporting=true;try{const blob=await cafeteriaBlob(buildCafeteriaSlides(state.snapshot,els.unitName.value,state.edits),state.images);return {...identity,blob,filename:(els.projectName.value||'结构设计').replace(/[\\/:*?"<>|]/g,'_')+'_扩初汇报_草稿.pptx',draft:true};}finally{state.exporting=false;if(state.pendingSnapshot){const snapshot=state.pendingSnapshot;state.pendingSnapshot=null;applyMeasureSnapshot(snapshot);}}},
+};
 renderSlide();
 renderImageManager();
 requestMeasureSnapshot();

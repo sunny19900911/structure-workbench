@@ -1,0 +1,4 @@
+interface:
+  display_name: "Windows 网页应用离线交付"
+  short_description: "将历史实践转成可复用流程，明确证据来源、适用边界与实际验收方法"
+  default_prompt: "使用 $windows-portable-webapp 把这个工作台做成可解压使用的 Windows 版本，并验证数据迁移和离线边界。"

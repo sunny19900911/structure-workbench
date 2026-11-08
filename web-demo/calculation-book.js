@@ -4,7 +4,7 @@ const CALCBOOK_SECTION_NUMERALS = ['一', '二', '三', '四'];
 const calcbookState = {
   sections: [], defaults: [], ready: false, exporting: false,
   workbooks: [], workbookKey: '', sheetName: '', sheetData: null,
-  edits: {}, linkedExcel: null, outFiles: [],
+  edits: {}, linkedExcel: null, outFiles: [], assetsRevision: 0,
 };
 
 function calcbookFallbackSections() {
@@ -183,6 +183,12 @@ function calcbookEditKey() {
   return `${calcbookState.workbookKey}::${calcbookState.sheetName}`;
 }
 
+function calcbookApiUrl(path, query = {}) {
+  const params = new URLSearchParams(query);
+  if (window.WORKBENCH_PORTABLE && window.WorkbenchProjects?.id) params.set('project', window.WorkbenchProjects.id);
+  return path + (params.size ? '?' + params : '');
+}
+
 function calcbookColumnName(index) {
   let value = index + 1;
   let name = '';
@@ -204,8 +210,9 @@ function calcbookRenderSheet() {
   const header = Array.from({ length: data.column_count }, (_, index) => `<th>${calcbookColumnName(data.min_col - 1 + index)}</th>`).join('');
   table.innerHTML = `<thead><tr><th class="row-head"></th>${header}</tr></thead><tbody>${data.rows.map((row) => `
     <tr><th class="row-head">${row.row}</th>${row.cells.map((cell) => {
-      const current = cell.formula&&window.WorkbenchProjects?.mode!=='sample' ? '【导出时重算／宏表需复核】' : Object.prototype.hasOwnProperty.call(editMap, cell.coordinate) ? editMap[cell.coordinate] : cell.display;
-      const editable = cell.editable ? ' contenteditable="true"' : '';
+      let current = cell.formula&&window.WorkbenchProjects?.mode!=='sample' ? '【导出时重算／宏表需复核】' : Object.prototype.hasOwnProperty.call(editMap, cell.coordinate) ? editMap[cell.coordinate] : cell.display;
+      if (window.WORKBENCH_PORTABLE && cell.formula) current = data.can_recalculate && ['B6','B8','B10'].includes(cell.coordinate) ? '【导出时重算】' : (data.missing_formula_cache || []).includes(cell.coordinate) || (data.formula_errors || []).includes(cell.coordinate) ? '【缺少有效公式结果】' : cell.display;
+      const editable = cell.editable && (!window.WORKBENCH_PORTABLE || data.can_recalculate && data.formula_count === 3 || !data.formula_count) ? ' contenteditable="true"' : '';
       const kind = cell.formula ? 'formula' : '';
       return `<td class="${kind}" data-cell="${cell.coordinate}"${editable} title="${calcbookEsc(cell.formula || cell.coordinate)}">${calcbookEsc(current)}</td>`;
     }).join('')}</tr>`).join('')}</tbody>`;
@@ -224,17 +231,27 @@ function calcbookRenderSheet() {
   help.textContent = data.workbook === 'stair' || data.has_custom_formulas
     ? '历史模板参考：该宏表含自定义函数，本页不能重算；导出仍使用模板已有结果，必须在Excel复算并核对后采用。'
     : '黄色输入格可编辑；公式格只读，跃层柱 3 个公式会在导出时按输入重新计算。';
+  if (window.WORKBENCH_PORTABLE) {
+    const unresolved = (data.missing_formula_cache || []).concat(data.formula_errors || []).filter(cell => !(data.can_recalculate && ['B6','B8','B10'].includes(cell)));
+    help.textContent = data.can_recalculate && data.formula_count === 3
+      ? '本项目输入格可编辑；三个已核对的跃层柱公式在导出时重算。'
+      : data.formula_count ? '此表按 Excel 已保存结果只读显示。请在 Excel 中复算并保存后重新导入；本地版不运行宏。' : '输入格可编辑，原始 Excel 不会被覆盖。';
+    if (unresolved.length) help.textContent += ' 公式结果缺失或错误：' + unresolved.slice(0, 20).join('、') + '；包含本表的导出会停止。';
+    help.textContent += ' 导出范围：' + data.used_range + '。';
+  }
 }
 
 let calcbookLoadTicket=0;
 async function calcbookLoadSheet() {
   const ticket=++calcbookLoadTicket,project=window.WorkbenchProjects?.id;
+  calcbookState.sheetData = null;
+  document.getElementById('calcbook-excel-table')?.replaceChildren();
   if (!calcbookState.workbookKey || !calcbookState.sheetName) return;
   const state = document.getElementById('calcbook-excel-state');
   state.textContent = '正在读取…';
   try {
-    const query = new URLSearchParams({ workbook: calcbookState.workbookKey, sheet: calcbookState.sheetName });
-    const response = await fetch(`/api/calculation-book/workbook?${query}`, { cache: 'no-store' });
+    const query = { workbook: calcbookState.workbookKey, sheet: calcbookState.sheetName };
+    const response = await fetch(calcbookApiUrl('/api/calculation-book/workbook', query), { cache: 'no-store' });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || 'Excel 读取失败');
     if(ticket!==calcbookLoadTicket||project!==window.WorkbenchProjects?.id)return;
@@ -245,6 +262,7 @@ async function calcbookLoadSheet() {
     }
     calcbookRenderSheet();
   } catch (error) {
+    if(ticket!==calcbookLoadTicket||project!==window.WorkbenchProjects?.id)return;
     state.textContent = error?.message || 'Excel 读取失败';
   }
 }
@@ -257,7 +275,7 @@ function calcbookSelectWorkbook() {
   sheetSelect.innerHTML = sheets.map((sheet) => `<option value="${calcbookEsc(sheet.name)}">${calcbookEsc(sheet.name)}</option>`).join('');
   calcbookState.sheetName = sheets[0]?.name || '';
   calcbookState.sheetData = null;
-  calcbookLoadSheet();
+  return calcbookLoadSheet();
 }
 
 function calcbookLinkExcel() {
@@ -342,6 +360,7 @@ async function calcbookExport() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...project, confirmed: true, sections: calcbookState.sections,
+        ...(window.WORKBENCH_PORTABLE ? {project_id: window.WorkbenchProjects?.id || ''} : {}),
         excel_blocks: calcbookState.linkedExcel ? [calcbookState.linkedExcel] : [],
         out_files: calcbookState.outFiles,
       }),
@@ -372,17 +391,24 @@ async function calcbookExport() {
   }
 }
 
-async function calcbookInit() {
+async function calcbookInit({deferSheet = false} = {}) {
   const badge = document.getElementById('calcbook-ready');
+  const project = window.WorkbenchProjects?.id;
   try {
-    const response = await fetch('/api/calculation-book/status', { cache: 'no-store', signal: AbortSignal.timeout(30000) });
+    const response = await fetch(calcbookApiUrl('/api/calculation-book/status'), { cache: 'no-store', signal: AbortSignal.timeout(30000) });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || '计算书资料连接失败');
+    if (project !== window.WorkbenchProjects?.id) return;
     calcbookState.defaults = payload.sections?.some(section => section.items?.length) ? calcbookNormalizeSections(payload.sections) : calcbookFallbackSections();
     if (!calcbookState.sections.length) calcbookState.sections = calcbookCloneSections(calcbookState.defaults);
     calcbookState.ready = Boolean(payload.ready);
     calcbookState.workbooks = Array.isArray(payload.workbooks) ? payload.workbooks : [];
-    document.querySelectorAll('a[href$="/calculation-book/template/catalog"]').forEach(link => { link.hidden = !payload.templates?.catalog; });
+    calcbookState.assetsRevision = Number.isSafeInteger(payload.assetsRevision) ? payload.assetsRevision : 0;
+    document.querySelectorAll('a[href*="/api/calculation-book/template/"]').forEach(link => {
+      const url = new URL(link.href, location.href), key = url.pathname.split('/').at(-1);
+      if (window.WORKBENCH_PORTABLE) { if (project) url.searchParams.set('project', project); else url.searchParams.delete('project'); link.href = url.pathname + url.search; }
+      if (key === 'catalog') link.hidden = !payload.templates?.catalog;
+    });
     badge.textContent = calcbookState.ready
       ? `Word 生成已就绪 · ${calcbookState.workbooks.length} 份 Excel 已连接`
       : '计算书输入不完整';
@@ -390,12 +416,14 @@ async function calcbookInit() {
     const workbookSelect = document.getElementById('calcbook-workbook');
     workbookSelect.innerHTML = calcbookState.workbooks.map((item) => `<option value="${calcbookEsc(item.key)}">${calcbookEsc(item.label)}</option>`).join('');
     calcbookState.workbookKey = calcbookState.workbooks[0]?.key || '';
-    calcbookSelectWorkbook();
+    if (!deferSheet) calcbookSelectWorkbook();
     if (!calcbookState.workbooks.length) {
       document.getElementById('calcbook-excel-state').textContent = '未配置 Excel 母件';
-      document.getElementById('calcbook-excel-help').textContent = 'Excel 母件尚未放到服务器；不影响 PDF 合并或 Word 封面、目录和 OUT 导出。';
+      document.getElementById('calcbook-excel-help').textContent = window.WORKBENCH_PORTABLE ? '本项目尚未导入 Excel 母件，可点击“选择本机 Excel”。不影响 PDF 合并、Word 封面、目录和 OUT 导出。' : 'Excel 母件尚未放到服务器；不影响 PDF 合并或 Word 封面、目录和 OUT 导出。';
     }
+    if (payload.sourceWarnings?.length) document.getElementById('calcbook-excel-help').textContent = '项目包中的 Excel 母件缺项：' + payload.sourceWarnings.join('；') + '。涉及该母件的生成会停止，不会套用其他项目。';
   } catch (error) {
+    if (project !== window.WorkbenchProjects?.id) return;
     calcbookState.defaults = calcbookFallbackSections();
     if (!calcbookState.sections.length) calcbookState.sections = calcbookFallbackSections();
     calcbookState.ready = false;
@@ -426,11 +454,45 @@ document.querySelectorAll('[data-k="project_name"],[data-k="project_code"],[data
   field.addEventListener('input', calcbookResetConfirmation);
 });
 
+if (window.WORKBENCH_PORTABLE) {
+  const controls = document.querySelector('#calcbook-workbook')?.closest('.calcbook-tool-controls');
+  if (controls) {
+    const row = document.createElement('div'); row.className = 'calcbook-tool-controls';
+    row.innerHTML = '<label>导入类型<select id="calcbook-source-slot"><option value="jump-column">跃层柱母件（XLSX）</option><option value="stair">楼梯母件（XLSM）</option></select></label><button class="calcbook-reset" id="calcbook-import-source" type="button">选择本机 Excel</button><input id="calcbook-source-file" type="file" accept=".xlsx,.xlsm" hidden>';
+    controls.before(row);
+    const input = row.querySelector('#calcbook-source-file'), button = row.querySelector('#calcbook-import-source');
+    button.addEventListener('click', () => input.click());
+    input.addEventListener('change', () => {
+      const file = input.files?.[0], key = row.querySelector('#calcbook-source-slot').value; input.value = ''; if (!file) return;
+      window.WorkbenchProjects?.runOperation(async () => {
+        if (file.size > 64 * 1024 * 1024) throw Error('Excel 母件最大 64 MB');
+        await window.WorkbenchProjects.flush();
+        const project = window.WorkbenchProjects.id, state = document.getElementById('calcbook-excel-state');
+        state.textContent = '正在检查并导入本机母件…';
+        try {
+          const query = new URLSearchParams({project, slot: key, revision: String(calcbookState.assetsRevision)});
+          const response = await fetch('/api/calculation-book/import-source?' + query, {method: 'POST', headers: {'X-Workbench-Request': 'calculation-source', 'X-File-Name': encodeURIComponent(file.name)}, body: file, signal: AbortSignal.timeout(180000)});
+          const result = await response.json(); if (!response.ok) throw Error(result.error || 'Excel 母件导入失败');
+          const archivePrefix = 'archived:' + Date.now() + ':';
+          for (const [editKey, values] of Object.entries(calcbookState.edits)) if (editKey.startsWith(key + '::')) { calcbookState.edits[archivePrefix + editKey] = values; delete calcbookState.edits[editKey]; }
+          if (calcbookState.linkedExcel?.workbook === key) calcbookState.linkedExcel = null;
+          await calcbookInit({deferSheet: true});
+          calcbookState.workbookKey = key; document.getElementById('calcbook-workbook').value = key; await calcbookSelectWorkbook();
+          document.getElementById('calcbook-excel-link').textContent = calcbookState.linkedExcel ? '已联动' : '联动到计算书';
+          calcbookChanged(); await window.WorkbenchProjects.flush();
+          document.getElementById('wp-status').textContent = '母件已保存到当前项目，原文件未改动。' + (result.warnings?.length ? result.warnings.join('；') : '请核对后联动到计算书。');
+        } catch (error) { state.textContent = error.message || 'Excel 母件导入失败'; throw error; }
+      }, button);
+    });
+  }
+}
+
 window.CalculationBook={
  ready:calcbookInit(),busy:()=>calcbookState.exporting,
  capture(){return JSON.parse(JSON.stringify({catalogVersion:2,sections:calcbookState.sections,pdfSources:window.CalculationPDFs?.capture(),edits:calcbookState.edits,linkedExcel:calcbookState.linkedExcel,outFiles:calcbookState.outFiles,workbookKey:calcbookState.workbookKey,sheetName:calcbookState.sheetName}));},
  async loadProject(saved,mode){
   ++calcbookLoadTicket;const data=saved||{};
+  if(window.WORKBENCH_PORTABLE)await calcbookInit({deferSheet:true});
   calcbookState.sections=calcbookProjectSections(data);
   window.CalculationPDFs?.load(data.pdfSources);
   calcbookState.edits=data.edits||{};calcbookState.linkedExcel=data.linkedExcel||null;calcbookState.outFiles=data.outFiles||[];
@@ -443,4 +505,25 @@ window.CalculationBook={
   document.getElementById('calcbook-excel-link').textContent=calcbookState.linkedExcel?'已联动':'联动到计算书';
   await calcbookLoadSheet();
  },invalidate:calcbookResetConfirmation
+};
+window.CalculationBook.mcp={
+ read(){return {project:calcbookProject(),...window.CalculationBook.capture(),outFiles:calcbookState.outFiles.map(({content_base64,...file})=>file),workbooks:calcbookState.workbooks,sheet:calcbookState.sheetData,assetsRevision:calcbookState.assetsRevision};},
+ catalog(sections){if(!Array.isArray(sections)||sections.length!==4)throw Error('计算书需要四组目录');calcbookState.sections=calcbookCloneSections(sections);calcbookChanged();return this.read();},
+ async excel({workbook,sheet,edits={},link=false}){
+  const selected=calcbookState.workbooks.find(w=>w.key===workbook),project=window.WorkbenchProjects.id;
+  if(!selected?.sheets.some(s=>s.name===sheet))throw Error('当前项目工作簿或工作表不存在');
+  // Validate the complete request against the actual sheet before changing the
+  // currently selected workbook, existing inputs or linked export block.
+  const response=await fetch(calcbookApiUrl('/api/calculation-book/workbook',{workbook,sheet}),{cache:'no-store'}),data=await response.json();
+  if(!response.ok)throw Error(data.error||'Excel读取失败');if(project!==window.WorkbenchProjects.id)throw Error('项目已切换');
+  const allowed=new Set(data.rows.flatMap(row=>row.cells.filter(cell=>cell.editable&&(!window.WORKBENCH_PORTABLE||data.can_recalculate&&data.formula_count===3||!data.formula_count)).map(cell=>cell.coordinate)));
+  for(const [cell,value]of Object.entries(edits))if(!allowed.has(cell)||typeof value!=='string')throw Error('该单元格不可编辑：'+cell);
+  const key=workbook+'::'+sheet,defaults=workbook==='jump-column'&&window.WorkbenchProjects.mode!=='sample'?{A1:calcbookProject().project_name,B2:'',B3:'',B4:'',B5:'',B7:'',B9:''}:{},nextEdits={...(calcbookState.edits[key]||defaults),...edits};
+  if(link&&workbook==='jump-column'&&window.WorkbenchProjects.mode!=='sample'&&['B2','B3','B4','B5','B7','B9'].some(cell=>!Number.isFinite(Number(nextEdits[cell]))||Number(nextEdits[cell])<=0))throw Error('请先填写本项目B2、B3、B4、B5、B7、B9有效正数');
+  calcbookState.workbookKey=workbook;calcbookState.sheetName=sheet;calcbookState.sheetData=data;calcbookState.edits[key]=nextEdits;calcbookState.linkedExcel=null;
+  document.getElementById('calcbook-workbook').value=workbook;document.getElementById('calcbook-sheet').innerHTML=selected.sheets.map(s=>'<option value="'+calcbookEsc(s.name)+'">'+calcbookEsc(s.name)+'</option>').join('');document.getElementById('calcbook-sheet').value=sheet;
+  calcbookChanged();calcbookRenderSheet();if(link)calcbookLinkExcel();return this.read();
+ },
+ async model(files){if(files.some(f=>!/^w(mass|disp|zq)\.out$/i.test(f.name)))throw Error('计算书模型只接受WMASS、WDISP、WZQ.OUT');await calcbookReadOutFiles(files);return this.read();},
+ package({confirmed=false}={}){return {...calcbookProject(),project_id:window.WorkbenchProjects.id,confirmed:confirmed===true,sections:calcbookCloneSections(calcbookState.sections),excel_blocks:calcbookState.linkedExcel?[JSON.parse(JSON.stringify(calcbookState.linkedExcel))]:[],out_files:JSON.parse(JSON.stringify(calcbookState.outFiles)),draft:true};},
 };

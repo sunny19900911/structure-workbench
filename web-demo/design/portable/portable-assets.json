@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "note": "Only the portable profile uses these local resources. Download at packaging time; no CDN fallback at runtime.",
+  "files": [
+    {"target":"vendor/xlsx-0.18.5/xlsx.full.min.js","url":"https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"},
+    {"target":"vendor/tesseract-5.1.1/tesseract.min.js","url":"https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"},
+    {"target":"vendor/tesseract-5.1.1/worker.min.js","url":"https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js"},
+    {"target":"vendor/tessdata-4.0.0/chi_sim.traineddata.gz","url":"https://cdn.jsdelivr.net/gh/naptha/tessdata@gh-pages/4.0.0/chi_sim.traineddata.gz"},
+    {"target":"vendor/tessdata-4.0.0/eng.traineddata.gz","url":"https://cdn.jsdelivr.net/gh/naptha/tessdata@gh-pages/4.0.0/eng.traineddata.gz"}
+  ],
+  "archives": [
+    {"url":"https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-3.11.174.tgz","target":"vendor/pdfjs-3.11.174","files":{"package/build/pdf.min.js":"pdf.min.js","package/build/pdf.worker.min.js":"pdf.worker.min.js"},"directories":{"package/cmaps/":"cmaps/","package/standard_fonts/":"standard_fonts/"}},
+    {"url":"https://registry.npmjs.org/tesseract.js-core/-/tesseract.js-core-5.1.1.tgz","target":"vendor/tesseract-core-5.1.1","patterns":["package/tesseract-core*.js","package/tesseract-core*.wasm"]}
+  ]
+}

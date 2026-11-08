@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob:; img-src 'self' blob: data:; font-src 'self' data:; worker-src 'self' blob:; object-src 'none'">
+  <title>编辑项目文件</title>
+</head>
+<body>
+  <header class="office-header">
+    <div><strong id="office-title">正在打开…</strong><span id="office-state" role="status" aria-live="polite"></span></div>
+    <div class="office-actions"><button id="office-save" disabled>保存到本机</button><button id="office-download" disabled>下载副本</button></div>
+  </header>
+  <nav id="office-word-tools" class="office-tools" aria-label="Word 基本编辑" hidden>
+    <button data-command="history.undo" title="撤销">撤销</button><button data-command="history.redo" title="重做">重做</button>
+    <span class="office-divider"></span>
+    <button data-command="format.bold"><b>加粗</b></button><button data-command="format.italic"><i>斜体</i></button><button data-command="format.underline"><u>下划线</u></button>
+    <select id="office-font" aria-label="字体"><option value="">字体</option><option>宋体</option><option>黑体</option><option>仿宋</option><option>微软雅黑</option><option>Arial</option><option>Times New Roman</option></select>
+    <select id="office-size" aria-label="字号"><option value="">字号</option><option>9</option><option>10.5</option><option>12</option><option>14</option><option>16</option><option>18</option><option>22</option><option>28</option></select>
+    <button data-command="paragraph.left">左对齐</button><button data-command="paragraph.center">居中</button><button data-command="paragraph.justify">两端对齐</button>
+    <span class="office-divider"></span>
+    <button id="office-table">插入表格</button><button data-command="table.addRow">加一行</button><button data-command="table.deleteRow">删当前行</button>
+    <button id="office-image">插入图片</button><input id="office-image-file" type="file" accept="image/png,image/jpeg" hidden>
+  </nav>
+  <p id="office-error" role="alert" hidden></p>
+  <main id="office-editor" aria-label="项目文件正文"></main>
+  <script type="module" src="./office-editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {readWordSource} from '../../server/word-source.mjs';
+import {fragments,extractLocal} from '../../intake-core.js';
+import {composeDocument} from '../../document-intake.js';
+import {referenceText,reportTable} from '../../reference-report.js';
+
+test('real DOCX header survives Word reading and produces exact unit geometry',async()=>{
+  const bytes=await readFile(new URL('./fixtures/architecture.docx',import.meta.url));
+  const blocks=await readWordSource(bytes,false,'建筑说明-测试.docx');
+  assert.deepEqual(blocks.tables[0][0],['单体名称','建筑面积','地上建筑面积','地下建筑面积','地上层数','结构高度(m)','主要功能']);
+  assert.equal(blocks.tables[0].length,2,'fixture has one ordinary header and one data row');
+  const pieces=fragments(blocks);
+  assert.equal(pieces.filter(f=>/提取表/.test(f.locator)).length,1,'fact fragments must still omit header rows');
+  const source={source_id:'SYNTHETIC-PORTABLE-ARCH',slot:'bldg',name:'建筑说明-测试.docx',blocks,fragments:pieces};
+  const original=JSON.stringify(source),factsBefore=extractLocal(source);
+  const document=composeDocument([source]);
+  assert.equal(document.projectName,'离线验收项目');
+  assert.equal(document.location,'云南省昆明市经开区');
+  assert.equal(document.units.length,1);
+  const unit=document.units[0];
+  assert.equal(unit.name,'教学楼');assert.equal(unit.floors,'5');
+  assert.equal(unit.area,'1234.56');assert.equal(unit.aboveArea,'1234.56');
+  assert.equal(unit.planningHeight,'23.70');assert.equal(unit.fireHeight,'23.70');
+  assert.match(unit.use,/教学/);assert.equal(unit.locator,'提取表 1 行 2');
+  assert.equal(unit.source_id,source.source_id);
+  assert.ok(factsBefore.facts.some(f=>f.key==='height_m'&&f.value==='23.70'&&f.unit==='教学楼'));
+  assert.deepEqual(extractLocal(source),factsBefore,'display composition must not change the fact extraction pipeline');
+  assert.equal(JSON.stringify(source),original,'source paragraphs and tables remain immutable');
+  const reportState={parameters:{},document};
+  assert.match(referenceText(reportState,'selection'),/主要功能为普通教学教室及教学辅助用房，以教学为主。/);
+  assert.doesNotMatch(referenceText(reportState,'selection'),/主要功能为主要功能为/);
+  assert.equal(reportTable(reportState,'units').rows[2].values[8],'普通教学教室及教学辅助用房，以教学为主');
+});
+test('building nature presentation prefers explicit nature and retains manual overrides',()=>{
+  const unit={name:'教学楼',floors:'5',use:'主要功能为教学。',nature:'原资料明确填写的建筑性质'};
+  const state={parameters:{},document:{units:[unit]}};
+  assert.equal(reportTable(state,'units').rows[2].values[8],unit.nature);
+  delete unit.nature;
+  assert.equal(reportTable(state,'units').rows[2].values[8],'教学');
+  state.unitTable={cells:{'教学楼':{8:'人工编辑内容'}}};
+  assert.equal(reportTable(state,'units').rows[2].values[8],'人工编辑内容');
+  delete state.unitTable;unit.use='';
+  assert.equal(reportTable(state,'units').rows[2].values[8],'');
+  assert.doesNotMatch(referenceText(state,'selection'),/主要功能为/);
+});
