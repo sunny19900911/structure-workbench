@@ -8,20 +8,67 @@
 </head>
 <body>
   <header class="office-header">
-    <div><strong id="office-title">正在打开…</strong><span id="office-state" role="status" aria-live="polite"></span></div>
+    <div class="office-document-mark" aria-hidden="true" data-icon="document"></div>
+    <strong id="office-title">正在打开…</strong>
+    <div class="office-save-status"><span data-icon="check" aria-hidden="true"></span><span id="office-state" role="status" aria-live="polite"></span></div>
     <div class="office-actions"><button id="office-save" disabled>保存到本机</button><button id="office-download" disabled>下载副本</button></div>
   </header>
-  <nav id="office-word-tools" class="office-tools" aria-label="Word 基本编辑" hidden>
-    <button data-command="history.undo" title="撤销">撤销</button><button data-command="history.redo" title="重做">重做</button>
-    <span class="office-divider"></span>
-    <button data-command="format.bold"><b>加粗</b></button><button data-command="format.italic"><i>斜体</i></button><button data-command="format.underline"><u>下划线</u></button>
-    <select id="office-font" aria-label="字体"><option value="">字体</option><option>宋体</option><option>黑体</option><option>仿宋</option><option>微软雅黑</option><option>Arial</option><option>Times New Roman</option></select>
-    <select id="office-size" aria-label="字号"><option value="">字号</option><option>9</option><option>10.5</option><option>12</option><option>14</option><option>16</option><option>18</option><option>22</option><option>28</option></select>
-    <button data-command="paragraph.left">左对齐</button><button data-command="paragraph.center">居中</button><button data-command="paragraph.justify">两端对齐</button>
-    <span class="office-divider"></span>
-    <button id="office-table">插入表格</button><button data-command="table.addRow">加一行</button><button data-command="table.deleteRow">删当前行</button>
-    <button id="office-image">插入图片</button><input id="office-image-file" type="file" accept="image/png,image/jpeg" hidden>
-  </nav>
+  <section id="office-word-tools" class="office-tools" aria-label="Word 基本编辑" hidden>
+    <nav class="office-tabs" role="tablist" aria-label="编辑选项卡">
+      <button role="tab" id="tab-home" aria-controls="office-ribbon" aria-selected="true" data-tab="home">开始</button>
+      <button role="tab" id="tab-insert" aria-controls="office-ribbon" aria-selected="false" data-tab="insert" tabindex="-1">插入</button>
+      <button role="tab" id="tab-view" aria-controls="office-ribbon" aria-selected="false" data-tab="view" tabindex="-1">视图</button>
+    </nav>
+    <div id="office-ribbon" class="office-ribbon" role="tabpanel" aria-labelledby="tab-home">
+      <div class="ribbon-scroll">
+        <div class="ribbon-group history-group" data-panels="home insert view">
+          <div class="tool-row"><button class="icon-button" data-command="history.undo" aria-label="撤销" title="撤销 Ctrl+Z" data-icon="undo"></button><button class="icon-button" data-command="history.redo" aria-label="重做" title="重做 Ctrl+Y" data-icon="redo"></button></div><span class="group-caption">撤销 / 重做</span>
+        </div>
+        <div class="ribbon-group insert-group" data-panels="home insert">
+          <details class="ribbon-menu"><summary class="large-tool"><span data-icon="plus"></span><span>插入 <i data-icon="chevron"></i></span></summary><div class="ribbon-popover insert-popover">
+            <button id="office-table"><span data-icon="table"></span>插入表格</button><button id="office-image"><span data-icon="image"></span>插入图片</button>
+          </div></details><input id="office-image-file" type="file" accept="image/png,image/jpeg" hidden>
+        </div>
+        <div class="ribbon-group font-group" data-panels="home">
+          <div class="tool-row">
+            <select id="office-font" aria-label="字体"><option value="">字体</option><option>宋体</option><option>黑体</option><option>仿宋</option><option>微软雅黑</option><option>Arial</option><option>Times New Roman</option></select>
+            <select id="office-size" aria-label="字号"><option value="">字号</option><option value="9">小五 · 9</option><option value="10.5">五号 · 10.5</option><option value="12">小四 · 12</option><option value="14">四号 · 14</option><option value="16">三号 · 16</option><option value="18">小三 · 18</option><option value="22">二号 · 22</option><option value="28">一号 · 28</option></select>
+          </div>
+          <div class="tool-row format-row">
+            <button class="letter-button" data-command="format.bold" title="加粗 Ctrl+B" aria-label="加粗"><b>B</b></button><button class="letter-button" data-command="format.italic" title="斜体 Ctrl+I" aria-label="斜体"><i>I</i></button><button class="letter-button" data-command="format.underline" title="下划线 Ctrl+U" aria-label="下划线"><u>U</u></button><button class="letter-button" data-command="format.strike" title="删除线" aria-label="删除线"><s>S</s></button>
+            <label class="color-tool" title="文本高亮"><span data-icon="highlight"></span><input type="color" id="office-highlight" value="#ffff00" aria-label="文本高亮颜色"></label>
+            <label class="color-tool" title="字体颜色"><span class="color-letter">A</span><input type="color" id="office-color" value="#e53935" aria-label="字体颜色"></label>
+          </div>
+        </div>
+        <div class="ribbon-group" data-panels="home">
+          <details class="ribbon-menu office-more"><summary class="large-tool"><span data-icon="alignLeft"></span><span>段落 <i data-icon="chevron"></i></span></summary><div class="ribbon-popover paragraph-popover">
+            <div class="popover-heading">对齐方式</div><div class="alignment-row">
+              <button data-command="paragraph.left" aria-label="左对齐" title="左对齐" data-icon="alignLeft"></button><button data-command="paragraph.center" aria-label="居中" title="居中" data-icon="alignCenter"></button><button data-command="paragraph.right" aria-label="右对齐" title="右对齐" data-icon="alignRight"></button><button data-command="paragraph.justify" aria-label="两端对齐" title="两端对齐" data-icon="alignJustify"></button>
+            </div>
+            <label>行距<select data-spacing="line" aria-label="行距"><option value="">选择</option><option value="1">单倍</option><option value="1.5">1.5 倍</option><option value="2">双倍</option></select></label>
+            <label>段前<select data-spacing="before" aria-label="段前间距"><option value="">磅</option><option>0</option><option>6</option><option>12</option><option>18</option><option>24</option></select></label>
+            <label>段后<select data-spacing="after" aria-label="段后间距"><option value="">磅</option><option>0</option><option>6</option><option>12</option><option>18</option><option>24</option></select></label>
+          </div></details>
+        </div>
+        <div class="ribbon-group list-group" data-panels="home">
+          <div class="tool-row"><button class="icon-button" data-command="list.bullet" title="项目符号" aria-label="项目符号" data-icon="listBullet"></button><button class="icon-button" data-command="list.number" title="编号" aria-label="编号" data-icon="listNumber"></button></div>
+          <div class="tool-row"><button class="icon-button" data-command="list.indent" title="列表缩进" aria-label="列表缩进" data-icon="indent"></button><button class="icon-button" data-command="list.outdent" title="减少缩进" aria-label="减少缩进" data-icon="outdent"></button></div>
+        </div>
+        <div class="ribbon-group style-group" data-panels="home">
+          <span class="style-symbol">A<span>◇</span></span><select id="office-style" aria-label="段落样式"><option value="">样式</option></select>
+        </div>
+        <div class="ribbon-group insert-direct" data-panels="insert" hidden>
+          <button class="large-tool" data-insert="table"><span data-icon="table"></span><span>表格</span></button><button class="large-tool" data-insert="image"><span data-icon="image"></span><span>图片</span></button>
+        </div>
+        <div class="ribbon-group view-group" data-panels="view" hidden>
+          <span class="group-caption">显示比例</span><div class="tool-row"><button data-zoom="fit">适合宽度</button><button data-zoom="75">75%</button><button data-zoom="100">100%</button><button data-zoom="125">125%</button></div>
+        </div>
+      </div>
+      <div id="office-table-tools" class="office-context-tools" hidden aria-label="表格编辑">
+        <span data-icon="table" aria-hidden="true"></span><span>表格</span><button data-command="table.addRowBefore">上方加行</button><button data-command="table.addRow">下方加行</button><button data-command="table.deleteRow">删当前行</button><button data-command="table.addColumnBefore">左侧加列</button><button data-command="table.addColumn">右侧加列</button><button data-command="table.deleteColumn">删当前列</button>
+      </div>
+    </div>
+  </section>
   <p id="office-error" role="alert" hidden></p>
   <main id="office-editor" aria-label="项目文件正文"></main>
   <script type="module" src="./office-editor.js"></script>

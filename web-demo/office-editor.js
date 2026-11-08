@@ -1,4 +1,10 @@
 import {SuperDoc} from 'superdoc';
+import {WORD_COMMANDS,WORD_COMMAND_NAMES,runWordCommand,spacingAttributes} from './office-word-commands.js';
+import {mountWordRibbon,syncRibbonSelection} from './office-word-ribbon.js';
+import {EXTENDED_COMMANDS,runExtended,sections,searchText,outline} from './office-word-extended.js';
+import {buildWordWorkspace,mountWordWorkspace} from './office-word-workspace.js';
+import {normalizeWordExport} from './office-word-export.js';
+import zipScriptUrl from './vendor/jszip.min.js?url';
 import 'superdoc/style.css';
 import './office-editor.css';
 import './office-workbench.css';
@@ -15,8 +21,10 @@ function title(){ $('office-title').textContent=metadata.title||'项目文档';d
 function notifySaved(){window.parent.postMessage({type:'workbench:office-saved',projectId,documentId,document:metadata},location.origin);}
 
 async function mountWord(file){
- let sd,ready=false,generation=0,savedGeneration=0,savePending=null,mutationPending=false,destroyed=false;
- const changed=()=>{if(ready){generation++;status('有修改 · 版本 '+metadata.fileRevision);}};
+ if(!window.JSZip)await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=zipScriptUrl;script.onload=resolve;script.onerror=()=>reject(Error('DOCX 打包组件载入失败'));document.head.append(script);});
+ let sd,ready=false,generation=0,savedGeneration=0,savePending=null,mutationPending=false,destroyed=false,autoSaveTimer;
+ const scheduleSave=()=>{clearTimeout(autoSaveTimer);autoSaveTimer=setTimeout(()=>{if(destroyed)return;if(mutationPending||savePending){scheduleSave();return;}save().catch(()=>{});},1800);};
+ const changed=()=>{if(ready&&!destroyed){generation++;status('有修改 · 正在等待自动保存');scheduleSave();}};
  await new Promise((resolve,reject)=>{
   const timer=setTimeout(()=>reject(Error('Word 编辑器载入超时，请关闭后重试；原文件已保留。')),90000);
   sd=new SuperDoc({selector:'#office-editor',documents:[{id:documentId,type:'docx',data:file}],documentMode:'editing',telemetry:{enabled:false},zoom:{mode:'fit-width',fitWidth:{min:10,max:100,padding:24}},
@@ -27,11 +35,17 @@ async function mountWord(file){
  });
  sd.setZoomMode('fit-width');
  const editor=()=>{if(destroyed||!ready||!sd.activeEditor)throw Error('文档尚未打开');return sd.activeEditor;};
- const read=()=>({document:metadata,dirty:generation!==savedGeneration,text:editor().state.doc.textBetween(0,editor().state.doc.content.size,'\n'),commands:['text.replace','format.bold','format.italic','format.underline','format.font','format.size','paragraph.left','paragraph.center','paragraph.justify','table.insert','table.addRow','table.deleteRow','image.insert','history.undo','history.redo']});
- async function exportBlob(){const blob=await sd.export({exportType:['docx'],triggerDownload:false,isFinalDoc:false});if(!(blob instanceof Blob)||!blob.size)throw Error('未生成有效的 DOCX，未保存。');return blob;}
+ const styles=(editor().helpers?.linkedStyles?.getStyles?.()||[]).filter(style=>/^(Normal|Heading[1-3])$/.test(style.id)||/^(正文|标题\s*[1-3])$/.test(style.name||''));
+ const styleSelect=$('office-style');styleSelect.replaceChildren(new Option('样式',''),...styles.map(style=>new Option(({Normal:'正文',Heading1:'标题 1',Heading2:'标题 2',Heading3:'标题 3'})[style.id]||style.name||style.id,style.id)));
+ function syncContext(){const e=editor();$('office-table-tools').hidden=!e.isActive('table');syncRibbonSelection(e);}
+ const active=editor();active.on('selectionUpdate',syncContext);active.on('transaction',syncContext);syncContext();
+ const read=()=>({styles:styles.map(({id,name})=>({id,name})),document:metadata,sections:sections(editor()),dirty:generation!==savedGeneration,text:editor().state.doc.textBetween(0,editor().state.doc.content.size,'\n'),commands:[...WORD_COMMAND_NAMES,...EXTENDED_COMMANDS]});
+ async function exportBlob(){const blob=await sd.export({exportType:['docx'],triggerDownload:false,isFinalDoc:false});if(!(blob instanceof Blob)||!blob.size)throw Error('未生成有效的 DOCX，未保存。');return normalizeWordExport(blob,window.JSZip);}
  async function save(){
   if(savePending)return savePending;
+  if(mutationPending)throw Error('文档正在编辑，请稍后保存。');
   if(generation===savedGeneration)return {document:metadata,dirty:false};
+  clearTimeout(autoSaveTimer);
   $('office-editor').inert=true;
   savePending=(async()=>{const snapshot=generation,revision=metadata.fileRevision;status('正在保存到本机…');const blob=await exportBlob();const response=await request(base+'/save?expectedRevision='+revision,{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Workbench-Request':'office-documents'},body:blob});metadata=(await response.json()).document;savedGeneration=snapshot;title();notifySaved();status(generation===savedGeneration?'已保存到本机 · 版本 '+metadata.fileRevision:'有新修改尚未保存');return {document:metadata,dirty:generation!==savedGeneration};})().catch(error=>{status('未保存 · 当前修改仍保留');showError(error);throw error;}).finally(()=>{savePending=null;$('office-editor').inert=false;});return savePending;
  }
@@ -52,20 +66,18 @@ async function mountWord(file){
   const {from,to}=locateText(expectedText),e=editor();
   const tr=e.state.tr.insertText(text,from,to);e.view.dispatch(tr);return {replacements:1};
  }
- const commands={
-  'format.bold':['toggleBold'], 'format.italic':['toggleItalic'], 'format.underline':['toggleUnderline'],
-  'paragraph.left':['setTextAlign','left'],'paragraph.center':['setTextAlign','center'],'paragraph.justify':['setTextAlign','justify'],
-  'table.addRow':['addRowAfter'],'table.deleteRow':['deleteRow'],'history.undo':['undo'],'history.redo':['redo']
- };
  async function executeCommand({name,args={},expectedRevision}){
   if(!Number.isInteger(expectedRevision)||expectedRevision!==metadata.fileRevision)throw Object.assign(Error('文档版本已变化，请重新读取。'),{status:409});
   if(savePending||mutationPending)throw Error('文档正在保存或编辑，请稍后重试。');
   mutationPending=true;
   try{
    const e=editor();let result;
-   if(args.targetText!=null){const range=locateText(args.targetText);if(name==='image.insert'||name==='table.insert')range.from=range.to;if(e.commands.setTextSelection(range)===false)throw Error('目标文字暂不可编辑');}
-   if(name==='text.replace')result=replaceText(args);
-   else if(commands[name]){const [fn,...values]=commands[name];result=e.commands[fn](...values);}
+   if(!WORD_COMMAND_NAMES.includes(name)&&!EXTENDED_COMMANDS.includes(name))throw Error('未支持的文档命令');
+   if(name==='paragraph.spacing')spacingAttributes(args);
+   if(args.targetText!=null){const range=locateText(args.targetText);if(name==='image.insert'||name==='table.insert'||name==='note.insert'||name.startsWith('insert.'))range.from=range.to;if(e.commands.setTextSelection(range)===false)throw Error('目标文字暂不可编辑');}
+   if(EXTENDED_COMMANDS.includes(name))result=runExtended(e,name,args);
+   else if(name==='text.replace')result=replaceText(args);
+   else if(Object.hasOwn(WORD_COMMANDS,name)||name==='paragraph.spacing'||name==='paragraph.style'||name==='format.color'||name==='format.highlight')result=runWordCommand(e,name,args);
    else if(name==='format.font'){if(typeof args.font!=='string'||!args.font.trim()||args.font.length>80)throw Error('字体名称无效');result=e.commands.setFontFamily(args.font);}
    else if(name==='format.size'){const n=Number(args.size);if(!(n>=6&&n<=96))throw Error('字号应在 6–96 之间');result=e.commands.setFontSize(n);}
    else if(name==='table.insert'){const {rows=3,columns=3}=args;if(!Number.isInteger(rows)||rows<1||rows>50||!Number.isInteger(columns)||columns<1||columns>20)throw Error('表格行列数无效');result=e.commands.insertTable({rows,cols:columns,withHeaderRow:false});}
@@ -77,24 +89,33 @@ async function mountWord(file){
    }
    else throw Error('未支持的文档命令');
    if(result===false)throw Error('当前位置不能执行此操作，请先选择正文或表格。');
-   // Every successful command is a local draft until the normal save path acknowledges it.
+   // The normal save path (manual or debounced) must acknowledge this local draft.
    changed();return {document:metadata,dirty:true,result};
   }finally{mutationPending=false;}
  }
  $('office-word-tools').hidden=false;
  status('已打开本机文件 · 版本 '+metadata.fileRevision);
- return {read,save,exportBlob,executeCommand,replaceText:args=>executeCommand({name:'text.replace',args,expectedRevision:metadata.fileRevision}),get dirty(){return generation!==savedGeneration;},get busy(){return Boolean(savePending||mutationPending);},destroy(){destroyed=true;sd.destroy();}};
+ return {read,save,exportBlob,executeCommand,sections:()=>sections(editor()),find:query=>searchText(editor(),query),outline:()=>outline(editor()),notes:()=>editor().doc.footnotes.list({limit:100}).items,comments:()=>editor().doc.comments.list({limit:100}).items.map(item=>({text:item.text||item.content||item.commentId})),changes:()=>editor().doc.trackChanges.list({limit:100}).items.map(item=>({text:({replacement:'替换',insertion:'插入',deletion:'删除',formatting:'格式'}[item.type]||'修订')+'：'+(item.excerpt||item.text||item.insertedText||item.deletedText||'请在正文中查看对应标记')})),statistics(){const e=editor(),text=e.state.doc.textContent;let paragraphs=0;e.state.doc.descendants(n=>{if(n.isTextblock)paragraphs++;});return {characters:text.replace(/\s/g,'').length,words:(text.match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/g)||[]).length,paragraphs};},selectRange(range){editor().commands.setTextSelection({from:range.from,to:range.to});editor().commands.focus();},setReviewMode(enabled){sd.setDocumentMode(enabled?'suggesting':'editing');},setZoom(value){if(value==='fit')sd.setZoomMode('fit-width');else sd.setZoom(Number(value));},replaceText:args=>executeCommand({name:'text.replace',args,expectedRevision:metadata.fileRevision}),get dirty(){return generation!==savedGeneration;},get busy(){return Boolean(savePending||mutationPending);},destroy(){destroyed=true;clearTimeout(autoSaveTimer);active.off('selectionUpdate',syncContext);active.off('transaction',syncContext);sd.destroy();}};
 }
 
 async function run(command){clearError();try{return await controller.executeCommand({...command,expectedRevision:metadata.fileRevision});}catch(error){showError(error);throw error;}}
+buildWordWorkspace();
+mountWordRibbon({zoom:value=>controller?.setZoom?.(value)});
 document.querySelectorAll('[data-command]').forEach(button=>{button.addEventListener('mousedown',event=>event.preventDefault());button.onclick=()=>run({name:button.dataset.command}).catch(()=>{});});
-$('office-font').onchange=event=>{if(event.target.value)run({name:'format.font',args:{font:event.target.value}}).catch(()=>{});};
-$('office-size').onchange=event=>{if(event.target.value)run({name:'format.size',args:{size:Number(event.target.value)}}).catch(()=>{});};
+function bindSelect(element,name,key,convert=value=>value){element.onchange=()=>{const value=element.value;if(value!=='')run({name,args:{[key]:convert(value)}}).catch(()=>{}).finally(()=>{element.value='';});};}
+$('office-color').onchange=event=>run({name:'format.color',args:{color:event.target.value}}).catch(()=>{});
+$('office-highlight').onchange=event=>run({name:'format.highlight',args:{color:event.target.value}}).catch(()=>{});
+bindSelect($('office-style'),'paragraph.style','style');
+bindSelect($('office-font'),'format.font','font');
+bindSelect($('office-size'),'format.size','size',Number);
+document.querySelectorAll('[data-spacing]').forEach(select=>bindSelect(select,'paragraph.spacing',select.dataset.spacing,Number));
 $('office-table').onmousedown=event=>event.preventDefault();$('office-table').onclick=()=>run({name:'table.insert',args:{rows:3,columns:3}}).catch(()=>{});
 $('office-image').onmousedown=event=>event.preventDefault();$('office-image').onclick=()=>$('office-image-file').click();
 $('office-image-file').onchange=async event=>{const file=event.target.files[0];if(!file)return;try{if(file.size>4*1024*1024)throw Error('图片不能超过 4 MB');const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});await run({name:'image.insert',args:{data,alt:file.name}});}catch(error){showError(error);}finally{event.target.value='';}};
+mountWordWorkspace({getController:()=>controller,run,onError:showError});
 $('office-save').onclick=async()=>{clearError();try{await controller.save();}catch(error){showError(error);}};
 $('office-download').onclick=async()=>{try{await controller.save();const blob=controller.exportBlob?await controller.exportBlob():await(await request(base+'/content')).blob();const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(metadata.title||'项目文档').replace(/\.(docx|xlsx|pptx)$/i,'')+'.'+metadata.type;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}catch(error){showError(error);}};
+document.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s'){event.preventDefault();if(controller)controller.save().catch(showError);}});
 window.addEventListener('beforeunload',event=>{if(controller?.dirty){event.preventDefault();event.returnValue='';}});
 try{
  if(!/^[a-f0-9]{32}$/.test(projectId||'')||!/^[a-zA-Z0-9-]{16,64}$/.test(documentId||''))throw Error('文档地址无效，请从项目工作台打开。');
