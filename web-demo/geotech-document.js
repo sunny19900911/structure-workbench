@@ -1,6 +1,7 @@
+import {sourceParagraphs,blockTableRecords,geotechTableRows,usable} from './intake-structure.js';
 // Section boundaries come from the uploaded report, not keyword-matched paragraphs repeated across chapters.
 const clean=s=>String(s||'').replace(/\s+/g,' ').trim();
-export function detailedGeotech(source){
+export function detailedGeotech(source,unit='项目整体'){
  if(!source)return {text:'',tables:[],images:[],report:''};
  const ps=(source.blocks?.paras||source.fragments.filter(f=>!/提取表/.test(f.locator)).map(f=>f.text)).map(clean);
  const chapter=/^(?:[一二三四五六七八九十]+、|[（(][一二三四五六七八九十]+[）)]|\d+\s*[、.])/;
@@ -17,19 +18,43 @@ export function detailedGeotech(source){
  const suitability=take(/^[（(]三[）)]建筑适宜性评价$/);
  const engineering=take(/^[（(]二[）)]地基土的工程性质评价$/, /^\s*[（(]三[）)]/);
  const water=take(/^[（(]七[）)]水文地质条件$/, /^\s*[（(]八[）)]/);
- const compact=parts=>[...new Set(parts.map(clean).filter(Boolean))].join('\n');
- const tableList=source.blocks?.tables||[];
- const strength=tableList.findLast(rows=>/天然重度|天然.*重度/.test(rows[0]?.join(''))&&/承载力特征值/.test(rows[0]?.join('')));
- const pile=tableList.find(rows=>/土层名称/.test(rows[0]?.join(''))&&/旋挖成孔/.test(rows[0]?.join('')));
- const physical=tableList.find(rows=>/室内土工试验/.test(rows[0]?.join('')));
- const siteTable=tableList.find(rows=>/等效剪切波速/.test(rows[0]?.join(''))&&/场地类别/.test(rows[0]?.join('')));
- const tables=[['physical',physical],['strength',strength],['pile',pile],['site',siteTable]].filter(([,r])=>r).map(([key,rows])=>({key,rows,source_id:source.source_id}));
+ const seenText=new Set();const compact=parts=>parts.map(clean).filter(t=>t&&!seenText.has(t)&&seenText.add(t)).join('\n');
+ const tableList=(source.blocks?.tables||[]).map((rows,t)=>({rows,records:blockTableRecords(source.blocks,t)})).filter(t=>t.records.some(usable));
+ const has=(table,re)=>table.records.some(r=>r.fields?.some(c=>re.test(c.label)));
+ const strength=tableList.findLast(t=>has(t,/天然.*重度/)&&has(t,/承载力特征值/));
+ const pile=tableList.find(t=>has(t,/土层名称/)&&has(t,/旋挖成孔/));
+ const physical=tableList.find(t=>has(t,/室内土工试验/));
+ const siteTable=tableList.find(t=>has(t,/等效剪切波速/)&&has(t,/场地类别/));
+ const tables=[['physical',physical],['strength',strength],['pile',pile],['site',siteTable]].filter(([,t])=>t).map(([key,t])=>({key,rows:geotechTableRows(key,t.records)||t.rows,rawRows:t.rows,records:t.records,source_id:source.source_id}));
  const seen=new Set();const images=(source.blocks?.images||[]).filter(i=>i.afterParagraph<300&&/地貌|区域地质|地壳|活动断裂|钻孔|岩溶|岩芯|地震动/.test(i.caption)).filter(i=>{if(seen.has(i.data))return false;seen.add(i.data);return true;}).map(i=>({...i,source_id:source.source_id}));
  // Word often places two photo captions in one paragraph. Match them in image order.
  const groups=Map.groupBy(images,i=>i.caption);
  for(const [caption,group] of groups){const names=caption.split(/(?=(?:照片|图)\s*\d+\s*[:：])/).map(clean).filter(Boolean);if(names.length===group.length&&names.length>1)group.forEach((im,i)=>im.caption=names[i]);}
  const title=ps.findIndex(t=>/场地岩土工程详细勘察报告/.test(t));
  const report=title>=0?ps.slice(Math.max(0,title-1),title+1).join(''):String(source.name||'').replace(/\.(docx?|pdf)$/i,'');
+ const allowed=sourceParagraphs(source).filter(f=>!f.unit||unit==='项目整体'||f.unit===unit);
+ const accepted=new Set(allowed.map(f=>clean(f.text)));
+ const buckets=[terrain,strata,physics,seismic,site,liquid,soft,fracture,stability,suitability,engineering,water];
+ for(const bucket of buckets){const kept=bucket.filter(t=>accepted.has(clean(t)));bucket.splice(0,bucket.length,...kept);}
+ // Reports with different numbering still feed the actual reference-report/Word chapter chain.
+ const present=new Set(buckets.flat().map(clean));
+ for(const f of allowed){
+  const whole=clean(f.text);if(present.has(whole))continue;
+  let previousBucket;
+  for(const t of whole.split(/(?<=[。])/).map(clean).filter(Boolean)){
+  if(present.has(t))continue;
+  let bucket;
+  if(/基础.*建议|建议.*基础|持力层|桩长|抗浮/.test(t)){previousBucket=null;continue;}
+  if(/腐蚀|地下水|水位埋深/.test(t))bucket=water;
+  else if(/液化/.test(t))bucket=liquid;
+  else if(/剪切波速|覆盖层厚度|场地类别/.test(t))bucket=site;
+  else if(/地层|粉质黏土|砂岩|填土层/.test(t))bucket=strata;
+  else if(/地貌|地形/.test(t))bucket=terrain;
+  else if(/场地.*稳定|建筑适宜性/.test(t))bucket=stability;
+  if(!bucket)bucket=previousBucket;
+  if(bucket){bucket.push(t);present.add(t);previousBucket=bucket;}
+  }
+ }
  const text=[['4.1 场地地形及地貌',terrain],['4.2 场地地层岩性构成',strata],['4.3 地基土层物理力学参数',physics],['4.4 场地地震效应评价',[]],['4.4.1 抗震地段的划分',seismic],['4.4.2 场地类别',site],['4.4.3 场地地震液化判定',liquid],['4.4.4 软土震陷',soft],['4.4.5 断裂带',fracture],['4.5 岩土工程评价',[...stability,...suitability,...engineering]],['4.6 水文地质与腐蚀性',water]].map(([h,parts])=>h+'\n'+compact(parts)).join('\n\n');
- return {text,tables,images,report,source_id:source.source_id};
+ return {text,tables,images,report,source_id:source.source_id,evidence:allowed.filter(f=>text.includes(clean(f.text))||clean(f.text).split(/(?<=[。])/).some(t=>text.includes(t.trim())&&t.trim())).map(f=>({source_id:source.source_id,fragment_id:f.id,locator:f.locator,quote:f.text}))};
 }

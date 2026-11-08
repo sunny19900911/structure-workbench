@@ -1,3 +1,4 @@
+import {sourceParagraphs,blockTableRecords,usable,projectName} from './intake-structure.js';
 import {detailedGeotech} from './geotech-document.js';
 // Direct document composition from this project's uploaded sources, without
 // promoting extracted text to signed engineering decisions or model results.
@@ -19,7 +20,7 @@ function rows(source){
  }
  return source.fragments.filter(f=>/表\s*\d+/.test(f.locator||'')).map(f=>({...f,cells:f.cells||f.text.split('；').map(c=>c.replace(/^[^：]*：/,''))}));
 }
-function paragraphSource(source){return (source?.fragments||[]).filter(f=>! /表\s*\d+/.test(f.locator||'')&&f.text.length>15);}
+function paragraphSource(source){return sourceParagraphs(source);}
 export function composeDocument(sources=[],unit='项目整体'){
  const docs=sources.filter(s=>['bldg','geo'].includes(s.slot)&&s.fragments?.length);
  const result={version:2,units:[],notes:[],parameters:{},sourceIds:docs.map(s=>s.source_id),evidence:[],overview:'',ground:'',foundation:''};
@@ -31,13 +32,13 @@ export function composeDocument(sources=[],unit='项目整体'){
   const paras=paragraphSource(arch),tableRows=rows(arch);
   const find=re=>paras.find(f=>re.test(f.text));
   const read=(re,group=1)=>{const f=find(re);if(!f)return '';remember(arch,f);return tidy(re.exec(f.text)?.[group]);};
-  result.projectName=read(/(?:项目名称|工程名称)\s*[:：]\s*(.+?)(?=\s+设计证书|\s+项目编号|$)/).replace(/[。；].*$/,'');
+  result.projectName=projectName(read(/(?:项目名称|工程名称)\s*[:：]\s*(.+?)(?=\s+设计证书|\s+项目编号|$)/).replace(/[。；].*$/,''));
   result.location=read(/(?:建设地点|项目地点|工程地点)\s*[:：]\s*([^。；]+)/);
   const tableId=f=>/表\s*(\d+)/.exec(f.locator||'')?.[1];
   const header=tableRows.find(f=>/栋号|单体名称|建筑名称/.test(f.cells.join('|'))&&/建筑面积/.test(f.cells.join('|')));
   if(header){
    const nameIndex=header.cells.findIndex(c=>/^(栋号|单体名称|建筑名称)$/.test(tidy(c)));
-   const areaIndex=header.cells.findIndex(c=>/^建筑面积/.test(tidy(c)));
+   const areaIndex=header.cells.findIndex(c=>/^建筑面积/.test(tidy(c))&&!/万|亩|公顷/.test(c));
    for(const row of tableRows.filter(f=>tableId(f)===tableId(header))){
     const name=tidy(row.cells[nameIndex]),area=tidy(row.cells[areaIndex]);
     if(!name||/合计|总计/.test(name)||!number(area)||result.units.some(u=>u.name===name))continue;
@@ -59,6 +60,20 @@ export function composeDocument(sources=[],unit='项目整体'){
     remember(arch,row);result.units.push(u);
    }
   }
+  // Fill only from this version of the architectural source; never from geotechnical quotations.
+  const structured=(arch.blocks?.tables||[]).flatMap((table,t)=>blockTableRecords(arch.blocks,t).map(r=>({...r,locator:'提取表 '+(t+1)+' 行 '+(r.index+1),id:arch.fragments.find(f=>f.locator==='提取表 '+(t+1)+' 行 '+(r.index+1))?.id||'TABLE-'+t+'-'+r.index})));
+  for(const row of structured.filter(r=>usable(r)&&r.unit)){
+   let u=result.units.find(u=>u.name===row.unit);
+   if(!u){u={name:row.unit,area:'',aboveArea:'',belowArea:'',floors:'',planningHeight:'',fireHeight:'',use:'',storeys:'',source_id:arch.source_id,locator:row.locator};result.units.push(u);}
+   for(const [key,re] of Object.entries({area:/^建筑面积/,aboveArea:/^地上建筑面积/,belowArea:/^地下建筑面积/,floors:/^地上层数$/,planningHeight:/规划高度/,fireHeight:/消防高度/,height:/^建筑高度/,structuralHeight:/^结构高度/,use:/主要功能|使用功能|建筑用途/,structuralType:/结构类型|结构形式/})){
+    const cells=row.fields.filter(c=>c.path.some(p=>re.test(p)));const cell=cells.length===1?cells[0]:null;
+    const wrongUnit=cell&&(/height/i.test(key)&&/mm|cm|毫米|厘米/i.test(cell.label)||/area/i.test(key)&&/公顷|亩|万/.test(cell.label));
+    if(cell?.value&&!wrongUnit&&!u[key])u[key]=cell.value;
+   }
+   const floor=row.fields.find(c=>/地上\s*[/／]\s*地下层数/.test(c.label));
+   if(!u.floors&&floor&&/^\d+[/／]\d+$/.test(floor.value)){const [above,below]=floor.value.split(/[/／]/);u.floors=above+(Number(below)?'；地下'+below:'');}
+   remember(arch,row);
+  }
   // Header-only cells and feasibility-study columns are not project values.
   const totals={};for(const row of tableRows){for(const [key,label]of [['total','总建筑面积'],['above','地上建筑面积'],['below','地下建筑面积']]){const at=row.cells.findIndex(c=>tidy(c)===label);if(at>=0&&number(row.cells[at+1])&&!totals[key]){totals[key]=tidy(row.cells[at+1]);remember(arch,row);}}}
   result.totals=totals;
@@ -66,7 +81,7 @@ export function composeDocument(sources=[],unit='项目整体'){
   for(const u of result.units){if(u.planningHeight&&u.fireHeight&&u.planningHeight!==u.fireHeight)result.notes.push(`${u.name}分别列出规划高度${u.planningHeight}m、消防高度${u.fireHeight}m，不作为结构计算高度。`);}
  }
  if(geo){
-  const paras=paragraphSource(geo).filter(f=>f.text.length>35);
+  const paras=paragraphSource(geo).filter(f=>!f.unit||unit==='项目整体'||f.unit===unit);
   const pick=re=>{const f=paras.filter(f=>re.test(f.text)).at(-1);remember(geo,f);return f?.text||'';};
   const summary=pick(/地貌上处于.*(?:建筑适宜性|基本适宜)/)||pick(/场地.*(?:基本稳定|建筑适宜性)/);
   const land=sentences(summary).filter(t=>/地貌|特殊性岩土|不良地质|基本稳定|建筑适宜性/.test(t)).join('').replace('有：为','为').replace('地形坡度约为地形坡度约为','地形坡度约为');
@@ -78,9 +93,10 @@ export function composeDocument(sources=[],unit='项目整体'){
   const waterText=sentences(water).filter(t=>/未测到地下水|未见到稳定.*地下水/.test(t)).join('');
   const corrosion=pick(/综合评定.*腐蚀性/);const corrosionText=sentences(corrosion).filter(t=>/综合评定|钢筋具|钢结构具/.test(t)).map(t=>t.includes('综合评定')?t.slice(t.indexOf('综合评定')):t).join('');
   result.ground='5.1 场地与工程地质\n根据岩土工程勘察报告，'+land+'\n'+[result.parameters.site_class?'建筑场地类别为'+result.parameters.site_class+'。':'',adverse,liquefaction,collapse].filter(Boolean).join('')+'\n\n5.2 水文地质与腐蚀性\n'+waterText+corrosionText;
-  const foundation=pick(/可供选择的桩型|建议采用桩基础/);
-  const foundationText=sentences(foundation).filter(t=>/建议采用桩基础|可供选择的桩型|桩端持力层/.test(t)).join('');
-  const karst=clean(pick(/岩溶.*一桩一孔/));
+  const foundations=paras.filter(f=>/可供选择的桩型|建议.*基础|桩端持力层/.test(f.text)&&!/抗浮/.test(f.text));
+  foundations.forEach(f=>remember(geo,f));
+  const foundationText=unique(foundations.map(f=>clean(f.text))).join('\n');
+  const karstSource=clean(pick(/岩溶.*一桩一孔/));const karst=foundationText.includes(karstSource)?'':karstSource;
   const antifloat=pick(/抗浮设计水位按/);
   result.waterText=sentences(antifloat).filter(t=>/抗浮设计水位按|场地整平标高.*复核/.test(t)).join('');
   result.foundation='5.3 地基基础方案\n勘察报告提出如下基础建议：'+foundationText+'\n'+karst+'\n\n5.4 地下结构抗浮\n'+(result.waterText?'考虑雨季滞水及基坑积水作用，勘察报告建议的抗浮水位如下：\n'+result.waterText:'');
@@ -90,14 +106,25 @@ export function composeDocument(sources=[],unit='项目整体'){
   const intensity=/地震烈度(?:值)?为\s*([ⅥⅦⅧⅨ6-9]+)度/.exec(quake)?.[1];result.parameters.intensity=({'Ⅵ':'6','Ⅶ':'7','Ⅷ':'8','Ⅸ':'9'})[intensity]||intensity||'';
   if(/附图|分区/.test(result.waterText))result.notes.push('抗浮水位按报告部位分别列示，范围值保留分区条件，不合并成全项目统一水位。');
  }
- result.geotech=detailedGeotech(geo);
  if(geo){
-  const designRows=rows(geo).filter(f=>/建筑物名称：|建（构）筑物名称：/.test(f.text)&&/结构类型：/.test(f.text));
+  const records=(geo.blocks?.tables||[]).flatMap((table,t)=>blockTableRecords(geo.blocks,t).map(r=>({...r,locator:'提取表 '+(t+1)+' 行 '+(r.index+1),id:geo.fragments.find(f=>f.locator==='提取表 '+(t+1)+' 行 '+(r.index+1))?.id||'GEO-TABLE-'+t+'-'+r.index})));
+  const suggestions=records.filter(r=>usable(r)&&r.unit&&(unit==='项目整体'||r.unit===unit)&&r.fields.some(c=>/基础|持力层/.test(c.label)));
+  const texts=[];
+  for(const row of suggestions){
+   const text=row.unit+'：'+row.fields.filter(c=>/基础|持力层/.test(c.label)&&c.value).map(c=>c.label+'：'+c.value).join('；');
+   texts.push(text);remember(geo,row);
+  }
+  if(texts.length){
+   for(const note of records.filter(r=>r.kind==='table_note'&&suggestions.some(s=>s.locator.split(' 行 ')[0]===r.locator.split(' 行 ')[0]))){texts.push(note.text);remember(geo,note);}
+   result.foundation=result.foundation.replace('\n\n5.4', '\n'+unique(texts).join('\n')+'\n\n5.4');
+  }
+ }
+ result.geotech=detailedGeotech(geo,unit);
+ for(const evidence of result.geotech.evidence||[])if(!result.evidence.some(e=>e.source_id===evidence.source_id&&e.fragment_id===evidence.fragment_id))result.evidence.push(evidence);
+ if(arch){
   for(const u of result.units){
-   const row=designRows.find(f=>f.text.includes('建筑物名称：'+u.name+'；'));
-   u.structuralType=row?.text.match(/结构类型：([^；]+)/)?.[1]||'';
    const own=paragraphSource(arch).filter(f=>new RegExp('^'+escape(u.name)+'\\s*[:：—]').test(f.text)).map(f=>f.text).join(' ');
-   for(const [key,re] of Object.entries({length:/(?:建筑)?长度(?:为|约|：)?\s*([\d.]+)m/,width:/(?:建筑)?宽度(?:为|约|：)?\s*([\d.]+)m/,span:/主要跨度(?:为|约|：)?\s*([\d.]+)m/,height:/建筑高度(?:为|约|：)?\s*([\d.]+)m/}))u[key]=re.exec(own)?.[1]||'';
+   for(const [key,re] of Object.entries({length:/(?:建筑)?长度(?:为|约|：)?\s*([\d.]+)m(?![a-z²2])/i,width:/(?:建筑)?宽度(?:为|约|：)?\s*([\d.]+)m(?![a-z²2])/i,span:/主要跨度(?:为|约|：)?\s*([\d.]+)m(?![a-z²2])/i,height:/建筑高度(?:为|约|：)?\s*([\d.]+)m(?![a-z²2])/i}))u[key]=u[key]||re.exec(own)?.[1]||'';
   }
  }
  result.allUnitNames=result.units.map(u=>u.name);
@@ -112,12 +139,14 @@ export function cleanDocumentText(text){return String(text).replace(/【待核�
 // new source. Reuse the derived document across readers without hashing images
 // or rescanning all paragraphs every time a unit picker or grade table renders.
 export function createDocumentComposer(){
- let previous=[],document;
+ let previous=[],document;const unitDocuments=new Map();
  return (sources=[],unit='项目整体')=>{
   const inputs=sources.map(s=>[s,s.slot,s.hash,s.fragments,s.blocks]);
   if(!document||inputs.length!==previous.length||inputs.some((row,i)=>row.some((v,j)=>v!==previous[i][j]))){
-   document=composeDocument(sources);previous=inputs;
+   document=composeDocument(sources);previous=inputs;unitDocuments.clear();
   }
-  return unit==='项目整体'?document:{...document,units:document.units.filter(u=>u.name===unit)};
+  if(unit==='项目整体')return document;
+  if(!unitDocuments.has(unit))unitDocuments.set(unit,composeDocument(sources,unit));
+  return unitDocuments.get(unit);
  };
 }

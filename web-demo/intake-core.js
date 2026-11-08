@@ -1,40 +1,65 @@
+import {paragraphKinds,blockTableRecords,sourceParagraphs,usable,projectName} from './intake-structure.js';
 // Current-project evidence only. Historical retrieval never writes these facts.
 import {fingerprint} from './expansion-core.js';
 import {gradeParameters} from './seismic-grade-core.js';
 
 export const PROJECT='项目整体';
-export const FIELD_LABELS={project_name:'项目名称',project_code:'项目编号',region:'工程地点',unit_name:'单体名称',use:'建筑用途',floors_above:'地上层数',floors_below:'地下层数',height_m:'结构高度（m）',height_arch_m:'建筑高度（m）',span_m:'主要跨度（m）',struct_sys:'结构体系',site_class:'场地类别',geo_water:'地下水描述',water_depth:'抗浮水位采用值',geo_water_candidate:'抗浮水位建议',geo_foundation:'基础建议',geo_strata:'地层描述',geo_liquefaction:'液化情况',bldg_total:'总建筑面积（㎡）'};
+export const FIELD_LABELS={geo_corrosivity:'腐蚀性评价',geo_seismic_site:'场地地震参数',bldg_area:'建筑面积（㎡）',height_planning_m:'规划高度（m）',height_fire_m:'消防高度（m）',project_name:'项目名称',project_code:'项目编号',region:'工程地点',unit_name:'单体名称',use:'建筑用途',floors_above:'地上层数',floors_below:'地下层数',height_m:'结构高度（m）',height_arch_m:'建筑高度（m）',span_m:'主要跨度（m）',struct_sys:'结构体系',site_class:'场地类别',geo_water:'地下水描述',water_depth:'抗浮水位采用值',geo_water_candidate:'抗浮水位建议',geo_foundation:'基础建议',geo_strata:'地层描述',geo_liquefaction:'液化情况',bldg_total:'总建筑面积（㎡）'};
 export const GLOBAL_KEYS=new Set(['project_name','project_code','region','site_class','water_depth']);
-export const UNIT_KEYS=new Set(['unit_name','use','floors_above','floors_below','height_m','height_arch_m','span_m','struct_sys']);
+export const UNIT_KEYS=new Set(['bldg_area','height_planning_m','height_fire_m','unit_name','use','floors_above','floors_below','height_m','height_arch_m','span_m','struct_sys']);
 export function freshIntake(){return {schema:1,sources:[],facts:[],history:[],suggestions:{},locationQueries:[],revision:0};}
 const compact=s=>String(s??'').replace(/\s+/g,'').replace(/Ⅲ/g,'III').replace(/Ⅱ/g,'II').replace(/Ⅳ/g,'IV').replace(/Ⅰ/g,'I');
 export function fragments(blocks){
   const result=[];let context='';
-  const add=(text,locator)=>{text=String(text).trim();if(!text)return;const name=/(?:单体名称|建筑名称|单体)\s*[:：]\s*([^，。；;\n]+)/.exec(text);if(name)context=name[1].trim();result.push({id:'F'+(result.length+1),text,locator,unit:context});};
-  (blocks.paras||[]).forEach((p,i)=>add(p,'提取段落 '+(i+1)));
-  (blocks.tables||[]).forEach((rows,t)=>{const head=rows[0]||[];rows.slice(1).forEach((row,r)=>{context='';const named=head.findIndex(h=>/单体名称|建筑名称/.test(String(h)));if(named>=0)context=String(row[named]||'').trim();add(row.map((v,i)=>String(head[i]||'列'+(i+1))+'：'+String(v??'')).join('；'),'提取表 '+(t+1)+' 行 '+(r+2));});});
+  const kinds=paragraphKinds(blocks.paras||[]);
+  const tables=(blocks.tables||[]).map((rows,t)=>blockTableRecords(blocks,t));
+  const knownUnits=[...new Set(tables.flat().filter(usable).map(r=>r.unit).filter(Boolean))];
+  (blocks.paras||[]).forEach((p,i)=>{
+    const text=String(p).trim();if(!text)return;
+    const name=/(?:单体名称|建筑名称|单体)\s*[:：]\s*([^，。；;\n]+)/.exec(text);
+    const namedUnit=knownUnits.find(unit=>text.startsWith(unit+'：')||text.startsWith(unit+':'));
+    if(name)context=name[1].trim();else if(namedUnit)context=namedUnit;else if(kinds[i]==='heading'||kinds[i]==='requirement')context='';
+    result.push({id:'F'+(result.length+1),text,locator:'提取段落 '+(i+1),unit:context,kind:kinds[i]});
+  });
+  (blocks.tables||[]).forEach((rows,t)=>{
+    for(const row of tables[t])if(row.text)result.push({...row,id:'F'+(result.length+1),locator:'提取表 '+(t+1)+' 行 '+(row.index+1)});
+  });
   return result;
 }
 export function factId(f){return 'IN-'+fingerprint([f.source_id,f.fragment_id,f.key,f.unit,f.value]);}
 export function validateExtraction(payload,source,{maxFacts=400}={}){
-  const facts=[],warnings=[];const byId=new Map(source.fragments.map(f=>[f.id,f]));
+  const facts=[],warnings=[];const classified=new Map(sourceParagraphs(source).map(f=>[f.id,f]));const byId=new Map(source.fragments.filter(f=>/表\s*\d+/.test(f.locator||'')||classified.has(f.id)).map(f=>[f.id,classified.get(f.id)||f]));
   for(const item of (Array.isArray(payload?.facts)?payload.facts:[]).slice(0,maxFacts)){
     if(!item||typeof item!=='object')continue;
     const f=byId.get(item.fragment_id),key=item.key,value=String(item.value??'').trim(),quote=String(item.quote??'').trim(),unit=String(item.unit||PROJECT).trim();
-    if(!Object.hasOwn(FIELD_LABELS,key)||!f||!value||value.length>1800||!quote||!compact(f.text).includes(compact(quote))||!compact(quote).includes(compact(value))){warnings.push('已拦截一项缺少原文支持的提取结果');continue;}
+    if(!Object.hasOwn(FIELD_LABELS,key)||!f||!usable(f)||!value||value.length>1800||!quote||!compact(f.text).includes(compact(quote))||!compact(quote).includes(compact(value))){warnings.push('已拦截一项缺少原文支持的提取结果');continue;}
+    if(key==='project_name'&&projectName(value)!==value){warnings.push('项目名称包含标签或证书字段');continue;}
     if(UNIT_KEYS.has(key)&&(unit===PROJECT||!(compact(f.text).includes(compact(unit))||f.unit===unit))){warnings.push('单体归属不明确：'+FIELD_LABELS[key]);continue;}
+    if(unit!==PROJECT&&f.unit&&f.unit!==unit){warnings.push('提取单体与来源单体不符');continue;}
     // A project's identity is global; geotechnical facts may be scoped to a unit.
     if(['project_name','project_code','region'].includes(key)&&unit!==PROJECT){warnings.push('项目公共信息不能归入单个单体');continue;}
-    const fact={key,value,quote,unit,fragment_id:f.id,locator:f.locator,source_id:source.source_id,filename:source.name,slot:source.slot,label:FIELD_LABELS[key],statement:/建议|拟采用|宜采用|推荐/.test(quote)?'作者观点':'原文事实',status:'candidate'};
+    const fact={key,value,quote,unit,fragment_id:f.id,locator:f.locator,source_id:source.source_id,filename:source.name,slot:source.slot,category:key.startsWith('geo_')||['site_class','water_depth'].includes(key)?'geo':'bldg',label:FIELD_LABELS[key],statement:/建议|拟采用|宜采用|推荐/.test(quote)?'作者观点':'原文事实',status:'candidate'};
     fact.id=factId(fact);if(!facts.some(x=>x.id===fact.id))facts.push(fact);
   }
   return {facts,warnings:[...new Set([...warnings,...(Array.isArray(payload?.warnings)?payload.warnings:[]).filter(x=>typeof x==='string').slice(0,20)])]};
 }
 export function extractLocal(source){
   const facts=[];const patterns={project_name:/(?:项目名称|工程名称|组团名称)\s*[:：]\s*([^。；;\n]+)/,project_code:/(?:项目编号|工程编号|设计编号)\s*[:：]\s*([\w-]+)/,region:/(?:工程地点|建设地点|项目地点|项目用地位于|工程位于)\s*[:：]?\s*([^。；;\n]+)/,unit_name:/(?:单体名称|建筑名称|单体)\s*[:：]\s*([^，。；;\n]+)/,use:/(?:建筑用途|使用功能|用途)\s*[:：]\s*([^，。；;\n]+)/,floors_above:/地上(?:层数)?\s*[:：]?\s*(\d+)\s*(?:层|(?=[；;，,]|$))/,floors_below:/地下(?:层数)?\s*[:：]?\s*(\d+)\s*(?:层|(?=[；;，,]|$))/,height_m:/(?:结构高度|结构总高)\s*(?:为|约|是|[:：])?\s*([\d.]+)\s*(?:m(?![a-z²2])|米)/i,height_arch_m:/(?:建筑高度)\s*(?:为|约|是|[:：])?\s*([\d.]+)\s*(?:m(?![a-z²2])|米)/i,span_m:/(?:主要跨度|最大跨度)\s*(?:为|约|[:：])?\s*([\d.]+)\s*(?:m(?![a-z²2])|米)/i,struct_sys:/(?:结构体系|结构形式)\s*(?:采用|为|[:：])?\s*([^，。；;\n]+)/,site_class:/场地类别\s*(?:为|[:：])?\s*((?:[ⅠⅡⅢⅣ]+|I[0-4V]*|III|II|IV)\s*类)/i,bldg_total:/总建筑面积\s*(?:为|[:：])?\s*([\d,.]+)\s*(?:m|㎡|平方米)/i};
-  for(const f of source.fragments){
-    for(const [key,re] of Object.entries(patterns)){const m=re.exec(f.text);if(m)facts.push({key,value:m[1].trim(),quote:f.text,fragment_id:f.id,unit:UNIT_KEYS.has(key)?(key==='unit_name'?m[1].trim():f.unit||PROJECT):PROJECT});}
-    if(source.slot==='geo')for(const [key,re] of Object.entries({geo_water:/地下水|水位埋深/,geo_water_candidate:/抗浮水位/,geo_foundation:/基础.*建议|建议.*基础|持力层/,geo_strata:/地层|粉质黏土|砂岩|填土层/,geo_liquefaction:/液化/}))if(re.test(f.text))facts.push({key,value:f.text,quote:f.text,fragment_id:f.id,unit:PROJECT});
+  for(const f of [...sourceParagraphs(source),...source.fragments.filter(f=>/表\s*\d+/.test(f.locator||''))].filter(usable)){
+    for(const [key,re] of Object.entries(patterns)){const m=re.exec(f.text);if(m)facts.push({key,value:key==='project_name'?projectName(m[1]):m[1].trim(),quote:f.text,fragment_id:f.id,unit:UNIT_KEYS.has(key)?(key==='unit_name'?m[1].trim():f.unit||PROJECT):PROJECT});}
+    for(const cell of f.fields||[]){
+      const label=cell.label,value=cell.value;if(!cell.mapped||!value)continue;
+      const mappings={floors_above:/^地上层数$/,floors_below:/^地下层数$/,height_m:/^结构(?:高度|总高)(?:[（(]m[）)])?$/i,height_arch_m:/^建筑高度(?:[（(](?:米|m)[）)])?$/i,height_planning_m:/规划高度/,height_fire_m:/消防高度/,bldg_area:/^建筑面积/,use:/主要功能|使用功能|建筑用途/,struct_sys:/结构类型|结构形式/};
+      for(const [key,re] of Object.entries(mappings))if(cell.path.some(p=>re.test(p))&&!(/height/.test(key)&&/mm|cm|毫米|厘米/i.test(label))&&!(/area/.test(key)&&/公顷|亩|万/.test(label))&&(!/height|area|floors/.test(key)||/^\d+(?:\.\d+)?$/.test(value)))facts.push({key,value,quote:f.text,fragment_id:f.id,unit:f.unit||PROJECT});
+      if(/地上\s*[/／]\s*地下层数/.test(label)&&/^\d+\s*[/／]\s*\d+$/.test(value))value.split(/[/／]/).forEach((v,i)=>facts.push({key:i?'floors_below':'floors_above',value:v.trim(),quote:f.text,fragment_id:f.id,unit:f.unit||PROJECT}));
+    }
+    if(source.slot==='geo'){
+      // Keep distinct sentences; identical prose is not broadcast into three chapters.
+      for(const text of (f.kind==='table_row'?[f.text]:f.text.split(/(?<=[。])/).filter(t=>t.trim()))){
+        const matches=Object.entries({geo_water_candidate:/抗浮水位/,geo_corrosivity:/腐蚀性/,geo_seismic_site:/等效剪切波速|覆盖层厚度|场地类别/,geo_liquefaction:/液化/,geo_foundation:/基础.*建议|建议.*基础|持力层|桩长/,geo_water:/地下水|水位埋深/,geo_strata:/地层|粉质黏土|砂岩|填土层/}).filter(([,re])=>re.test(text));
+        if(matches.length)facts.push({key:matches[0][0],value:text.trim(),quote:f.text,fragment_id:f.id,unit:f.unit||PROJECT});
+      }
+    }
   }
   return validateExtraction({facts},source,{maxFacts:Infinity});
 }

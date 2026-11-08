@@ -20,12 +20,25 @@ def extract(path):
  relpath=posixpath.join(posixpath.dirname(part),'_rels',posixpath.basename(part)+'.rels')
  rel={x.get('Id'):posixpath.normpath(posixpath.join(posixpath.dirname(part),x.get('Target',''))) for x in parse(z.read(relpath)) if x.get('TargetMode')!='External'} if relpath in z.namelist() else {}
  text=lambda el:''.join(el.xpath('.//w:t[not(ancestor::w:del)]/text()',namespaces=N))
- blocks=list(body);out={'paras':[],'tables':[],'images':[],'ordered':[],'warnings':[]}
+ blocks=list(body);out={'paras':[],'tables':[],'tableMeta':[],'images':[],'ordered':[],'warnings':[]}
  for i,b in enumerate(blocks):
   t=text(b)
   if b.tag=='{'+w+'}p' and t.strip():out['paras'].append(t);out['ordered'].append({'type':'p','index':len(out['paras'])-1,'text':t})
   if b.tag=='{'+w+'}tbl':
-   rows=[[text(c) for c in r.findall('w:tc',N)] for r in b.findall('w:tr',N)];out['tables'].append(rows);out['ordered'].append({'type':'table','index':len(out['tables'])-1})
+   rows=[];details=[];previous={}
+   for r in b.findall('w:tr',N):
+    before=r.find('w:trPr/w:gridBefore',N);start=int(before.get('{'+w+'}val','0')) if before is not None else 0
+    row=['']*start;cells=[];current={}
+    for c in r.findall('w:tc',N):
+     span=c.find('w:tcPr/w:gridSpan',N);width=int(span.get('{'+w+'}val','1')) if span is not None else 1
+     merge=c.find('w:tcPr/w:vMerge',N);mode=merge.get('{'+w+'}val','continue') if merge is not None else ''
+     column=len(row);raw=text(c);value=previous.get(column,'') if mode=='continue' else raw
+     cells.append({'column':column,'span':width,'verticalMerge':mode,'text':raw})
+     for j in range(width):
+      row.append(value)
+      if mode:current[column+j]=value
+    previous=current;rows.append(row);details.append({'header':r.find('w:trPr/w:tblHeader',N) is not None,'cells':cells})
+   out['tables'].append(rows);out['tableMeta'].append({'rows':details});out['ordered'].append({'type':'table','index':len(out['tables'])-1})
   ids=b.xpath('.//a:blip/@r:embed | .//v:imagedata/@r:id',namespaces=N)
   for rid in ids:
    part=rel.get(rid)

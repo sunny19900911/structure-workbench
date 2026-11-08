@@ -62,7 +62,7 @@ test('方案仅允许已有案例来源，阻止历史数值与计算通过断�
   assert.equal(validateProposal({options:[option]},k).options.length,1);
   for(const patch of [{source_ids:['伪造']},{checks:['验算通过']},{system:'600mm柱框架'}])assert.throws(()=>validateProposal({options:[{...option,...patch}]},k));
 });
-const base=fileURLToPath(new URL('../../qa/project-integration/',import.meta.url));await mkdir(base,{recursive:true});const root=await mkdtemp(join(base,'intake-fixture-'));
+const base=fileURLToPath(new URL('../../qa/parallel-hardening/intake/',import.meta.url));await mkdir(base,{recursive:true});const root=await mkdtemp(join(base,'intake-fixture-'));
 async function fixture(path,value){const file=join(root,path);await mkdir(dirname(file),{recursive:true});await writeFile(file,value,'utf8');}
 await fixture('602-项目/wiki/扩初说明写作方法库/machine/case-matrix.json',JSON.stringify({cases:[{case_id:'CASE-A',use:'教学楼',system:'框架',floors_above:5,evidence:[{source_id:'CASE-A',locator:'工程概况'}]}]}));
 await fixture('602-项目/wiki/扩初说明写作方法库/machine/expansion-design-rules.yaml','required_inputs:\n  building_unit:\n    - name\n    - floors_below\n    - structural_height_m\n');
