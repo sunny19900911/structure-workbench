@@ -9,7 +9,7 @@ description: 通过 structure-workbench 本机 MCP 读取和更新结构工作�
 
 ## 开始任务
 
-1. 调用 `workbench_status`，读取资源 `workbench://engineering/workflow`、`sources`、`parameters`。按任务再读 `chapters`、`seismic` 或 `irregularity` 及其分类资源；不要把全部历史案例一次塞进上下文。
+1. 调用纯读的 `workbench_status`；未运行时显式调用 `workbench_start` 或 `workbench_open`，读取资源 `workbench://engineering/workflow`、`sources`、`parameters`。按任务再读 `chapters`、`seismic` 或 `irregularity` 及其分类资源；不要把全部历史案例一次塞进上下文。
 2. 用 `workbench_project_list` 找到稳定 `projectId`。同名不代表同一项目；有歧义才询问。用 `workbench_project_read` 读取已保存概要，必要时按分区和 offset 分页读全文。
 3. 浏览器业务需要此项目页面已打开；`BROWSER_REQUIRED` 时调用 `workbench_open`，然后 `workbench_project_context`。记录当前单体和返回的分区修订；写入在 `expectedRevisions` 中携带这些修订，写完重新读取，不复用旧值。目标单体不同先用 `workbench_project_select_unit`，把目标名称放入 `args.unit`，待切换完成后重新读上下文；不能省略单体让工具沿用未知页面状态。整体稿明确写“项目整体”。
 4. 先运行 `workbench_engineering_check` 了解缺项和当前稿状态。它检查已保存分区，网页 `hasUnsavedChanges` 为真时不能称已检查未保存稿；只读任务不自动保存。检查是状态整理，`engineeringApproval: false`；有缺项仍可生成草稿。

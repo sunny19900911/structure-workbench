@@ -5,9 +5,9 @@ import {projectRequest} from './project-store-client.js';
 import {measureTextBlocks,editMeasureText} from './mcp-measures.js';
 
 const W=window.WorkbenchProjects,I=window.WorkbenchIntake,E=window.ExpansionWorkbench,M=window.WorkbenchModules,L=window.WorkbenchLegacy;
-let session=null,running=false,stopped=false;
-const metadata=()=>({projectId:W.id,unit:E.unit,revision:W.mcp.revision,busy:running||W.mcp.busy||I.busy||E.busy});
-async function request(path,body){const response=await fetch('/api/mcp-browser/'+path,{method:'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'mcp-browser'},body:JSON.stringify(body)});const value=await response.json();if(!response.ok)throw bridgeError(value.error,value.code,response.status);return value;}
+let session=null,running=false,stopped=false,polling=false,timer,pendingCompletion=null;
+const metadata=()=>({projectId:W.id,unit:E.unit,revision:W.mcp.revision,busy:!!pendingCompletion||running||W.mcp.busy||I.busy||E.busy});
+async function request(path,body){const response=await fetch('/api/mcp-browser/'+path,{method:'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'mcp-browser'},body:JSON.stringify(body),signal:AbortSignal.timeout(15000)});const value=await response.json();if(!response.ok)throw bridgeError(value.error,value.code,response.status);return value;}
 async function revisions(){const parts=['main','intake',E.mcp.part,'modules','ppt','portable-assets','lifecycle'];const records=await Promise.all(parts.map(async part=>[part,(await projectRequest('/'+W.id+'/'+part)).record?.revision||0]));return Object.fromEntries(records);}
 function localRevisions(){return {main:W.mcp.revision,intake:I.mcp.revision,[E.mcp.part]:E.mcp.revision,modules:M.mcp.revision,...(M.mcp.ppt?.ready?{ppt:M.mcp.ppt.revision}:{})};}
 const dirty=()=>W.mcp.dirty||I.mcp.dirty||E.mcp.dirty||M.mcp.dirty||!!M.mcp.ppt?.dirty;
@@ -89,25 +89,38 @@ async function invoke(task){const a=task.args||{},unit=task.unit||E.unit;switch(
  default:throw bridgeError('未实现的工作台操作');
 }}
 async function executeTask(task){
+ const checkDeadline=()=>{if(task.deadline!==undefined&&Date.now()>=task.deadline)throw bridgeError('任务已过期，未开始本次操作','TASK_EXPIRED',409);};
+ checkDeadline();
  const spec=validateBridgeRequest(task);if(task.projectId!==W.id)throw bridgeError('页面已经切换项目','PROJECT_CHANGED',409);
  return W.mcp.run(async()=>{
+  checkDeadline();
   if(task.unit&&task.unit!==E.unit)throw bridgeError('网页当前单体与请求不同，请先调用project.select_unit','UNIT_MISMATCH',409);
   if(task.operation.startsWith('ppt.'))await M.mcp.openPpt(task.unit||E.unit);
-  if(!spec.readOnly){validateRevisionSnapshot(spec,task.expectedRevisions,await revisions(),localRevisions(),E.mcp.part);if(dirty()&&task.operation!=='project.save'){await W.flush();throw bridgeError('网页原有修改已保存，请重新读取project.context后再执行本次修改','REVISION_CONFLICT',409);}}
+  if(!spec.readOnly){const remote=await revisions();checkDeadline();validateRevisionSnapshot(spec,task.expectedRevisions,remote,localRevisions(),E.mcp.part);if(dirty()&&task.operation!=='project.save'){await W.flush();throw bridgeError('网页原有修改已保存，请重新读取project.context后再执行本次修改','REVISION_CONFLICT',409);}}
+  checkDeadline();
   const result=await invoke(task);if(!spec.readOnly)await W.flush();return {result,context:await context()};
  });
 }
 async function tick(){
- if(stopped||running)return;
+ if(stopped||running||polling)return;
+ polling=true;clearTimeout(timer);
  try{
+  if(pendingCompletion){await request('complete',pendingCompletion);pendingCompletion=null;return;}
   if(!W.id||W.loading||!E.mcp||!M.mcp)return;
   if(!session)session=await request('register',metadata());
   const reply=await request('poll',{...session,clientId:session.id,...metadata()});if(!reply.task)return;
   const task=reply.task;running=true;const who=session;let heartbeat;
-  try{await request('start',{...who,clientId:who.id,taskId:task.id});heartbeat=setInterval(()=>request('poll',{...who,clientId:who.id,...metadata(),busy:true}).catch(()=>{}),3000);const result=await executeTask(task);await request('complete',{...who,clientId:who.id,taskId:task.id,result});}
-  catch(e){await request('complete',{...who,clientId:who.id,taskId:task.id,error:{message:e.message,code:e.code,status:e.status}}).catch(()=>{});}
+  try{await request('start',{...who,clientId:who.id,taskId:task.id});heartbeat=setInterval(()=>request('poll',{...who,clientId:who.id,...metadata(),busy:true}).catch(()=>{}),3000);const result=await executeTask(task);pendingCompletion={...who,clientId:who.id,taskId:task.id,result};}
+  catch(e){pendingCompletion={...who,clientId:who.id,taskId:task.id,error:{message:e.message,code:e.code,status:e.status}};}
   finally{clearInterval(heartbeat);running=false;}
- }catch(e){if(e.status===401)session=null;}
- finally{if(!stopped)setTimeout(tick,800);}
+ }catch(e){if(e.status===401){session=null;pendingCompletion=null;}}
+ finally{polling=false;if(!stopped)timer=setTimeout(tick,800);}
 }
-if(window.WORKBENCH_PORTABLE){window.addEventListener('pagehide',()=>{stopped=true;});tick();}
+if(window.WORKBENCH_PORTABLE){
+ const resume=()=>{stopped=false;clearTimeout(timer);if(running&&session)request('poll',{...session,clientId:session.id,...metadata(),busy:true}).catch(()=>{});else tick();};
+ window.addEventListener('pagehide',()=>{stopped=true;clearTimeout(timer);});
+ window.addEventListener('pageshow',resume);
+ window.addEventListener('online',resume);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')resume();});
+ tick();
+}

@@ -7,29 +7,31 @@ const MAX_BYTES=80*1024*1024;
 
 // This queue is process-local. A browser must claim an unexpired task before it
 // can run. Disconnect/timeout never leaves a queued mutation for the next tab.
-export function createBrowserBridge({now=Date.now,clientTTL=12000}={}){
+export function createBrowserBridge({now=Date.now,clientTTL=120000}={}){
  const clients=new Map(),tasks=new Map();
- const status=()=>({clients:[...clients.values()].filter(c=>now()-c.seen<clientTTL).map(({id,projectId,unit,busy,revision})=>({id,projectId,unit,busy,revision})),operations:BROWSER_OPERATIONS});
+ const status=()=>({clients:[...clients.values()].map(({id,projectId,unit,busy,revision,seen})=>({id,projectId,unit,busy,revision,state:busy?'busy':now()-seen<clientTTL?'connected':'unresponsive',lastSeen:seen})),tasks:[...tasks.values()].map(({id,request,phase,deadline})=>({id,projectId:request.projectId,operation:request.operation,phase,deadline})),operations:BROWSER_OPERATIONS});
  const register=metadata=>{const id=randomUUID(),token=randomBytes(24).toString('hex');clients.set(id,{id,token,seen:now(),projectId:metadata.projectId,unit:metadata.unit,revision:metadata.revision,busy:false});return {id,token};};
  const authenticate=body=>{const c=clients.get(body.clientId);if(!c||c.token!==body.token)throw error('工作台页面连接已失效，请重新载入页面','CLIENT_EXPIRED',401);c.seen=now();return c;};
- const settle=(task,err,result)=>{if(!tasks.has(task.id))return;tasks.delete(task.id);clearTimeout(task.timer);if(err)task.reject(err);else task.resolve(result);};
- const poll=body=>{const c=authenticate(body);Object.assign(c,{projectId:body.projectId,unit:body.unit,revision:body.revision,busy:!!body.busy});const task=[...tasks.values()].find(t=>t.clientId===c.id&&t.phase==='queued'&&now()<t.deadline);if(!task||c.busy)return {task:null};task.phase='claimed';return {task:{id:task.id,...task.request,deadline:task.deadline}};};
+ const settle=(task,err,result)=>{if(!tasks.has(task.id))return;if(err?.code==='OUTCOME_UNKNOWN')task.phase='outcome_unknown';else tasks.delete(task.id);clearTimeout(task.timer);task.cleanup?.();if(err)task.reject(err);else task.resolve(result);};
+ const poll=body=>{const c=authenticate(body);Object.assign(c,{projectId:body.projectId,unit:body.unit,revision:body.revision,busy:!!body.busy||[...tasks.values()].some(t=>t.clientId===c.id&&['running','outcome_unknown'].includes(t.phase))});const task=[...tasks.values()].find(t=>t.clientId===c.id&&t.phase==='queued'&&now()<t.deadline);if(!task||c.busy)return {task:null};task.phase='claimed';return {task:{id:task.id,...task.request,deadline:task.deadline}};};
  const start=body=>{const c=authenticate(body),task=tasks.get(body.taskId);if(!task||task.clientId!==c.id||task.phase!=='claimed'||now()>=task.deadline)throw error('任务已过期或取消，未执行','TASK_EXPIRED',409);task.phase='running';c.busy=true;return {allowed:true};};
- const complete=body=>{const c=authenticate(body),task=tasks.get(body.taskId);c.busy=false;if(!task||task.clientId!==c.id||task.phase!=='running')return {accepted:false};if(body.error)settle(task,error(String(body.error.message||body.error),body.error.code||'BROWSER_OPERATION_FAILED',body.error.status||400));else{const context=body.result?.context;if(validId(context?.projectId))Object.assign(c,{projectId:context.projectId,unit:context.unit,revision:context.revisions?.main,seen:now()});settle(task,null,body.result);}return {accepted:true};};
+ const complete=body=>{const c=authenticate(body),task=tasks.get(body.taskId);if(!task||task.clientId!==c.id||!['running','outcome_unknown'].includes(task.phase))return {accepted:false};c.busy=false;if(now()>=task.deadline&&task.phase==='running')settle(task,error('任务已开始但超过期限，请核对当前状态','OUTCOME_UNKNOWN',504));if(body.error)settle(task,error(String(body.error.message||body.error),body.error.code||'BROWSER_OPERATION_FAILED',body.error.status||400));else{const context=body.result?.context;if(validId(context?.projectId))Object.assign(c,{projectId:context.projectId,unit:context.unit,revision:context.revisions?.main,seen:now()});settle(task,null,body.result);}return {accepted:true};};
  async function execute(request,{timeoutMs=180000,signal}={}){
   const spec=browserOperation(request.operation);if(!spec)throw error('未知工作台操作','UNKNOWN_OPERATION');
   if(!validId(request.projectId))throw error('需要明确当前项目ID','INVALID_PROJECT');
   if(!spec.readOnly&&(!request.expectedRevisions||!Number.isInteger(request.expectedRevisions.main)))throw error('写入前请读取 project.context，提交 expectedRevisions','REVISION_REQUIRED',409);
+  if([...tasks.values()].some(t=>t.request.projectId===request.projectId&&['running','outcome_unknown'].includes(t.phase))&&!spec.readOnly)throw error('该项目已有任务执行中或结果尚未知，请读取状态并等待原任务返回，勿重复写入','OUTCOME_UNKNOWN',409);
+  const known=[...clients.values()].filter(c=>c.projectId===request.projectId);
   const live=[...clients.values()].filter(c=>c.projectId===request.projectId&&now()-c.seen<clientTTL);
   const client=live.filter(c=>!c.busy).sort((a,b)=>(b.unit===request.unit)-(a.unit===request.unit)||b.seen-a.seen)[0];
-  if(!client)throw error(live.length?'工作台正在处理其他任务，请稍后重试':'请先在本机工作台打开此项目：/workbuddy-integrated-studio.html?project='+request.projectId,live.length?'BROWSER_BUSY':'BROWSER_REQUIRED',409);
+  if(!client)throw error(live.length?'工作台正在处理其他任务，请稍后重试':known.length?'页面暂未响应，请恢复页面或网络后重试':'请先在本机工作台打开此项目：/workbuddy-integrated-studio.html?project='+request.projectId,live.length?'BROWSER_BUSY':known.length?'BROWSER_UNRESPONSIVE':'BROWSER_REQUIRED',409);
   if([...tasks.values()].some(t=>t.clientId===client.id))throw error('该项目已有MCP任务在等待执行','BROWSER_BUSY',409);
   timeoutMs=Math.max(100,Math.min(Number(timeoutMs)||180000,300000));
   return new Promise((resolve,reject)=>{
    const task={id:randomUUID(),clientId:client.id,request,deadline:now()+timeoutMs,phase:'queued',resolve,reject};
    task.timer=setTimeout(()=>settle(task,error(task.phase==='running'?'页面任务已开始但尚未返回结果；请读取当前状态后再决定是否重试':'页面没有及时执行，任务已作废；不会稍后自动写入',task.phase==='running'?'OUTCOME_UNKNOWN':'TASK_EXPIRED',504)),timeoutMs);
    tasks.set(task.id,task);
-   if(signal){const cancel=()=>settle(task,error(task.phase==='running'?'请求已取消；任务已开始，请读取项目状态':'请求已取消，未开始的任务已作废',task.phase==='running'?'OUTCOME_UNKNOWN':'TASK_CANCELLED',499));if(signal.aborted)cancel();else signal.addEventListener('abort',cancel,{once:true});}
+   if(signal){const cancel=()=>settle(task,error(task.phase==='running'?'请求已取消；任务已开始，请读取项目状态':'请求已取消，未开始的任务已作废',task.phase==='running'?'OUTCOME_UNKNOWN':'TASK_CANCELLED',499));if(signal.aborted)cancel();else{signal.addEventListener('abort',cancel,{once:true});task.cleanup=()=>signal.removeEventListener('abort',cancel);}}
   });
  }
  const plugin={name:'workbench-mcp-browser',configureServer:mount,configurePreviewServer:mount};

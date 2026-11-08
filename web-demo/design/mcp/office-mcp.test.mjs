@@ -11,7 +11,7 @@ import {BROWSER_OPERATIONS, OFFICE_COMMAND_ARGUMENTS} from '../../mcp-browser-op
 import {bridgeError, validateBridgeRequest, validateBridgeValue, validateRevisionSnapshot, checkedImage} from '../../mcp-browser-core.js';
 
 const projectId = '1234567890abcdef1234567890abcdef', documentId = 'abcdef1234567890abcdef1234567890', unit = '教学楼';
-const root = fileURLToPath(new URL('../../qa/portable-release/mcp/office-tools/', import.meta.url));
+const root = fileURLToPath(new URL('../../qa/parallel-hardening/mcp/office-tools/', import.meta.url));
 await mkdir(root, {recursive: true});
 const parsed = result => JSON.parse(result.content.find(c => c.type === 'text').text);
 const metadata = {projectId, documentId, unit, type: 'docx', fileRevision: 3, filename: '教学楼.docx'};

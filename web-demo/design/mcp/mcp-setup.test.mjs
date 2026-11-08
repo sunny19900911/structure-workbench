@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {buildMcpConfiguration,generateMcpConfiguration} from '../../deploy/portable/mcp-setup.mjs';
 
-const root=fileURLToPath(new URL('../../qa/portable-release/mcp-setup/',import.meta.url));
+const root=fileURLToPath(new URL('../../qa/parallel-hardening/mcp-setup/',import.meta.url));
 async function fixture(){
  await mkdir(root,{recursive:true});
  const folder=await mkdtemp(join(root,'中文 空格 ')),packageRoot=join(folder,'离线工作台'),dataRoot=join(folder,'同事项目');
