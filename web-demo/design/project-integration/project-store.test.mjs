@@ -6,7 +6,7 @@ import {randomUUID} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {readPart,writePart,validProjectId} from '../../server/project-store.mjs';
 import {projectPart} from '../../project-store-client.js';
-const base=new URL('../../qa/project-integration/',import.meta.url);
+const base=new URL('../../qa/parallel-hardening/storage/legacy/',import.meta.url);
 await mkdir(base,{recursive:true});
 const root=await mkdtemp(join(fileURLToPath(base),'test-'));
 const a=randomUUID().replaceAll('-',''),b=randomUUID().replaceAll('-','');
