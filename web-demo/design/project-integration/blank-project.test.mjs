@@ -5,7 +5,7 @@ import {createState,scaffold} from '../../expansion-core.js';
 
 const html=await readFile(new URL('../../workbuddy-integrated-studio.html',import.meta.url),'utf8');
 const example=JSON.parse(await readFile(new URL('../../data/example-project.json',import.meta.url),'utf8'));
-const section=id=>html.split(`<section id="${id}"`)[1].split('</section>')[0];
+const section=id=>html.split(`<section id="${id}"`)[1].split(/<section id="stage\d+"/)[0];
 const defaults=name=>JSON.parse(html.match(new RegExp(`^const ${name} = (.+);$`,'m'))[1]);
 const historical=/云南旅游|龙泉路|万彩城|25-AD-037|57919\.26|16010\.084|C50 起|归并系数均为 1\.01|保护层厚度.*增加 5mm/;
 

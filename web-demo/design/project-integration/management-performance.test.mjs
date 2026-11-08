@@ -69,7 +69,7 @@ test('专项载入只预读判断所需上下文，完整文稿及图片留到�
  const code=source.slice(source.indexOf('async function load('),source.indexOf('window.WorkbenchModules='));
  for(const decisions of [[],[{unit:'另一单体',status:'confirmed'}]]){
   const calls=[],fresh=()=>({decisions:[]}),data={decisions};
-  const context={W:{id:'test'},loading:false,saveTimer:0,clearTimeout(){},dialog:{close(){}},frame:null,fresh,note(){},render(){},emit(){},PROJECT:'项目整体',
+  const context={window:{WORKBENCH_PORTABLE:false},W:{id:'test'},loading:false,saveTimer:0,clearTimeout(){},dialog:{close(){}},frame:null,fresh,note(){},render(){},emit(){},PROJECT:'项目整体',
    projectPart:()=>({load:async()=>data}),refreshExpansions:async contextOnly=>calls.push(contextOnly)};
   await vm.runInNewContext(code+';load()',context);
   assert.deepEqual(calls,decisions.length?[true]:[]);
