@@ -1,16 +1,86 @@
-import {mkdir,readFile,readdir,writeFile} from 'node:fs/promises';
-import {join} from 'node:path';
+import fs, {readdir} from 'node:fs/promises';
+import {join,resolve} from 'node:path';
 import {randomUUID} from 'node:crypto';
 
-const queues=new Map();
 export const validProjectId=id=>/^[a-f0-9]{32}$/.test(id||'');
 function folder(root,id,part){if(!validProjectId(id)||!/^([a-z][a-z0-9_-]{0,79})$/.test(part))throw Error('项目或数据分区标识无效');return join(root,id,part);}
-export async function readPart(root,id,part){let names;const dir=folder(root,id,part);try{names=await readdir(dir);}catch(e){if(e.code==='ENOENT')return null;throw e;}const last=names.filter(x=>/^\d{10}-[a-f0-9-]+\.json$/.test(x)).sort().at(-1);return last?JSON.parse(await readFile(join(dir,last),'utf8')):null;}
-export async function writePart(root,id,part,data,expected){
- const dir=folder(root,id,part),key=join(root,id);const prior=queues.get(key)||Promise.resolve();
- const next=prior.catch(()=>{}).then(async()=>{if(part!=='lifecycle'&&(await readPart(root,id,'lifecycle'))?.data.deleted){const error=Error('项目已删除，可在项目管理中恢复。');error.status=410;throw error;}const old=await readPart(root,id,part);if(!Number.isInteger(expected)||expected<0)throw Error('保存版本无效');if((old?.revision||0)!==expected){const e=Error('其他窗口已保存新版本。当前恢复稿已保留，请导出备份后载入最新版本。');e.status=409;throw e;}if(!data||typeof data!=='object'||Array.isArray(data))throw Error('项目内容无效');const saved={schema:1,projectId:id,part,revision:expected+1,savedAt:new Date().toISOString(),data};await mkdir(dir,{recursive:true});await writeFile(join(dir,String(saved.revision).padStart(10,'0')+'-'+randomUUID()+'.json'),JSON.stringify(saved),{encoding:'utf8',flag:'wx'});return saved;});
- queues.set(key,next);try{return await next;}finally{if(queues.get(key)===next)queues.delete(key);}
+const versionName=/^(\d{10})-[a-f0-9-]+\.json$/;
+const maxRevision=9999999999;
+const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+function damaged(message,files){return Object.assign(Error(message),{status:503,code:'PROJECT_STORE_CORRUPT',files});}
+function ioFailure(error){if(!error.status)error.status=500;return error;}
+
+// Dependency injection is only for isolated fault tests; production always uses node:fs.
+export function createProjectStore({io=fs,platform=process.platform}={}){
+ const queues=new Map();
+ async function readPart(root,id,part){
+  const dir=folder(root,id,part);let names;
+  try{names=await io.readdir(dir);}catch(error){if(error.code==='ENOENT')return null;throw ioFailure(error);}
+  const versions=names.filter(name=>versionName.test(name)).sort().reverse();
+  if(!versions.length)return null;
+  const highestRevision=Number(versionName.exec(versions[0])[1]),invalid=[];
+  for(let index=0;index<versions.length;index++){
+   const name=versions[index],revision=Number(versionName.exec(name)[1]);
+   // Same-revision siblings can be left by older multi-process writers. Never choose by UUID.
+   if(versions[index+1]&&Number(versionName.exec(versions[index+1])[1])===revision)
+    throw damaged('项目分区存在重复修订，已保留文件，请检查备份后恢复。',versions.filter(n=>Number(versionName.exec(n)[1])===revision));
+   let text;
+   try{text=await io.readFile(join(dir,name),'utf8');}catch(error){throw ioFailure(error);}
+   let record;
+   try{record=JSON.parse(text);}catch(error){if(!(error instanceof SyntaxError))throw error;invalid.push(name);continue;}
+   const valid=object(record)&&record.schema===1&&record.projectId===id&&record.part===part&&record.revision===revision&&revision>0&&object(record.data)&&typeof record.savedAt==='string'&&Number.isFinite(Date.parse(record.savedAt));
+   if(!valid){invalid.push(name);continue;}
+   if(!invalid.length)return record;
+   // A corrupt delete/restore marker cannot safely be interpreted as an active project.
+   if(part==='lifecycle')throw damaged('项目删除或恢复记录损坏，已保留文件，请检查备份后恢复。',invalid);
+   const recoveryRevision=highestRevision+invalid.length;
+   if(recoveryRevision>=maxRevision)throw damaged('项目修订已达上限，请检查备份后恢复。',invalid);
+   // Read-only recovery token: above every on-disk revision, so no old writer can match it.
+   // The next save re-reads this state and persists token+1; neither damaged nor token
+   // revisions are reused. Each additional damaged fallback also advances the token.
+   // Repeated reads/restarts return the same token while the on-disk state is unchanged.
+   return {...record,revision:recoveryRevision,recovery:{sourceRevision:revision,highestRevision,damagedFiles:invalid}};
+  }
+  throw damaged('项目分区全部版本损坏，已保留文件，请从备份恢复。',invalid);
+ }
+ async function publish(dir,saved){
+  const final=join(dir,String(saved.revision).padStart(10,'0')+'-'+randomUUID()+'.json');
+  const temporary=final+'.tmp';let handle;
+  try{
+   await io.mkdir(dir,{recursive:true});
+   handle=await io.open(temporary,'wx');
+   await handle.writeFile(JSON.stringify(saved),'utf8');
+   await handle.sync();
+   await handle.close();handle=null;
+   await io.rename(temporary,final);
+   // Windows does not support opening directories for fsync through node:fs.
+   // On POSIX, flush the published directory entry before acknowledging the save.
+   if(platform!=='win32'){
+    const directory=await io.open(dir,'r');
+    try{await directory.sync();}finally{await directory.close();}
+   }
+  }catch(error){throw ioFailure(error);}finally{if(handle)await handle.close().catch(()=>{});}
+  // Failed/crashed temporary files are intentionally retained as evidence, never read/GC'd.
+ }
+ async function writePart(root,id,part,data,expected){
+  const dir=folder(root,id,part),key=resolve(root,id),prior=queues.get(key)||Promise.resolve();
+  const next=prior.catch(()=>{}).then(async()=>{
+   if(part!=='lifecycle'&&(await readPart(root,id,'lifecycle'))?.data.deleted)throw Object.assign(Error('项目已删除，可在项目管理中恢复。'),{status:410});
+   const old=await readPart(root,id,part);
+   if(!Number.isSafeInteger(expected)||expected<0)throw Error('保存版本无效');
+   if((old?.revision||0)!==expected)throw Object.assign(Error('其他窗口已保存新版本。当前恢复稿已保留，请导出备份后载入最新版本。'),{status:409});
+   if(!object(data))throw Error('项目内容无效');
+   if(expected>=maxRevision)throw Error('项目修订已达上限');
+   // Snapshot the JSON representation, which may normalize undefined/NaN or invoke toJSON.
+   const saved=JSON.parse(JSON.stringify({schema:1,projectId:id,part,revision:expected+1,savedAt:new Date().toISOString(),data}));
+   if(!object(saved.data))throw Error('项目内容无效');
+   await publish(dir,saved);return saved;
+  });
+  queues.set(key,next);try{return await next;}finally{if(queues.get(key)===next)queues.delete(key);}
+ }
+ return {readPart,writePart};
 }
+export const {readPart,writePart}=createProjectStore();
 export function projectStoreApi(env={}){
  const root=env.WORKBENCH_PROJECT_STORE||join(env.WORKBENCH_DATABASE_ROOT||'E:/600-工作台数据库','603-进行项目','workbench-projects');
  return {name:'workbench-project-store',configureServer:register,configurePreviewServer:register};
@@ -24,5 +94,5 @@ export function projectStoreApi(env={}){
   if(req.method!=='POST')return reply(405,{error:'不支持的操作'});
   if(req.headers['x-workbench-request']!=='project-store')return reply(403,{error:'请求来源无效'});
   let size=0,chunks=[];for await(const chunk of req){size+=chunk.length;if(size>32*1024*1024)return reply(413,{error:'项目分区超过32MB，请减少本次图片或文件体积'});chunks.push(chunk);}const body=JSON.parse(Buffer.concat(chunks).toString());const record=await writePart(root,id,part,body.data,body.expectedRevision);return reply(200,{record:url.searchParams.get('ack')==='1'?{revision:record.revision,savedAt:record.savedAt}:record});
- }catch(e){reply(e.status||400,{error:e.message||'项目保存失败'});}});}
+ }catch(e){reply(e.status||400,{error:e.message||'项目保存失败',...(e.code?{code:e.code}:{})});}});}
 }
