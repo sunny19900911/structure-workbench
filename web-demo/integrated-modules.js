@@ -51,7 +51,7 @@ function openResearch(){
     }catch(e){progress.textContent=e.message;note(e.message);}finally{busy=false;button.disabled=false;renderDecisions();}
   };dialog.showModal();
 }
-const units=()=>[PROJECT,...new Set([...I.units,...Object.keys(state.steel.units),...state.decisions.map(d=>d.unit)].filter(n=>n&&n!==PROJECT))];
+const units=()=>[PROJECT,...new Set([...I.units,...Object.keys(expansions),...Object.keys(state.steel.units),...state.decisions.map(d=>d.unit)].filter(n=>n&&n!==PROJECT))];
 const options=(list,chosen)=>list.map(n=>'<option '+(n===chosen?'selected':'')+'>'+esc(n)+'</option>').join('');
 const unitPicker=id=>'<label>适用单体 <select id="'+id+'">'+options(units(),activeUnit)+'</select></label>';
 function canEdit(id){return !!store&&!loading&&!busy&&!W.loading&&L.canEdit(id);}

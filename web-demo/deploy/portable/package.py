@@ -121,7 +121,7 @@ if (ROOT/'node_modules/superdoc/LICENSE').is_file():
     notice=stage/'第三方组件';notice.mkdir(exist_ok=True)
     shutil.copy2(ROOT/'node_modules/superdoc/LICENSE',notice/'SuperDoc-1.47.2-LICENSE.txt')
     (notice/'SuperDoc来源.txt').write_text('SuperDoc 1.47.2\nAGPL-3.0\nhttps://registry.npmjs.org/superdoc/-/superdoc-1.47.2.tgz\nhttps://github.com/superdoc/docx-editor\n本包为本机开发试用；正式对外分发前应完成对应源码与项目许可证整理。\n',encoding='utf-8')
-manifest={'product':'结构工程办公工作台（本机试用）','version':release,'platform':'Windows x64','node':nodeVersion,'python':version,'buildDate':'2026-11-08','dataLocation':'%LOCALAPPDATA%/'+(args.data_folder or 'StructureWorkbench'),'sources':sources}
+manifest={'product':'结构工程办公工作台（本机试用）','version':release,'platform':'Windows x64','node':nodeVersion,'python':version,'buildDate':time.strftime('%Y-%m-%d'),'dataLocation':'%LOCALAPPDATA%/'+(args.data_folder or 'StructureWorkbench'),'sources':sources}
 (stage/'发行版本.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
 files={}
 for p in stage.rglob('*'):

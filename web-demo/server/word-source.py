@@ -20,10 +20,33 @@ def extract(path):
  relpath=posixpath.join(posixpath.dirname(part),'_rels',posixpath.basename(part)+'.rels')
  rel={x.get('Id'):posixpath.normpath(posixpath.join(posixpath.dirname(part),x.get('Target',''))) for x in parse(z.read(relpath)) if x.get('TargetMode')!='External'} if relpath in z.namelist() else {}
  text=lambda el:''.join(el.xpath('.//w:t[not(ancestor::w:del)]/text()',namespaces=N))
- blocks=list(body);out={'paras':[],'tables':[],'tableMeta':[],'images':[],'ordered':[],'warnings':[]}
+ styles={}
+ stylepart=posixpath.join(posixpath.dirname(part),'styles.xml')
+ if stylepart in z.namelist():
+  styles={x.get('{'+w+'}styleId'):x for x in parse(z.read(stylepart)).findall('w:style',N)}
+ def paragraph_meta(p):
+  pr=p.find('w:pPr',N);chain=[pr] if pr is not None else []
+  sid=pr.find('w:pStyle',N) if pr is not None else None
+  key=sid.get('{'+w+'}val') if sid is not None else None;seen=set()
+  while key and key not in seen and key in styles:
+   seen.add(key);style=styles[key];spr=style.find('w:pPr',N)
+   if spr is not None:chain.append(spr)
+   base=style.find('w:basedOn',N);key=base.get('{'+w+'}val') if base is not None else None
+  meta={}
+  for props in chain:
+   level=props.find('w:outlineLvl',N)
+   if level is not None and 'headingLevel' not in meta:
+    value=int(level.get('{'+w+'}val','9'))
+    if value<9:meta['headingLevel']=value
+   numbering=props.find('w:numPr',N)
+   if numbering is not None and 'numbering' not in meta:
+    meta['numbering']={E.QName(c).localname:c.get('{'+w+'}val') for c in numbering}
+  return meta
+ blocks=list(body);out={'paras':[],'paragraphMeta':[],'tables':[],'tableMeta':[],'images':[],'ordered':[],'warnings':[]}
  for i,b in enumerate(blocks):
   t=text(b)
-  if b.tag=='{'+w+'}p' and t.strip():out['paras'].append(t);out['ordered'].append({'type':'p','index':len(out['paras'])-1,'text':t})
+  if b.tag=='{'+w+'}p' and t.strip():
+   out['paras'].append(t);out['paragraphMeta'].append(paragraph_meta(b));out['ordered'].append({'type':'p','index':len(out['paras'])-1,'text':t})
   if b.tag=='{'+w+'}tbl':
    rows=[];details=[];previous={}
    for r in b.findall('w:tr',N):

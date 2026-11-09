@@ -28,6 +28,10 @@ def build(spec,dest):
    for r in table.findall('w:tr',N):table.remove(r)
    for item in block['rows']:
     r=deepcopy(original_rows[item['source']]);cells=r.findall('w:tc',N)
+    # Template 19 contains data from its first row (mass), not a leading header.
+    # The reference accidentally marks all 23 rows as repeating headers.
+    if key=='19':
+     for header in r.findall('w:trPr/w:tblHeader',N):header.getparent().remove(header)
     if len(item['values'])!=len(cells):raise ValueError('Table cell count mismatch')
     for c,value in zip(cells,item['values']):
      ps=c.findall('w:p',N);p=ps[0] if ps else E.SubElement(c,q('p'))

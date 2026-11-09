@@ -1,4 +1,5 @@
 import {sourceParagraphs,blockTableRecords,usable,projectName} from './intake-structure.js';
+import {architecturalUnitSections} from './architectural-unit-sections.js';
 import {detailedGeotech} from './geotech-document.js';
 // Direct document composition from this project's uploaded sources, without
 // promoting extracted text to signed engineering decisions or model results.
@@ -74,6 +75,13 @@ export function composeDocument(sources=[],unit='项目整体'){
    if(!u.floors&&floor&&/^\d+[/／]\d+$/.test(floor.value)){const [above,below]=floor.value.split(/[/／]/);u.floors=above+(Number(below)?'；地下'+below:'');}
    remember(arch,row);
   }
+  // Numbered unit sections are an independent source of geometry, even without a schedule.
+  for(const section of architecturalUnitSections(arch)){
+   let u=result.units.find(u=>u.name===section.unit.name);
+   if(!u){u={...section.unit,source_id:arch.source_id};result.units.push(u);}
+   else for(const [key,value] of Object.entries(section.unit))if(value&&!u[key])u[key]=value;
+   section.evidence.forEach(f=>remember(arch,f));
+  }
   // Header-only cells and feasibility-study columns are not project values.
   const totals={};for(const row of tableRows){for(const [key,label]of [['total','总建筑面积'],['above','地上建筑面积'],['below','地下建筑面积']]){const at=row.cells.findIndex(c=>tidy(c)===label);if(at>=0&&number(row.cells[at+1])&&!totals[key]){totals[key]=tidy(row.cells[at+1]);remember(arch,row);}}}
   result.totals=totals;
@@ -83,16 +91,7 @@ export function composeDocument(sources=[],unit='项目整体'){
  if(geo){
   const paras=paragraphSource(geo).filter(f=>!f.unit||unit==='项目整体'||f.unit===unit);
   const pick=re=>{const f=paras.filter(f=>re.test(f.text)).at(-1);remember(geo,f);return f?.text||'';};
-  const summary=pick(/地貌上处于.*(?:建筑适宜性|基本适宜)/)||pick(/场地.*(?:基本稳定|建筑适宜性)/);
-  const land=sentences(summary).filter(t=>/地貌|特殊性岩土|不良地质|基本稳定|建筑适宜性/.test(t)).join('').replace('有：为','为').replace('地形坡度约为地形坡度约为','地形坡度约为');
-  const site=pick(/本工程建筑场地类别划分为/);result.parameters.site_class=/(?:本工程)?建筑场地类别划分为\s*([ⅠⅡⅢⅣIV]+类)/.exec(site)?.[1]||'';
-  const adverse=sentences(site).find(t=>/抗震不利地段/.test(t))||'';
-  const liquefaction=pick(/无饱和.*(?:粉土|砂).*液化/),subsidence=pick(/③2.*(?:存在震陷|需考虑震陷)/);
-  const collapse=sentences(subsidence).filter(t=>/③2.*软塑/.test(t)).join('')+(subsidence.match(/③2黏土亦?存在震陷的可能[^。]*。/)?.[0]||'');
-  const water=pick(/所有.*钻孔.*(?:未测到地下水|未见到稳定.*地下水)/);
-  const waterText=sentences(water).filter(t=>/未测到地下水|未见到稳定.*地下水/.test(t)).join('');
-  const corrosion=pick(/综合评定.*腐蚀性/);const corrosionText=sentences(corrosion).filter(t=>/综合评定|钢筋具|钢结构具/.test(t)).map(t=>t.includes('综合评定')?t.slice(t.indexOf('综合评定')):t).join('');
-  result.ground='5.1 场地与工程地质\n根据岩土工程勘察报告，'+land+'\n'+[result.parameters.site_class?'建筑场地类别为'+result.parameters.site_class+'。':'',adverse,liquefaction,collapse].filter(Boolean).join('')+'\n\n5.2 水文地质与腐蚀性\n'+waterText+corrosionText;
+  result.ground='';
   const foundations=paras.filter(f=>/可供选择的桩型|建议.*基础|桩端持力层/.test(f.text)&&!/抗浮/.test(f.text));
   foundations.forEach(f=>remember(geo,f));
   const foundationText=unique(foundations.map(f=>clean(f.text))).join('\n');
@@ -100,10 +99,6 @@ export function composeDocument(sources=[],unit='项目整体'){
   const antifloat=pick(/抗浮设计水位按/);
   result.waterText=sentences(antifloat).filter(t=>/抗浮设计水位按|场地整平标高.*复核/.test(t)).join('');
   result.foundation='5.3 地基基础方案\n勘察报告提出如下基础建议：'+foundationText+'\n'+karst+'\n\n5.4 地下结构抗浮\n'+(result.waterText?'考虑雨季滞水及基坑积水作用，勘察报告建议的抗浮水位如下：\n'+result.waterText:'');
-  const quake=pick(/地震动峰值加速度.*第三组/);
-  result.parameters.pga=/(?:地震动峰值加速度为|地震动峰值加速度为)\s*([\d.]+g)/.exec(quake)?.[1]||'';
-  result.parameters.eq_group=/设计地震分组为\s*(第[一二三]组)/.exec(quake)?.[1]||'';
-  const intensity=/地震烈度(?:值)?为\s*([ⅥⅦⅧⅨ6-9]+)度/.exec(quake)?.[1];result.parameters.intensity=({'Ⅵ':'6','Ⅶ':'7','Ⅷ':'8','Ⅸ':'9'})[intensity]||intensity||'';
   if(/附图|分区/.test(result.waterText))result.notes.push('抗浮水位按报告部位分别列示，范围值保留分区条件，不合并成全项目统一水位。');
  }
  if(geo){
@@ -116,10 +111,25 @@ export function composeDocument(sources=[],unit='项目整体'){
   }
   if(texts.length){
    for(const note of records.filter(r=>r.kind==='table_note'&&suggestions.some(s=>s.locator.split(' 行 ')[0]===r.locator.split(' 行 ')[0]))){texts.push(note.text);remember(geo,note);}
+   result.foundationTableText=unique(texts).join('\n');
    result.foundation=result.foundation.replace('\n\n5.4', '\n'+unique(texts).join('\n')+'\n\n5.4');
   }
  }
  result.geotech=detailedGeotech(geo,unit);
+ if(geo){
+  const g=result.geotech;
+  result.ground=g.text;
+  if(g.foundationText)result.foundation='5.3 地基基础方案\n勘察报告提出如下基础建议：\n'+g.foundationText+(result.foundationTableText?'\n'+result.foundationTableText:'')+'\n\n5.4 地下结构抗浮\n'+(g.antifloatText||result.waterText||'');
+  if(g.antifloatText){result.waterText=g.antifloatText;if(!g.foundationText)result.foundation=result.foundation.split('\n\n5.4')[0]+'\n\n5.4 地下结构抗浮\n'+g.antifloatText;}
+  // Only unambiguous report values; retain differing zones in prose, not a single parameter.
+  const uniqueValue=re=>{const values=[...g.text.matchAll(re)].map(m=>m[1]);const distinct=[...new Set(values)];return distinct.length===1?distinct[0]:'';};
+  result.parameters.site_class=uniqueValue(/(?:建筑)?场地类别(?:划分为|为|属于|属)\s*([ⅠⅡⅢⅣIV]+类)(?![、～~])/g);
+  result.parameters.pga=uniqueValue(/(?:地震动峰值加速度|设计基本地震加速度)(?:值)?(?:为|取|采用|：|:)?\s*([\d.]+g)/g);
+  result.parameters.eq_group=uniqueValue(/设计地震分组(?:为|属于|：|:)?\s*(第[一二三]组)/g);
+  const intensity=uniqueValue(/(?:抗震设防烈度|地震烈度)(?:值)?(?:为|：|:)?\s*([ⅥⅦⅧⅨ6-9]+)度/g);
+  result.parameters.intensity=({'Ⅵ':'6','Ⅶ':'7','Ⅷ':'8','Ⅸ':'9'})[intensity]||intensity;
+ }
+
  for(const evidence of result.geotech.evidence||[])if(!result.evidence.some(e=>e.source_id===evidence.source_id&&e.fragment_id===evidence.fragment_id))result.evidence.push(evidence);
  if(arch){
   for(const u of result.units){
