@@ -1,0 +1,39 @@
+import {createServer} from 'vite';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {homedir} from 'node:os';
+import {mkdir,readFile} from 'node:fs/promises';
+import {portableHTML,RELEASE} from '../../../deploy/portable/runtime.mjs';
+import {deepSeekLocalApi,calculationBookLocalApi} from '../../../vite.config.js';
+import {projectStoreApi} from '../../../server/project-store.mjs';
+import {expansionApi} from '../../../server/expansion-api.mjs';
+import {intakeApi} from '../../../server/intake-api.mjs';
+import {documentFormatApi} from '../../../server/document-format-api.mjs';
+import {portableProjectApi} from '../../../server/portable-projects.mjs';
+import {officeDocumentApi} from '../../../server/office-document-api.mjs';
+import {officePptHistoryApi} from '../../../server/office-ppt-document-api.mjs';
+const root=fileURLToPath(new URL('../../../',import.meta.url));
+const data=join(root,'qa/parallel-review-20261109/ui'),runtime=join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies');
+const env={WORKBENCH_PORTABLE:'1',WORKBENCH_DATABASE_ROOT:data,WORKBENCH_PROJECT_STORE:join(data,'projects'),WORKBENCH_CACHE_ROOT:join(data,'cache'),WORKBENCH_PYTHON:join(runtime,'python/python.exe'),CALCBOOK_PYTHON:join(runtime,'python/python.exe'),WORKBENCH_PDFINFO:join(runtime,'native/poppler/Library/bin/pdfinfo.exe'),WORKBENCH_PDFTOPPM:join(runtime,'native/poppler/Library/bin/pdftoppm.exe'),CALCBOOK_SOURCE_DIR:join(data,'sources'),CALCBOOK_UPLOAD_DIR:join(data,'uploads'),IMA_BRIDGE_MODULE:join(data,'not-configured.mjs'),EXPANSION_STORE_DIR:join(data,'legacy'),PYTHONUTF8:'1'};
+await mkdir(env.WORKBENCH_PROJECT_STORE,{recursive:true});Object.assign(process.env,env);
+// Optional QA overlay for the unassigned workflow file. Never writes that file.
+let proposal;
+if(process.argv.includes('--workflow-proposal')){
+ const lines=(await readFile(join(root,'workflow-ui.js'),'utf8')).replaceAll('\r\n','\n').split('\n');
+ const patch=(await readFile(new URL('./workflow-ui.patch',import.meta.url),'utf8')).replaceAll('\r\n','\n').split('\n');
+ const output=[];let cursor=0,inHunk=false;
+ for(const line of patch){
+  const hunk=line.match(/^@@ -(\d+)(?:,\d+)? \+\d+(?:,\d+)? @@/);
+  if(hunk){const start=Number(hunk[1])-1;output.push(...lines.slice(cursor,start));cursor=start;inHunk=true;continue;}
+  if(!inHunk||!line)continue;
+  if(line[0]===' '||line[0]==='-'){if(lines[cursor]!==line.slice(1))throw Error('workflow-ui.patch与当前文件不匹配');cursor++;}
+  if(line[0]===' '||line[0]==='+')output.push(line.slice(1));
+ }
+ proposal=[...output,...lines.slice(cursor)].join('\n');
+}
+const local={name:'ui-isolated-qa',transformIndexHtml:portableHTML,configureServer(server){server.middlewares.use((req,res,next)=>{
+ if(!['/api/portable/health','/api/portable/preferences'].includes(req.url))return next();
+ res.setHeader('Content-Type','application/json');res.end(JSON.stringify({app:'structure-workbench-portable',version:RELEASE,pid:process.pid,dataRoot:data,local:true,aiConfigured:false}));
+});},transform(code,id){if(proposal&&id.replaceAll('\\','/')===join(root,'workflow-ui.js').replaceAll('\\','/'))return proposal;}};
+const server=await createServer({root,configFile:false,envDir:false,server:{host:'127.0.0.1',port:5446,strictPort:true,watch:{ignored:['**/qa/**','**/outputs/**']}},plugins:[local,officeDocumentApi(env),officePptHistoryApi(env),documentFormatApi(env),portableProjectApi(env),deepSeekLocalApi(env),calculationBookLocalApi(env),expansionApi(env),projectStoreApi(env),intakeApi(env)]});
+await server.listen();console.log('UI QA http://127.0.0.1:5446/workbuddy-integrated-studio.html · '+data);

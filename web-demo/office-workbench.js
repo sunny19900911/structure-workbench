@@ -13,16 +13,28 @@ export function mountOfficeWorkbench(){
  async function save(){if(editor()?.busy)throw Error('正在保存文档');if(editor()?.dirty)await editor().save();if(editor()?.dirty)throw Error('文档有新修改，请保存后继续');}
  async function clear(){await save();editor()?.destroy?.();frame?.remove();frame=null;current=null;}
  async function list(){
-  const projectId=W.id,{documents}=await api(projectId);if(projectId!==W.id)return;
+  const projectId=W.id,unit=E.unit,result=await api(projectId);if(projectId!==W.id||unit!==E.unit)return;
+  const documents=result.documents.filter(file=>file.unit===unit);
   const aside=dialog.querySelector('aside');aside.replaceChildren();
-  dialog.querySelector('.office-project-label').textContent=window.WorkbenchLegacy.params().project_name||'未命名项目';
+  dialog.querySelector('.office-project-label').textContent=(window.WorkbenchLegacy.params().project_name||'未命名项目')+' · '+unit;
   for(const file of documents){const item=document.createElement('div');item.className='office-file-item';
    const open=document.createElement('button');open.textContent=file.title.replace(/\.(docx|xlsx|pptx)$/i,'')+' · '+({docx:'Word',pptx:'PPT',xlsx:'Excel'})[file.type];open.title=file.unit+' · 版本 '+file.fileRevision;open.onclick=()=>run(()=>openDocument(file.documentId));
-   const download=document.createElement('a');download.textContent='下载';download.href='/api/office-documents/'+projectId+'/'+file.documentId+'/content';download.download=file.filename||file.title+'.'+file.type;item.append(open,download);aside.append(item);
+   const download=document.createElement('a');download.textContent='下载';download.href='/api/office-documents/'+projectId+'/'+file.documentId+'/content';download.download=file.filename||file.title+'.'+file.type;
+   download.onclick=event=>{event.preventDefault();run(async()=>{
+    if(busy||opening||commandPending)throw Error('正在处理文档');
+    if(current?.documentId===file.documentId)await save();
+    const link=document.createElement('a');link.href=download.href;link.download=download.download;link.click();
+   });};item.append(open,download);aside.append(item);
   }
   if(!documents.length){const p=document.createElement('p');p.textContent='生成成果，或打开已有文件。';aside.append(p);}return documents;
  }
- async function show(){if(!dialog.open)dialog.showModal();await list();}
+ async function show(){if(!dialog.open)dialog.showModal();return list();}
+ async function generateAndOpen(){
+  await show();const result=await generate();
+  const word=result.documents.find(file=>file.type==='docx');
+  if(word)await openDocument(word.documentId);
+  return result;
+ }
  async function openDocument(documentId){
   if(busy||opening||commandPending)throw Error('正在处理文档');opening=true;
   try{await clear();const projectId=W.id;
@@ -87,10 +99,13 @@ export function mountOfficeWorkbench(){
  const close=async()=>{if(opening||busy||commandPending)throw Error('正在处理文档');await clear();dialog.close();};
  dialog.querySelector('[data-office="close"]').onclick=()=>run(close);
  dialog.addEventListener('cancel',e=>{e.preventDefault();run(close);});
- dialog.querySelector('[data-office="generate"]').onclick=()=>run(generate);
+ dialog.querySelector('[data-office="generate"]').onclick=()=>run(generateAndOpen);
  const input=dialog.querySelector('input[type=file]');dialog.querySelector('[data-office="import"]').onclick=()=>input.click();
  input.onchange=()=>run(async()=>{const file=input.files[0];if(!file)return;await W.flush();const type=file.name.split('.').at(-1).toLowerCase();const record=await register(file,type,file.name.replace(/\.[^.]+$/,''),{projectId:W.id,unit:E.unit,version:W.parameterVersion});await list();await openDocument(record.documentId);input.value='';});
- const entry=document.createElement('button');entry.id='office-workspace-open';entry.textContent='Word · PPT · Excel';entry.onclick=()=>run(show);document.getElementById('wp-export')?.after(entry);
+ // Reuse the existing output entry. The first visit creates and opens the set;
+ // later visits keep the saved files available without generating duplicates.
+ const entry=document.getElementById('wp-export');
+ if(entry){entry.textContent='Word · PPT · Excel';entry.onclick=()=>run(async()=>{const documents=await show();if(!documents?.length)await generateAndOpen();});}
  W.register('office',{save,load:async()=>{editor()?.destroy?.();frame?.remove();frame=null;current=null;if(dialog.open)dialog.close();},busy:()=>busy||opening||commandPending||Boolean(editor()?.busy),capture:()=>null});
  window.WorkbenchOffice={show,list,generate,open:openDocument,save,async read(documentId){if(opening||commandPending)throw Error('正在处理文档');if(current?.documentId!==documentId){if(editor()?.dirty)throw Object.assign(Error('页面有未保存修改，请先保存'),{status:409,code:'UNSAVED_EDITOR'});await openDocument(documentId);}return editor().read();},async command(documentId,command){if(opening||commandPending||busy)throw Error('正在处理文档');if(current?.documentId!==documentId)await openDocument(documentId);const target=editor(),before=await target.read();if(before.document.documentId!==documentId||before.document.projectId!==W.id||before.document.unit!==E.unit)throw Error('文档与当前项目不一致');if(target.dirty)throw Object.assign(Error('页面有未保存修改，请先保存'),{status:409,code:'UNSAVED_EDITOR'});commandPending=true;try{await target.executeCommand(command);await target.save();return target.read();}finally{commandPending=false;}},get busy(){return busy||opening||commandPending;}};
  window.addEventListener('message',event=>{if(event.origin===location.origin&&event.source===frame?.contentWindow&&event.data?.type==='workbench:office-saved')list().catch(()=>{});});

@@ -8,19 +8,17 @@ const bar=document.createElement('section');
 bar.className='wp-bar';
 const barStyle=document.createElement('style');barStyle.textContent='.wp-bar button,.wp-bar input,.wp-bar select{font:inherit;padding:6px 9px;border:1px solid #b8c8d1;border-radius:5px;background:white;color:#263e50}.wp-bar button{cursor:pointer}.wp-bar select{max-width:320px}.wp-bar [role=status]{font-size:12px}.wp-bar #wp-changes{max-height:230px;overflow:auto}@media print{.wp-bar{display:none!important}}';document.head.append(barStyle);
 bar.style.cssText='margin:12px 24px;padding:14px 18px;background:#eef3f6;border:1px solid #b8c8d1;border-radius:10px;color:#263e50;font-size:13px';
-bar.innerHTML='<div class="wp-primary"><b>当前项目</b><select id="wp-project" aria-label="切换项目"></select><span id="wp-status" role="status">正在载入…</span><button id="wp-intake">导入资料</button><button id="wp-export">导出</button><details class="wp-management"><summary>项目管理</summary><div><span id="wp-mode"></span><input id="wp-name" placeholder="新项目名称" aria-label="新项目名称"><button id="wp-new">新建空白项目</button><button id="wp-sample">载入示例副本</button><button id="wp-save">保存全部</button><button id="wp-delete">删除当前项目</button><button id="wp-restore" hidden>恢复刚删除项目</button><button id="wp-backup">下载项目备份</button><button id="wp-reload">载入最新保存</button><button id="wp-settings" hidden>设置</button></div></details><button id="wp-retry" hidden>重试保存</button></div>';
+bar.innerHTML='<div class="wp-primary"><b>当前项目</b><select id="wp-project" aria-label="切换项目"></select><span id="wp-status" role="status">正在载入…</span><button id="wp-intake">导入资料</button><button id="wp-export">导出</button><details class="wp-management"><summary>项目管理</summary><div><span id="wp-mode"></span><input id="wp-name" placeholder="新项目名称" aria-label="新项目名称"><button id="wp-new">新建空白项目</button><button id="wp-sample">载入示例副本</button><button id="wp-save">保存全部</button><button id="wp-delete">删除当前项目</button><button id="wp-backup">下载项目备份</button></div></details><button id="wp-retry" hidden>重试保存</button></div>';
 
 document.body.prepend(bar);
 const q=s=>bar.querySelector(s);
-q('#wp-settings').hidden=!window.WORKBENCH_PORTABLE;
-q('#wp-settings').onclick=()=>window.WorkbenchPortable?.openSettings();
 bar.querySelectorAll('button,select,input').forEach(e=>e.disabled=true);
 const status=s=>{q('#wp-status').textContent=s;q('#wp-retry').hidden=!/失败|未保存|未连接|载入未完成/.test(s);q('#wp-retry').textContent=loading||!modules.has('workflow')?'重试载入':'重试保存';if(!q('#wp-retry').hidden&&!busy)q('#wp-retry').disabled=false;};
 const startupReadyTimer=setTimeout(()=>{if(!modules.has('workflow'))status('资料模块载入未完成，请点击重试载入。');},20000);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function render(){q('#wp-mode').textContent=mode==='sample'?'示例项目 · 不作为实际工程依据':'独立项目';}
 
-async function list(projects=null){q('#wp-restore').hidden=!localStorage.getItem('wb:last-deleted-project');if(!projects)({projects}=await projectRequest('/'));q('#wp-project').innerHTML=projects.map(p=>'<option value="'+p.id+'">'+esc(p.name)+(p.mode==='sample'?'（示例）':'')+'</option>').join('');q('#wp-project').value=id;}
+async function list(projects=null){if(!projects)({projects}=await projectRequest('/'));q('#wp-project').innerHTML=projects.map(p=>'<option value="'+p.id+'">'+esc(p.name)+(p.mode==='sample'?'（示例）':'')+'</option>').join('');q('#wp-project').value=id;}
 function capture(){return {...legacy.capture(),mode,parameterVersion,changes,exportHistory,calculation:window.CalculationBook?.capture()};}
 function scheduleSave(){if(loading||!part)return;status('有修改 · 等待保存');clearTimeout(timer);timer=setTimeout(()=>save().catch(()=>{}),700);}
 async function save(){clearTimeout(timer);if(loading||!part)return;await part.save(capture());}
@@ -38,7 +36,7 @@ async function load(next,{data=null,remoteOnly=false,projects=null}={}){
   window.dispatchEvent(new CustomEvent('workbuddy:project-changed',{detail:{projectId:id}}));
  }catch(e){loading=true;throw e;}
  legacy.publish();
- if(data){progress('正在保存新项目…');await save();q('#wp-project').add(new Option((parameters.project_name||'未命名项目')+(mode==='sample'?'（示例）':''),id));q('#wp-project').value=id;q('#wp-restore').hidden=!localStorage.getItem('wb:last-deleted-project');}
+ if(data){progress('正在保存新项目…');await save();q('#wp-project').add(new Option((parameters.project_name||'未命名项目')+(mode==='sample'?'（示例）':''),id));q('#wp-project').value=id;}
  else{if(projects||![...q('#wp-project').options].some(p=>p.value===id))await list(projects);else{const option=[...q('#wp-project').options].find(p=>p.value===id);option.textContent=(parameters.project_name||'未命名项目')+(mode==='sample'?'（示例）':'');q('#wp-project').value=id;}status(part.blocked?'恢复稿有版本冲突，请先下载备份':'已载入项目 · 修订 '+part.revision);}
 }
 async function create(sample=false){
@@ -52,7 +50,7 @@ async function create(sample=false){
  else status(sample?'示例副本已载入':'空白项目已创建');
 }
 async function removeCurrent(){
- if(!confirm('删除当前项目？项目资料和历史版本仍保留，可通过“恢复刚删除项目”撤销。')){status('已取消删除');return;}
+ if(!confirm('删除当前项目？项目资料和历史版本仍保留。')){status('已取消删除');return;}
  operationStarted=Date.now();
  // Soft deletion retains every server revision. Persist edits first; a failed or
  // conflicting save must leave this project open instead of discarding its draft.
@@ -64,12 +62,7 @@ async function removeCurrent(){
  const {projects}=await projectRequest('/');
  if(projects.length)await load(projects[0].id,{projects});
  else{q('#wp-project').replaceChildren();await load(newProjectId(),{data:legacy.blank('未命名项目')});}
- status('项目已删除，资料与历史版本保留，可恢复刚删除项目');
-}
-async function restoreRemoved(){
- const removed=localStorage.getItem('wb:last-deleted-project');if(!removed)return;
- const lifecycle=projectPart(removed,'lifecycle');await lifecycle.load();await lifecycle.save({deleted:false});
- localStorage.removeItem('wb:last-deleted-project');await list();status('项目已恢复，可从项目列表选择');
+ status('项目已删除，资料与历史版本保留');
 }
 function contentChanged(label='统一措施正文变更'){if(loading)return;parameterVersion++;changes.push({at:new Date().toLocaleString('zh-CN'),label,before:'原稿',after:'待复核',version:parameterVersion});legacy.invalidate();render();legacy.publish();scheduleSave();}
 async function download(){let archive;try{archive=await projectRequest('/'+id);}catch{archive={note:'项目库未连接，仅备份本页恢复稿'};}const browserRecovery={};for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key?.startsWith('wb:recovery:v1:'+id+':')){const cached=JSON.parse(localStorage.getItem(key));if(cached?.dirty||!archive.records)browserRecovery[key]=cached;}}const data={schema:1,projectId:id,archive,browserRecovery,main:capture(),modules:Object.fromEntries([...modules].map(([k,m])=>[k,m.capture()]))};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));a.download=(parameters.project_name||'项目')+'_恢复备份.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
@@ -103,9 +96,8 @@ document.addEventListener('change',e=>{if(e.target.matches('[data-k],#pstage-sel
 q('#wp-project').onchange=e=>action(async()=>{await flush();await load(e.target.value);});
 q('#wp-retry').onclick=()=>{if(!modules.has('workflow')){location.reload();return;}return action(async()=>{if(loading){await load(id||new URL(location.href).searchParams.get('project'));}else{await flush();status('项目已保存');}});};
 q('#wp-intake').onclick=()=>window.WorkbenchFlow?.open();q('#wp-export').onclick=()=>window.WorkbenchFlow?.export();
-q('#wp-delete').onclick=e=>action(removeCurrent,e.currentTarget);q('#wp-restore').onclick=e=>action(restoreRemoved,e.currentTarget);
+q('#wp-delete').onclick=e=>action(removeCurrent,e.currentTarget);
 q('#wp-new').onclick=e=>action(()=>create(),e.currentTarget);q('#wp-sample').onclick=e=>action(()=>create(true),e.currentTarget);q('#wp-save').onclick=e=>action(async()=>{progress('正在保存项目…');await flush();await list();status('项目已保存');},e.currentTarget);q('#wp-backup').onclick=e=>action(async()=>{await download();status('项目备份已下载');},e.currentTarget);
-q('#wp-reload').onclick=()=>action(async()=>{await download();await load(id,{remoteOnly:true});status('已下载当前恢复备份，并载入最新保存。');});
 window.addEventListener('beforeunload',()=>{save().catch(()=>{});for(const m of modules.values())m.save().catch(()=>{});});
 // Initial setup keeps previous browser drafts untouched and never auto-loads sample facts.
 await window.CalculationBook?.ready;

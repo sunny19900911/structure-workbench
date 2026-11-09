@@ -1,4 +1,5 @@
 import {autoParameterUpdates} from './workflow-core.js';
+import {documentKind} from './design/parallel-review-20261109/ui/intake-routing.js';
 import {createDocumentComposer} from './document-intake.js';
 import './project-workspace.js';
 import {projectPart,clone} from './project-store-client.js';
@@ -103,6 +104,7 @@ async function readLegacyDoc(bytes){
 }
 async function readFiles(slot,files,{replaceSource}={}){
   if(!files.length)return;if(busy)throw Error('正在处理资料，请稍候');
+  const imported=[];
   importSlot=slot;
   try{await action(async()=>{
     const project=W.id;
@@ -117,10 +119,13 @@ async function readFiles(slot,files,{replaceSource}={}){
         else throw Error('支持DOC、DOCX、DOCM、DOT、DOTX、DOTM、文字PDF、TXT、MD；文件实际格式会在读取前校验');
         if(project!==W.id)throw Error('项目已切换，未写入资料');
         window.dispatchEvent(new CustomEvent('workbuddy:task-status',{detail:{projectId:project,text:'整理中 · '+file.name,phase:'整理中'}}));
-        await ingest(slot,file.name,blocks,await digest(bytes),replaceSource);
+        const detected=slot==='auto'?documentKind(file.name,fragments(blocks).map(part=>part.text).join('\n')):slot;
+        if(!detected)throw Error('未能识别建筑或地勘资料，请使用包含“建筑”或“地勘”的文件名后重新导入');
+        await ingest(detected,file.name,blocks,await digest(bytes),replaceSource);
+        imported.push({name:file.name,slot:detected});
       }catch(e){throw Error('「'+file.name+'」导入失败：'+e.message);}
     }
-  },true);}finally{importSlot=null;}
+  },true);return {files:imported};}finally{importSlot=null;}
 }
 document.addEventListener('change',e=>{const input=e.target.closest('input[data-imp]');if(input&&['bldg','geo'].includes(input.dataset.imp)){e.stopImmediatePropagation();const files=[...input.files];readFiles(input.dataset.imp,files).catch(e=>note(e.message,'error'));}},true);
 

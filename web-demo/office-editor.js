@@ -99,6 +99,7 @@ async function mountWord(file){
 }
 
 async function run(command){clearError();try{return await controller.executeCommand({...command,expectedRevision:metadata.fileRevision});}catch(error){showError(error);throw error;}}
+function setupWordTools(){
 buildWordWorkspace();
 mountWordRibbon({zoom:value=>controller?.setZoom?.(value)});
 document.querySelectorAll('[data-command]').forEach(button=>{button.addEventListener('mousedown',event=>event.preventDefault());button.onclick=()=>run({name:button.dataset.command}).catch(()=>{});});
@@ -113,6 +114,7 @@ $('office-table').onmousedown=event=>event.preventDefault();$('office-table').on
 $('office-image').onmousedown=event=>event.preventDefault();$('office-image').onclick=()=>$('office-image-file').click();
 $('office-image-file').onchange=async event=>{const file=event.target.files[0];if(!file)return;try{if(file.size>4*1024*1024)throw Error('图片不能超过 4 MB');const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});await run({name:'image.insert',args:{data,alt:file.name}});}catch(error){showError(error);}finally{event.target.value='';}};
 mountWordWorkspace({getController:()=>controller,run,onError:showError});
+}
 $('office-save').onclick=async()=>{clearError();try{await controller.save();}catch(error){showError(error);}};
 $('office-download').onclick=async()=>{try{await controller.save();const blob=controller.exportBlob?await controller.exportBlob():await(await request(base+'/content')).blob();const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(metadata.title||'项目文档').replace(/\.(docx|xlsx|pptx)$/i,'')+'.'+metadata.type;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}catch(error){showError(error);}};
 document.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s'){event.preventDefault();if(controller)controller.save().catch(showError);}});
@@ -120,7 +122,7 @@ window.addEventListener('beforeunload',event=>{if(controller?.dirty){event.preve
 try{
  if(!/^[a-f0-9]{32}$/.test(projectId||'')||!/^[a-zA-Z0-9-]{16,64}$/.test(documentId||''))throw Error('文档地址无效，请从项目工作台打开。');
  metadata=(await(await request(base)).json()).document;title();
- if(metadata.type==='docx')controller=await mountWord(new File([await(await request(base+'/content')).blob()],(metadata.title||'项目文档')+'.docx',{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}));
+ if(metadata.type==='docx'){setupWordTools();controller=await mountWord(new File([await(await request(base+'/content')).blob()],(metadata.title||'项目文档')+'.docx',{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}));}
  else{const mountEditor=metadata.type==='xlsx'?(await import('./office-excel-editor.js')).mountExcelEditor:(await import('./office-ppt-editor.js')).mountPptEditor;if(metadata.type==='pptx')await import('./office-ppt-editor.css');const {view}=await(await request(base+'/view')).json();controller=await mountEditor({element:$('office-editor'),document:metadata,view,onSaved:next=>{metadata=next;title();status('已保存到本机 · 版本 '+metadata.fileRevision);notifySaved();}});status('已打开本机文件 · 版本 '+metadata.fileRevision);}
  window.WorkbenchOfficeEditor=controller;
  $('office-save').disabled=false;$('office-download').disabled=false;
