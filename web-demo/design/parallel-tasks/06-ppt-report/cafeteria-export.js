@@ -16,12 +16,12 @@ function fillText(node,text,size){
 const emu=n=>Math.round(n*9525);
 function transform(doc,b){const x=create(doc,A,'a:xfrm');x.append(create(doc,A,'a:off',{x:emu(b[0]),y:emu(b[1])}),create(doc,A,'a:ext',{cx:emu(b[2]),cy:emu(b[3])}));return x;}
 function picture(doc,id,s,rid){
-  const pic=create(doc,P,'p:pic'),nv=create(doc,P,'p:nvPicPr');nv.append(create(doc,P,'p:cNvPr',{id,name:s.name}),create(doc,P,'p:cNvPicPr'),create(doc,P,'p:nvPr'));pic.append(nv);
+  const pic=create(doc,P,'p:pic'),nv=create(doc,P,'p:nvPicPr');nv.append(create(doc,P,'p:cNvPr',{id,name:s.name,descr:'workbench:image-slot'}),create(doc,P,'p:cNvPicPr'),create(doc,P,'p:nvPr'));pic.append(nv);
   const fill=create(doc,P,'p:blipFill'),blip=create(doc,A,'a:blip');blip.setAttributeNS(R,'r:embed',rid);const stretch=create(doc,A,'a:stretch');stretch.append(create(doc,A,'a:fillRect'));fill.append(blip,stretch);pic.append(fill);
   const pr=create(doc,P,'p:spPr'),geom=create(doc,A,'a:prstGeom',{prst:'rect'});geom.append(create(doc,A,'a:avLst'));pr.append(transform(doc,s.box),geom);pic.append(pr);return pic;
 }
 function placeholder(doc,id,s){
-  const sp=create(doc,P,'p:sp'),nv=create(doc,P,'p:nvSpPr');nv.append(create(doc,P,'p:cNvPr',{id,name:s.name}),create(doc,P,'p:cNvSpPr'),create(doc,P,'p:nvPr'));sp.append(nv);
+  const sp=create(doc,P,'p:sp'),nv=create(doc,P,'p:nvSpPr');nv.append(create(doc,P,'p:cNvPr',{id,name:s.name,descr:'workbench:image-slot'}),create(doc,P,'p:cNvSpPr'),create(doc,P,'p:nvPr'));sp.append(nv);
   const pr=create(doc,P,'p:spPr'),geom=create(doc,A,'a:prstGeom',{prst:'rect'});geom.append(create(doc,A,'a:avLst'));const line=create(doc,A,'a:ln',{w:6350}),fill=create(doc,A,'a:solidFill');fill.append(create(doc,A,'a:srgbClr',{val:'D5D5D5'}));line.append(fill);pr.append(transform(doc,s.box),geom,create(doc,A,'a:noFill'),line);sp.append(pr);
   const body=create(doc,P,'p:txBody'),p=create(doc,A,'a:p'),r=create(doc,A,'a:r'),rp=create(doc,A,'a:rPr',{sz:1400}),t=create(doc,A,'a:t');t.textContent=s.name;rp.append(create(doc,A,'a:latin',{typeface:'宋体'}),create(doc,A,'a:ea',{typeface:'宋体'}));r.append(rp,t);p.append(create(doc,A,'a:pPr',{algn:'ctr'}),r);body.append(create(doc,A,'a:bodyPr',{anchor:'ctr'}),create(doc,A,'a:lstStyle'),p);sp.append(body);return sp;
 }
@@ -54,6 +54,21 @@ export async function cafeteriaBlob(slides,images=new Map()){
       tree.append(picture(doc,id,{...item,box:[x+(w-iw)/2,y+(h-ih)/2,iw,ih]},rid));
     }
     zip.file(path,xml(doc));zip.file(relPath,xml(rels));
+  }
+  const leftovers=[...images].filter(([key])=>key.startsWith('__unplaced__'));
+  if(leftovers.length){
+    const library=parse('<images/>'),relsNS='http://schemas.openxmlformats.org/package/2006/relationships',links=parse(`<Relationships xmlns="${relsNS}"/>`),rootLinks=parse(await zip.file('_rels/.rels').async('string'));
+    const path='customXml/workbench-ppt-images.xml';
+    rootLinks.documentElement.append(create(rootLinks,relsNS,'Relationship',{Id:'rIdWorkbenchImages',Type:R+'/customXml',Target:path}));
+    types.documentElement.append(create(types,types.documentElement.namespaceURI,'Override',{PartName:'/'+path,ContentType:'application/xml'}));
+    for(const [key,data] of leftovers){
+      const id=key.slice(12,44),name=key.slice(46),mime=data.startsWith('data:image/jpeg')?'jpeg':'png',part=`ppt/media/workbench-${id}.${mime==='jpeg'?'jpg':'png'}`;
+      const img=new Image();img.src=data;await img.decode();zip.file(part,data.split(',')[1],{base64:true});
+      library.documentElement.append(create(library,null,'image',{id,name,part,width:img.naturalWidth,height:img.naturalHeight,status:'unplaced',reason:'未匹配唯一空图位'}));
+      links.documentElement.append(create(links,relsNS,'Relationship',{Id:'rId'+id,Type:R+'/image',Target:'../'+part}));
+      types.documentElement.append(create(types,types.documentElement.namespaceURI,'Override',{PartName:'/'+part,ContentType:'image/'+mime}));
+    }
+    zip.file(path,xml(library));zip.file('customXml/_rels/workbench-ppt-images.xml.rels',xml(links));zip.file('_rels/.rels',xml(rootLinks));
   }
   zip.file('[Content_Types].xml',xml(types));return zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.presentationml.presentation',compression:'DEFLATE'});
 }

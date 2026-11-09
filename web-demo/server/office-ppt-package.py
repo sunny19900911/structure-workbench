@@ -18,6 +18,88 @@ spec.loader.exec_module(b)
 E, NS, P, A, R = b.E, b.NS, b.P, b.A, b.R
 REL = 'http://schemas.openxmlformats.org/package/2006/relationships'
 CT = 'http://schemas.openxmlformats.org/package/2006/content-types'
+LIBRARY = 'customXml/workbench-ppt-images.xml'
+
+def library(z):
+    return b.xml(z.read(LIBRARY)) if LIBRARY in z.namelist() else E.Element('images')
+
+def image_payload(value):
+    if not isinstance(value,str) or len(value)>1800000: fail('图片须小于 1.3 MB')
+    match=re.fullmatch(r'data:image/(png|jpeg);base64,([A-Za-z0-9+/=]+)',value)
+    if not match: fail('仅支持 PNG / JPEG 图片')
+    try:
+        payload=base64.b64decode(match[2],validate=True)
+        from PIL import Image
+        with Image.open(io.BytesIO(payload)) as image:
+            if image.width*image.height>25000000 or image.format!=('PNG' if match[1]=='png' else 'JPEG'): fail('图片内容与格式不一致或过大')
+            width,height=image.size
+            image.verify()
+    except b.OfficeError: raise
+    except Exception: fail('图片内容损坏')
+    return payload,match[1],width,height
+
+def image_library_edit(z,cmd):
+    catalog=library(z); changes={}
+    if cmd['op']=='ppt.image.import':
+        if len(catalog)>=100: fail('此文件最多保留100张批量上传图片')
+        payload,mime,width,height=image_payload(cmd.get('data'))
+        name=cmd.get('name')
+        if not isinstance(name,str) or not 1<=len(name)<=240 or re.search(r'[\x00-\x1f]',name): fail('图片名称无效')
+        ident=uuid.uuid4().hex; part='ppt/media/workbench-'+ident+('.png' if mime=='png' else '.jpg')
+        E.SubElement(catalog,'image',id=ident,name=name,part=part,width=str(width),height=str(height),status='unplaced',reason=str(cmd.get('reason',''))[:200])
+        changes[part]=payload
+        types=b.xml(z.read('[Content_Types].xml'))
+        for path,kind in [(part,'image/'+mime),(LIBRARY,'application/xml')]:
+            if not any(n.get('PartName')=='/'+path for n in types): E.SubElement(types,'{'+CT+'}Override',PartName='/'+path,ContentType=kind)
+        changes['[Content_Types].xml']=b.serial(types)
+        links=b.xml(z.read('_rels/.rels'))
+        if not any(n.get('Target')==LIBRARY for n in links): E.SubElement(links,'{'+REL+'}Relationship',Id='rIdWbImages'+uuid.uuid4().hex,Type=R+'/customXml',Target=LIBRARY)
+        changes['_rels/.rels']=b.serial(links)
+        links=b.xml(z.read(relpath(LIBRARY))) if relpath(LIBRARY) in z.namelist() else E.Element('{'+REL+'}Relationships')
+        E.SubElement(links,'{'+REL+'}Relationship',Id='rId'+ident,Type=R+'/image',Target='../'+part)
+        changes[relpath(LIBRARY)]=b.serial(links)
+    else:
+        images=[item for item in catalog if item.get('id')==cmd.get('imageId')]
+        if len(images)!=1: fail('图片未找到','TARGET_NOT_FOUND')
+        item=images[0]
+        if item.get('status')!='unplaced': fail('图片已经放置，请重新读取','CONFLICT')
+        width,height,slides=b.presentation_slides(z)
+        part,root=slides[integer(cmd.get('slide'),1,len(slides))-1];tree=root.find('p:cSld/p:spTree',NS)
+        target=None
+        if cmd.get('shapeId'):
+            targets=[s for s in tree if s.find('.//p:cNvPr',NS) is not None and s.find('.//p:cNvPr',NS).get('id')==str(cmd['shapeId'])]
+            if len(targets)!=1: fail('图位已变化','CONFLICT')
+            target=targets[0]
+            if not image_slot(target) or E.QName(target).localname=='pic': fail('该图位已有图片或已被修改','CONFLICT')
+            box=b.geometry(target)
+            name=target.find('.//p:cNvPr',NS).get('name','图片')
+        else:
+            box={'x':round(width*.1),'y':round(height*.2),'width':round(width*.8),'height':round(height*.65)};name=item.get('name')
+        if any(box[k] is None for k in ('x','y','width','height')): fail('图位没有明确位置')
+        scale=min(box['width']/int(item.get('width')),box['height']/int(item.get('height')))
+        iw=round(int(item.get('width'))*scale);ih=round(int(item.get('height'))*scale)
+        shape=new_shape(tree,True);ident=shape.find('p:nvPicPr/p:cNvPr',NS);ident.set('name',name)
+        if target is not None: ident.set('descr','workbench:image-slot')
+        links=b.xml(z.read(relpath(part))) if relpath(part) in z.namelist() else E.Element('{'+REL+'}Relationships')
+        rid='rId'+uuid.uuid4().hex
+        E.SubElement(links,'{'+REL+'}Relationship',Id=rid,Type=R+'/image',Target=posixpath.relpath(item.get('part'),'ppt/slides'))
+        fill=E.SubElement(shape,'{'+P+'}blipFill');E.SubElement(fill,'{'+A+'}blip').set('{'+R+'}embed',rid)
+        E.SubElement(E.SubElement(fill,'{'+A+'}stretch'),'{'+A+'}fillRect')
+        geometry(shape,{'x':box['x']+(box['width']-iw)/2,'y':box['y']+(box['height']-ih)/2,'width':iw,'height':ih})
+        E.SubElement(E.SubElement(shape.find('p:spPr',NS),'{'+A+'}prstGeom',prst='rect'),'{'+A+'}avLst')
+        if target is not None:
+            position=list(tree).index(target);tree.remove(shape);tree.remove(target);tree.insert(position,shape)
+        item.set('status','placed');item.set('slidePart',part);item.set('shapeId',ident.get('id'))
+        changes[part]=b.serial(root);changes[relpath(part)]=b.serial(links)
+    changes[LIBRARY]=b.serial(catalog)
+    return write(z,changes)
+
+def image_slot(shape):
+    ident=shape.find('.//p:cNvPr',NS)
+    if ident is None: return False
+    if ident.get('descr')=='workbench:image-slot': return E.QName(shape).localname=='pic' or b.shape_text(shape) in ('',ident.get('name'))
+    # Compatibility for previously generated report placeholders, never arbitrary prose.
+    return E.QName(shape).localname=='sp' and ident.get('name')==b.shape_text(shape) and bool(re.search('图|照片|截图|平面|立面',ident.get('name','')))
 
 def fail(message, code='INVALID_INPUT'):
     raise b.OfficeError(message, code)
@@ -64,6 +146,7 @@ def inspect(z):
         for shape in slide['shapes']:
             node = next((s for s in nodes if s.find('.//p:cNvPr', NS).get('id') == shape['id']), None)
             if node is None: continue
+            shape['imageSlot']=image_slot(node)
             ppr = node.find('p:txBody/a:p/a:pPr', NS)
             shape['align'] = ppr.get('algn', 'l') if ppr is not None else 'l'
             props = node.find('.//a:rPr', NS)
@@ -77,6 +160,9 @@ def inspect(z):
                 if color is not None: shape['color'] = '#'+color.get('val', '000000')
             # Inherited placeholders and grouped transforms must not be guessed.
             shape['editable'] = shape['editable'] and node.find('p:txBody', NS) is not None and node.find('.//a:fld',NS) is None and node.find('.//a:br',NS) is None
+        titles=[s for s in slide['shapes'] if s.get('text') and not s.get('imageSlot') and s['type']=='sp' and s.get('y') is not None and s['y']<slide['height']*.3]
+        slide['title']=max(titles,key=lambda s:s.get('fontSize',18))['text'] if titles else ''
+    view['imageLibrary']=[dict(item.attrib) for item in library(z)]
     return view
 
 def page_edit(z, cmd, slides):
@@ -183,6 +269,7 @@ def set_text(shape, text):
 
 def edit(z, cmd):
     if not isinstance(cmd,dict): fail('编辑命令无效')
+    if cmd.get('op') in ('ppt.image.import','ppt.image.place'): return image_library_edit(z,cmd)
     if cmd.get('op')=='ppt.image.insert': cmd={**cmd,'op':'image.insert'}
     op = cmd.get('op',''); _, _, slides = b.presentation_slides(z)
     if op.startswith('slide.'): return page_edit(z,cmd,slides)
@@ -273,7 +360,12 @@ def edit(z, cmd):
                         for item in list(prop):
                             if E.QName(item).localname in ('solidFill','gradFill','noFill','pattFill','blipFill','grpFill'): prop.remove(item)
                         fill=E.Element('{'+A+'}solidFill'); prop.insert(1 if prop.find('a:ln',NS) is not None else 0,fill);E.SubElement(fill,'{'+A+'}srgbClr',val=cmd['color'][1:].upper())
-        elif op=='shape.delete': tree.remove(shape)
+        elif op=='shape.delete':
+            tree.remove(shape)
+            catalog=library(z)
+            for image in catalog:
+                if image.get('slidePart')==part and image.get('shapeId')==str(cmd.get('shapeId')):
+                    image.set('status','unplaced');image.set('reason','已从页面移除');changes[LIBRARY]=b.serial(catalog)
         else: fail('不支持的 PPT 操作')
     changes[part]=b.serial(root)
     return write(z,changes)

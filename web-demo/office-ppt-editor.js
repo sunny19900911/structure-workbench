@@ -1,4 +1,6 @@
 // Native PPTX editor. UI and office.command invoke the same revision-checked command path.
+import {matchImageFiles,nativeImageTargets,readPptImage} from './office-ppt-assets.js';
+import {loadPptParameters,filterParameters} from './office-ppt-parameters.js';
 
 export async function mountPptEditor({element,document:initial,view:initialView,onSaved=()=>{}}){
  let record=initial,view=initialView,selectedSlide=0,selectedId=null,pending=null,busy=false,uncertain=false,destroyed=false,saveTimer=null;
@@ -13,6 +15,37 @@ export async function mountPptEditor({element,document:initial,view:initialView,
  const selected=()=>current()?.shapes.find(s=>s.id===selectedId);
  const base='/api/office-documents/'+encodeURIComponent(record.projectId)+'/'+encodeURIComponent(record.documentId);
  const report=e=>{status.textContent=e.message;};
+ const dialog=make('dialog','ppt-dialog');root.append(dialog);
+ function panel(title){dialog.replaceChildren();const heading=make('header'),content=make('div','ppt-dialog-content');heading.append(make('h2','',title),button('关闭',()=>dialog.close()));dialog.append(heading,content);if(!dialog.open)dialog.showModal();return content;}
+ async function parameters(){
+  const area=properties.querySelector('textarea'),range=area?{from:area.selectionStart,to:area.selectionEnd}:null;
+  await save();const target=selected(),slide=current(),content=panel('项目参数 · '+record.unit);
+  content.textContent='正在读取…';let rows;try{rows=await loadPptParameters(record);}catch(e){content.textContent=e.message;throw e;}content.replaceChildren();
+  const search=make('input'),list=make('div','ppt-parameter-list');search.type='search';search.placeholder='搜索名称、取值';search.setAttribute('aria-label','搜索参数');content.append(search,list);
+  function show(){list.replaceChildren();for(const item of filterParameters(rows,search.value))list.append(button(item.label+'：'+item.value+' · '+item.source,async()=>{
+   const text=item.label+'：'+item.value;
+   if(target?.editable){const from=range?.from??target.text.length,to=range?.to??from;await action('shape.text',{slide:slide.number,shapeId:target.id,expectedText:target.text,text:target.text.slice(0,from)+text+target.text.slice(to)});}
+   else await action('shape.addText',{slide:slide.number,text,x:Math.round(slide.width*.1),y:Math.round(slide.height*.4),width:Math.round(slide.width*.8),height:Math.round(slide.height*.12)});
+   dialog.close();
+  }));if(!list.childElementCount)list.textContent='没有匹配参数';}
+  search.oninput=show;show();search.focus();
+ }
+ function imageLibrary(){const content=panel('批量图片');content.append(button('选择多张图片',()=>batchInput.click()));
+  const items=view.imageLibrary||[];const unmatched=items.filter(item=>item.status==='unplaced');
+  content.append(make('p','',`${items.length-unmatched.length} 张已放置，${unmatched.length} 张未放置`));
+  for(const item of unmatched){const row=make('div','ppt-library-row');row.append(make('span','',item.name+' · '+(item.reason||'未放置')),button('放入当前页',async()=>{await action('ppt.image.place',{imageId:item.id,slide:current().number});imageLibrary();}));content.append(row);}
+ }
+ const batchInput=make('input');batchInput.type='file';batchInput.multiple=true;batchInput.accept='image/png,image/jpeg';batchInput.hidden=true;batchInput.setAttribute('aria-label','批量上传图片');root.append(batchInput);
+ let uploading=false;
+ batchInput.onchange=async()=>{const files=[...batchInput.files];batchInput.value='';if(!files.length)return;
+  try{await save();uploading=true;lock(false);const plans=matchImageFiles(files,nativeImageTargets(view));let placed=0,retained=0;const failed=[];
+   dialog.close();
+   for(const plan of plans){try{const {data}=await readPptImage(plan.file);const old=new Set((view.imageLibrary||[]).map(i=>i.id));await action('ppt.image.import',{name:plan.file.name,data,reason:plan.reason});retained++;
+    const item=view.imageLibrary.find(i=>!old.has(i.id));if(!plan.reason&&plan.target){await action('ppt.image.place',{imageId:item.id,slide:plan.target.slide,shapeId:plan.target.shapeId});placed++;retained--;}
+   }catch(e){failed.push(plan.file.name+'：'+e.message);if(uncertain)break;}}
+   imageLibrary();status.textContent=`批量上传：${placed} 张已放置，${retained} 张未放置`+(failed.length?'；'+failed.join('；'):'');
+  }catch(e){report(e);}finally{uploading=false;lock(false);}
+ };
  const autosave=()=>{clearTimeout(saveTimer);saveTimer=setTimeout(()=>save().catch(report),1200);};
  const button=(label,fn)=>{const b=make('button','',label);b.type='button';b.onclick=()=>Promise.resolve().then(fn).catch(report);return b;};
  dom.body.classList.add('ppt-editor-mounted');
@@ -21,7 +54,7 @@ export async function mountPptEditor({element,document:initial,view:initialView,
  function exitPresentation(){root.classList.remove('ppt-presenting');if(dom.fullscreenElement===root)dom.exitFullscreen().catch(()=>{});}
  const exit=button('退出放映',exitPresentation);exit.className='ppt-exit-presentation';root.append(exit);
  const ribbon=createPptRibbon({root,tools,properties,status,title:record.title,save,download,present,toggleThumbnails:()=>root.classList.toggle('ppt-hide-thumbnails'),selectFirst:()=>choose(0),addSlide:()=>action('slide.add',{slide:current().number})});
- function lock(value){busy=value;tools.inert=value;body.inert=value;properties.inert=value;root.setAttribute('aria-busy',String(value));}
+ function lock(value){busy=value;for(const part of [tools,body,properties,root.querySelector('.ppt-filebar'),root.querySelector('.ppt-ribbon-tabs')])if(part)part.inert=value||uploading;root.setAttribute('aria-busy',String(value||uploading));}
  async function api(action,options){
   const url=action==='history-restore'?'/api/office-ppt-history/'+encodeURIComponent(record.projectId)+'/'+encodeURIComponent(record.documentId):base+'/'+action;
   const response=await fetch(url,{...options,signal:AbortSignal.timeout(65000)});
@@ -54,7 +87,7 @@ export async function mountPptEditor({element,document:initial,view:initialView,
    if(name==='slide.add'||name==='slide.duplicate')selectedSlide=args.slide;
    if(name==='slide.move')selectedSlide=args.to-1;
    selectedSlide=Math.min(selectedSlide,view.slides.length-1);
-   if(name==='shape.addText'||name==='ppt.image.insert')selectedId=current()?.shapes.find(s=>!previousIds.has(s.id))?.id||null;
+   if(name==='shape.addText'||name==='ppt.image.insert'||name==='ppt.image.place')selectedId=current()?.shapes.find(s=>!previousIds.has(s.id))?.id||null;
    if(!selected())selectedId=null;
    render();status.textContent='已保存 · 版本 '+record.fileRevision;return {document:record};
   }catch(e){
@@ -129,12 +162,10 @@ export async function mountPptEditor({element,document:initial,view:initialView,
   const addText=button('文本框',()=>action('shape.addText',{slide:slide.number,text:'输入文字',x:Math.round(slide.width*.25),y:Math.round(slide.height*.45),width:Math.round(slide.width*.5),height:Math.round(slide.height*.2)}));tools.append(addText);
   const upload=make('input');upload.type='file';upload.accept='image/png,image/jpeg';upload.hidden=true;
   upload.onchange=async()=>{const file=upload.files[0];if(!file)return;try{
-   if(file.size>1300000)throw Error('请选择小于 1.3 MB 的 PNG / JPEG 图片');
-   const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('图片读取失败'));reader.readAsDataURL(file);});
-   const img=new Image();img.src=data;await img.decode();const width=Math.round(slide.width*.4),height=Math.round(width*img.naturalHeight/img.naturalWidth);
+   const {data,width:iw,height:ih}=await readPptImage(file),scale=Math.min(slide.width*.4/iw,slide.height*.6/ih),width=Math.round(iw*scale),height=Math.round(ih*scale);
    await action('ppt.image.insert',{slide:slide.number,data,x:Math.round(slide.width*.1),y:Math.round(slide.height*.1),width,height});
   }catch(e){report(e);}finally{upload.value='';}};
-  const addImage=button('图片',()=>upload.click());tools.append(addImage,upload,more);
+  const addImage=button('图片',()=>upload.click()),batch=button('批量图片',imageLibrary),params=button('参数',parameters);tools.append(addImage,upload,batch,params,more);
   view.slides.forEach((item,i)=>{
    const thumb=button('',()=>choose(i));thumb.className='ppt-thumbnail'+(i===selectedSlide?' is-selected':'');thumb.setAttribute('aria-label','第 '+(i+1)+' 页');thumb.setAttribute('aria-current',String(i===selectedSlide));thumb.append(make('span','ppt-page-number',i+1),surface(item,true));rail.append(thumb);
   });
@@ -161,10 +192,11 @@ export async function mountPptEditor({element,document:initial,view:initialView,
   }
   const note=make('details','ppt-display-note'),summary=make('summary','','显示说明');note.append(summary,make('p','','基础预览显示明确坐标的文本和图片。母版、主题、图表和组合对象保留在原文件中，请在 PowerPoint 中核对完整效果。'));workspace.append(note);
   if(shape)properties.prepend(make('h2','ppt-inspector-title',shape.type==='pic'?'图片格式':'对象格式'));
-  ribbon.update({add,duplicate,undo:undoButton,redo:redoButton,remove,up,down,text:addText,image:addImage,upload});
+  ribbon.update({add,duplicate,undo:undoButton,redo:redoButton,remove,up,down,text:addText,image:addImage,upload,batch,params});
  }
  render();status.textContent='已打开 · '+view.slides.length+' 页';
  const shortcut=e=>{
+  if(uploading)return;
   if(root.classList.contains('ppt-presenting')){
    if(e.key==='Escape'){exitPresentation();return;}
    if(['ArrowRight','ArrowDown','PageDown','ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();const delta=['ArrowRight','ArrowDown','PageDown'].includes(e.key)?1:-1;choose(Math.max(0,Math.min(view.slides.length-1,selectedSlide+delta))).catch(report);return;}
@@ -176,7 +208,7 @@ export async function mountPptEditor({element,document:initial,view:initialView,
   if(key==='z'||key==='y'){e.preventDefault();action(key==='y'||e.shiftKey?'history.redo':'history.undo',{}).catch(report);}
  };
  dom.addEventListener('keydown',shortcut);
- return {read:()=>({document:record,view,dirty:Boolean(pending),uncertain,canUndo:undo.length>0,canRedo:redo.length>0}),save,executeCommand:command=>executeCommand(command),get dirty(){return Boolean(pending)||uncertain;},get busy(){return busy;},destroy(){destroyed=true;clearTimeout(saveTimer);dom.removeEventListener('keydown',shortcut);ribbon.destroy();dom.body.classList.remove('ppt-editor-mounted');root.remove();}};
+ return {read:()=>({document:record,view,dirty:Boolean(pending),uncertain,canUndo:undo.length>0,canRedo:redo.length>0}),save,executeCommand:command=>uploading?Promise.reject(Error('图片正在上传，请稍后')):executeCommand(command),get dirty(){return Boolean(pending)||uncertain;},get busy(){return busy||uploading;},destroy(){destroyed=true;clearTimeout(saveTimer);dom.removeEventListener('keydown',shortcut);ribbon.destroy();dom.body.classList.remove('ppt-editor-mounted');root.remove();}};
 }
 
 // Screenshot-led Office ribbon. Every enabled control uses an existing editor action.
@@ -208,12 +240,11 @@ export function createPptRibbon({root,tools,properties,status,title,save,downloa
  const add=btn('新建幻灯片','plus',addSlide);add.classList.add('ppt-icon-button');
  const name=el('h1','ppt-filename',title||'项目汇报');
  const saved=el('div','ppt-file-status');saved.append(icon(doc,'check'),el('span','','所有编辑内容自动保存到本机'));
- const favorite=btn('收藏','star',null,true),folder=btn('项目文件','folder',null,true);favorite.classList.add('ppt-icon-button');folder.classList.add('ppt-icon-button');
  const right=el('div','ppt-file-actions'),show=btn('放映','play',present),saveButton=btn('保存到本机','save',save),exportButton=btn('下载副本','download',download);show.classList.add('ppt-icon-button');saveButton.classList.add('ppt-icon-button');exportButton.classList.add('ppt-primary');
- right.append(show,saveButton,exportButton);header.append(home,add,el('i','ppt-file-divider'),name,favorite,folder,saved,right);root.prepend(header,tabs);
+ right.append(show,saveButton,exportButton);header.append(home,add,el('i','ppt-file-divider'),name,saved,right);root.prepend(header,tabs);
  let active='开始';let sources=null;
  function selectTab(label){active=label;render();}
- const tabSpecs=[['开始',true],['插入',true],['美化',false],['切换',false],['动画',false],['放映',true],['审阅',false],['视图',true],['效率工具',false]];
+ const tabSpecs=[['开始',true],['插入',true],['放映',true],['视图',true]];
  for(const [label,enabled] of tabSpecs){const b=el('button','',label);b.type='button';b.dataset.tab=label;b.setAttribute('role','tab');b.disabled=!enabled;b.title=enabled?label:label+'（当前版本暂未支持）';b.onclick=()=>selectTab(label);tabs.append(b);}
  tabs.setAttribute('role','tablist');
  function decorate(button,name,label){button.classList.add('ppt-ribbon-button');button.setAttribute('aria-label',label);button.title=label;button.replaceChildren(icon(doc,name),el('span','',label));return button;}
@@ -228,17 +259,18 @@ export function createPptRibbon({root,tools,properties,status,title,save,downloa
   const popup=el('div','ppt-ribbon-popup');popup.append(sources.add,sources.duplicate,sources.up,sources.down,sources.remove);pageMenu.append(popup);
   const hasText=Boolean(properties.querySelector('textarea'));
   if(active==='开始'){
-   tools.append(history,group(pageMenu,decorate(sources.text,'text','文本框'),btn('形状','shapes',null,true)),group(btn('字体','text',()=>focusProperty('字体名称'),!hasText),btn('段落','paragraph',()=>properties.querySelector('textarea')?.focus(),!hasText)),group(btn('绘图','pen',null,true)),group(btn('动画','animation',null,true),btn('快捷美化','magic',null,true)),group(btn('页面设置','page',null,true)),group(btn('格式转换','copy',null,true)),group(btn('插件','plug',null,true)),group(decorate(sources.image,'image','图片'),btn('下载','download',download)));
+   tools.append(history,group(pageMenu,decorate(sources.text,'text','文本框')),group(btn('字体','text',()=>focusProperty('字体名称'),!hasText),btn('段落','paragraph',()=>properties.querySelector('textarea')?.focus(),!hasText)),group(decorate(sources.image,'image','图片'),btn('下载','download',download)));
   }else if(active==='插入'){
-   tools.append(group(decorate(sources.add,'plus','空白页面'),btn('模板页面','page',null,true),btn('AI页面','magic',null,true)),group(decorate(sources.text,'text','文本框'),btn('形状','shapes',null,true),decorate(sources.image,'image','图片')),group(btn('音频','play',null,true),btn('视频','play',null,true)),group(btn('表格','grid',null,true),btn('链接','plug',null,true),btn('图表','grid',null,true)),group(btn('页脚','page',null,true)),group(decorate(sources.duplicate,'copy','复制页')));
+   tools.append(group(decorate(sources.add,'plus','空白页面'),decorate(sources.duplicate,'copy','复制页')),group(decorate(sources.text,'text','文本框'),decorate(sources.image,'image','图片')));
   }else if(active==='放映'){
-   tools.append(group(btn('从头演示','play',async()=>{await selectFirst();await present();}),btn('从当前页演示','play',present),btn('演讲者视图','page',null,true)),group(btn('下载','download',download)));
+   tools.append(group(btn('从头演示','play',async()=>{await selectFirst();await present();}),btn('从当前页演示','play',present)),group(btn('下载','download',download)));
   }else{
    const grid=el('label','ppt-view-checkbox'),checkbox=el('input');checkbox.type='checkbox';checkbox.checked=root.classList.contains('ppt-gridlines');checkbox.onchange=()=>root.classList.toggle('ppt-gridlines',checkbox.checked);grid.append(checkbox,doc.createTextNode('网格线'));
-   tools.append(group(btn('普通视图','page',()=>root.classList.remove('ppt-hide-thumbnails')),btn('幻灯片母版','page',null,true)),group(grid),group(btn('缩略图','grid',toggleThumbnails),btn('适应窗口','page',()=>{root.classList.remove('ppt-hide-thumbnails');})),group(btn('放映','play',present)));
+   tools.append(group(btn('普通视图','page',()=>root.classList.remove('ppt-hide-thumbnails'))),group(grid),group(btn('缩略图','grid',toggleThumbnails),btn('适应窗口','page',()=>{root.classList.remove('ppt-hide-thumbnails');})),group(btn('放映','play',present)));
   }
   const compact=btn('工具栏切换','down',()=>root.classList.toggle('ppt-compact-ribbon'));compact.classList.add('ppt-toolbar-toggle');tools.append(compact);
   if(!hasText)for(const label of ['字体','段落']){const control=tools.querySelector(`[aria-label="${label}"]`);if(control)control.title='请先选择文本框';}
+  if(active==='开始'||active==='插入')tools.append(group(decorate(sources.params,'grid','参数'),decorate(sources.batch,'image','批量图片')));
   tools.append(sources.upload);root.classList.toggle('ppt-has-selection',properties.childElementCount>0);
  }
  const observer=new MutationObserver(()=>{saved.lastChild.textContent=/正在保存/.test(status.textContent)?'正在保存到本机…':/尚未保存|正在编辑/.test(status.textContent)?'正在编辑，稍后自动保存':/失败|错误|核对|未完成/.test(status.textContent)?status.textContent:'所有编辑内容自动保存到本机';});observer.observe(status,{childList:true,characterData:true,subtree:true});

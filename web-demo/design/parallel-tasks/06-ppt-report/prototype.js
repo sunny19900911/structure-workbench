@@ -3,6 +3,7 @@ import {cafeteriaHTML} from './cafeteria-view.js';
 import {downloadCafeteria,cafeteriaBlob} from './cafeteria-export.js';
 import { validateRewrite, parameterEvidence, rewriteGuidance } from './report-core.js';
 import {projectPart} from '../../../project-store-client.js';
+import {matchImageFiles,readPptImage} from '../../../office-ppt-assets.js';
 let draftStore, snapshotQueue=Promise.resolve(), draftLoading=false;
 let unitDrafts={}, imageLoading=false;
 const embedded=new URL(location.href).searchParams.get('embedded')==='1'&&window.parent!==window;
@@ -122,10 +123,10 @@ function renderSlide() {
   renderPageList();
   const readOnly=state.snapshot?.context?.canEdit===false;
   if(readOnly)els.canvas.querySelectorAll('[contenteditable="true"]').forEach(n=>n.contentEditable='false');
-  els.unitName.disabled=readOnly;
-  for(const el of [els.confirm,els.imageManagerButton])if(el)el.disabled=readOnly||state.exporting;
+  els.unitName.disabled=readOnly||imageLoading;
+  for(const el of [els.confirm,els.imageManagerButton])if(el)el.disabled=readOnly||state.exporting||imageLoading;
   if(readOnly)document.querySelector('#rewrite-btn').disabled=true;
-  els.canvas.querySelectorAll('[data-upload]').forEach(b=>b.disabled=readOnly);
+  els.canvas.querySelectorAll('[data-upload]').forEach(b=>b.disabled=readOnly||imageLoading);
 }
 
 function renderPageList() {
@@ -147,6 +148,15 @@ function renderImageManager() {
         <button type="button" data-upload-page="${pageIndex}" data-upload-name="${name}">${hasImage ? '覆盖图片' : '上传图片'}</button>
       </div>`;
   }).join('');
+  for(const [key] of state.images){if(!key.startsWith('__unplaced__'))continue;
+   const row=document.createElement('div');row.className='image-upload-row';
+   const name=document.createElement('span');name.textContent=key.slice(46)+' · 未放置';
+   const select=document.createElement('select');select.setAttribute('aria-label','选择图位 '+key.slice(46));
+   for(const slot of imageRequirements.filter(r=>!state.images.has(imageKey(r.pageIndex,r.name))))select.add(new Option(`${slot.pageIndex+1} · ${slot.pageTitle} · ${slot.name}`,imageKey(slot.pageIndex,slot.name)));
+   const place=document.createElement('button');place.type='button';place.textContent='放入图位';place.disabled=!select.options.length||state.snapshot?.context?.canEdit===false;
+   place.onclick=async()=>{if(imageLoading||state.exporting||state.snapshot?.context?.canEdit===false)return;try{if(state.images.has(select.value))throw Error('图位已有图片');state.images.set(select.value,state.images.get(key));state.images.delete(key);invalidateReview();await saveDraft();renderSlide();renderImageManager();}catch(e){showToast(e.message);}};
+   row.append(name,select,place);els.imageUploadList.append(row);
+  }
 }
 
 function setImageManager(open) {
@@ -159,6 +169,7 @@ function setImageManager(open) {
 }
 
 function startImageUpload(pageIndex, name) {
+  if(imageLoading||state.exporting||state.snapshot?.context?.canEdit===false)return;
   state.activeUpload = { pageIndex, name };
   els.imageInput.value = '';
   els.imageInput.click();
@@ -208,7 +219,7 @@ function applyMeasureSnapshot(snapshot) {
 }
 async function loadMeasureSnapshot(snapshot) {
   if (!snapshot.params || typeof snapshot.params !== 'object') return;
-  if (state.exporting) { state.pendingSnapshot = snapshot; return; }
+  if (state.exporting||imageLoading) { state.pendingSnapshot = snapshot; return; }
   if(!/^[a-f0-9]{32}$/.test(snapshot.project_id||'')){showToast('请从新版工作台项目入口连接参数');return;}
   const signature = JSON.stringify([snapshot.project_id,snapshot.parameter_version,snapshot.params,snapshot.output_version,snapshot.context?.canEdit]);
   if (signature === state.measureSignature) return;
@@ -318,13 +329,13 @@ els.imageInput.addEventListener('change', async () => {
   if (!file || !state.activeUpload) return;
   if(!draftStore||draftLoading){showToast('请先载入项目');return;}
   if(!/^image\/(png|jpeg|webp)$/.test(file.type)||file.size>4*1024*1024){showToast('请选择不超过4MB的PNG、JPEG或WebP图片');return;}
-  const project=projectKey();
+  const project=projectKey(),unit=els.unitName.value;
   const { pageIndex, name } = state.activeUpload;
   const key = imageKey(pageIndex, name);
   const oldUrl = state.images.get(key);
   if (oldUrl) URL.revokeObjectURL(oldUrl);
   imageLoading=true;let data;try{data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}finally{imageLoading=false;}
-  if(project!==projectKey())return;
+  if(project!==projectKey()||unit!==els.unitName.value)return;
   state.images.set(key, data);
   invalidateReview();
   renderSlide();
@@ -337,6 +348,19 @@ els.imageManagerButton.addEventListener('click', () => {
   setImageManager(!els.imageManager.classList.contains('open'));
 });
 els.imageManagerClose.addEventListener('click', () => setImageManager(false));
+document.querySelector('#batch-image-upload').onclick=()=>{if(!imageLoading&&!state.exporting&&state.snapshot?.context?.canEdit!==false)document.querySelector('#batch-image-input').click();};
+document.querySelector('#batch-image-input').onchange=async event=>{
+ const files=[...event.target.files];event.target.value='';if(!files.length||!draftStore||draftLoading||imageLoading||state.snapshot?.context?.canEdit===false)return;
+ const project=projectKey(),unit=els.unitName.value;
+ const targets=imageRequirements.map(r=>({key:imageKey(r.pageIndex,r.name),occupied:state.images.has(imageKey(r.pageIndex,r.name)),aliases:[r.name,`${r.pageIndex+1}-${r.name}`,`${r.pageTitle}-${r.name}`,...(imageRequirements.filter(s=>s.pageIndex===r.pageIndex).length===1?[r.pageTitle]:[])]}));
+ imageLoading=true;els.unitName.disabled=true;const failures=[];let placed=0,retained=0;
+ try{for(const plan of matchImageFiles(files,targets)){try{const {data}=await readPptImage(plan.file);if(project!==projectKey()||unit!==els.unitName.value)throw Error('项目或单体已切换');
+   if(!plan.reason&&!state.images.has(plan.target.key)){state.images.set(plan.target.key,data);placed++;}
+   else{state.images.set('__unplaced__'+crypto.randomUUID().replaceAll('-','')+'__'+plan.file.name,data);retained++;}
+  }catch(e){failures.push(plan.file.name+'：'+e.message);}}
+  invalidateReview();await saveDraft();showToast(`${placed} 张已放置，${retained} 张未放置`+(failures.length?'；'+failures.join('；'):''));
+ }catch(e){showToast(e.message);}finally{imageLoading=false;renderSlide();renderImageManager();if(state.pendingSnapshot){const snapshot=state.pendingSnapshot;state.pendingSnapshot=null;applyMeasureSnapshot(snapshot);}}
+};
 els.imageManagerBackdrop.addEventListener('click', () => setImageManager(false));
 els.measureLinkButton.addEventListener('click', connectMeasures);
 
@@ -348,6 +372,7 @@ els.confirm.addEventListener('click', () => {
 });
 
 els.generate.addEventListener('click', async () => {
+  if(imageLoading){showToast('图片正在读取，请稍后下载');return;}
   if (!state.measureParams) { showToast('请先连接统一技术措施'); return; }
   els.generate.textContent = '生成中…';
   els.generate.disabled = true;

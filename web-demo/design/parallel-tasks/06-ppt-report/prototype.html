@@ -80,6 +80,7 @@
         <strong>图片集中上传</strong>
         <span id="image-progress">0 / 0</span>
       </div>
+      <button id="batch-image-upload" type="button">批量上传图片</button>
       <button id="image-manager-close" type="button">关闭</button>
     </div>
     <div class="image-list-head" aria-hidden="true">
@@ -89,6 +90,7 @@
   </aside>
 
   <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+  <input id="batch-image-input" type="file" accept="image/png,image/jpeg" multiple hidden />
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="../../../vendor/jszip.min.js"></script>

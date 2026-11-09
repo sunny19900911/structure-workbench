@@ -1,0 +1,44 @@
+import assert from 'node:assert/strict';
+import {mkdir,writeFile,readFile} from 'node:fs/promises';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {join} from 'node:path';
+import {homedir} from 'node:os';
+import {execFile} from 'node:child_process';import {promisify} from 'node:util';
+const root=fileURLToPath(new URL('../../../',import.meta.url)),output=join(root,'qa/parallel-review-20261109/ppt/report-'+Date.now());await mkdir(output,{recursive:true});
+const runtime=join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies');
+const {chromium}=await import(pathToFileURL(join(runtime,'node/node_modules/playwright/index.mjs')));
+await promisify(execFile)(join(runtime,'python/python.exe'),['-c','from PIL import Image; import sys; Image.new("RGB",(600,300),"#347d66").save(sys.argv[1])',join(output,'fixture.png')]);
+const buffer=await readFile(join(output,'fixture.png'));
+const browser=await chromium.launch({headless:true,channel:'msedge'}),context=await browser.newContext({viewport:{width:1600,height:1050},acceptDownloads:true}),page=await context.newPage(),errors=[],checks=[];
+page.setDefaultTimeout(60000);page.on('pageerror',e=>errors.push(e.message));
+await context.route('**/*',route=>{const u=route.request().url();return /^(blob:|data:)/.test(u)||new URL(u).hostname==='127.0.0.1'?route.continue():route.abort();});
+const check=name=>{checks.push(name);console.log('PASS '+name);};let projectId;
+try{
+ await page.goto('http://127.0.0.1:5442/workbuddy-integrated-studio.html');await page.waitForFunction(()=>window.WorkbenchOffice&&window.WorkbenchProjects?.id&&!WorkbenchProjects.loading);
+ projectId=(await page.evaluate(()=>WorkbenchProjects.mcp.create('PPT编排批量验收'))).projectId;
+ await page.getByRole('button',{name:'汇报的 PPT',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#im-ppt-frame')?.contentWindow.WorkbenchPpt?.mcp.ready);
+ let frame=page.frames().find(f=>f.url().includes('prototype.html'));
+ await frame.getByRole('button',{name:'图片集中上传',exact:true}).click();
+ await frame.locator('#batch-image-input').setInputFiles(['鸟瞰图.png','一层结构布置.png','未命名素材.png','总平面图.png','总平面图.jpg'].map(name=>({name,mimeType:'image/png',buffer})));
+ await frame.waitForFunction(()=>!WorkbenchPpt.busy()&&document.querySelector('#toast').textContent.includes('张未放置'));
+ const read=async()=>{const r=await(await fetch('http://127.0.0.1:5442/api/workbench-projects/'+projectId+'/ppt')).json();return r.record.data;};
+ let saved=await read();assert.equal(Object.keys(saved.images).filter(k=>!k.startsWith('__unplaced__')).length,1);assert.equal(Object.keys(saved.images).filter(k=>k.startsWith('__unplaced__')).length,4);check('汇报页按标题批量匹配，重名/多图位/未匹配分别保留');
+ await frame.locator('.image-upload-row').filter({hasText:'未命名素材.png · 未放置'}).getByRole('button',{name:'放入图位'}).click();
+ await frame.waitForFunction(()=>!WorkbenchPpt.mcp.dirty);saved=await read();assert.equal(Object.keys(saved.images).filter(k=>k.startsWith('__unplaced__')).length,3);check('编排页未匹配图片可选择空图位并保存');
+ await frame.getByRole('button',{name:'关闭',exact:true}).click();
+ // A second upload of an occupied title must not silently replace the existing picture.
+ await frame.getByRole('button',{name:'图片集中上传',exact:true}).click();await frame.locator('#batch-image-input').setInputFiles([{name:'鸟瞰图.png',mimeType:'image/png',buffer}]);await frame.waitForFunction(()=>!WorkbenchPpt.busy()&&document.querySelector('#toast').textContent.includes('0 张已放置'));
+ saved=await read();assert.equal(Object.keys(saved.images).filter(k=>k.startsWith('__unplaced__')).length,4);check('再次上传保留已有人工图位');
+ await frame.getByRole('button',{name:'关闭',exact:true}).click();
+ const download=page.waitForEvent('download');await frame.getByRole('button',{name:'下载 PPT 草稿',exact:true}).click();const path=join(output,'批量编排导出.pptx');await(await download).saveAs(path);check('真实按钮生成并下载25页原生PPTX');
+ await page.screenshot({path:join(output,'report.png')});
+ await page.evaluate(()=>WorkbenchProjects.flush());
+ await page.reload();await page.waitForFunction(()=>window.WorkbenchProjects?.id&&!WorkbenchProjects.loading);await page.getByRole('button',{name:'汇报的 PPT',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#im-ppt-frame')?.contentWindow.WorkbenchPpt?.mcp.ready);frame=page.frames().find(f=>f.url().includes('prototype.html'));
+ assert.equal(await frame.evaluate(()=>WorkbenchPpt.mcp.read().images.filter(i=>i.present).length),2);await frame.getByRole('button',{name:'图片集中上传',exact:true}).click();assert.equal(await frame.locator('.image-upload-row').filter({hasText:'未放置'}).count(),4);await frame.getByRole('button',{name:'关闭',exact:true}).click();check('重载原项目保留已放置和未匹配图片');
+ await page.getByRole('button',{name:'Word · PPT · Excel',exact:true}).click();await page.locator('.office-workspace input[type=file]').setInputFiles(path);await page.waitForFunction(()=>document.querySelector('.office-editor-host iframe')?.contentWindow.WorkbenchOfficeEditor);
+ const native=page.frames().find(f=>f.url().includes('office-editor.html'));const state=await native.evaluate(()=>WorkbenchOfficeEditor.read());assert.equal(state.view.slides.length,25);assert.equal(state.view.imageLibrary.length,4);assert.ok(state.view.slides[2].shapes.some(s=>s.type==='pic'&&s.imageSlot));
+ await native.getByRole('button',{name:'第 3 页',exact:true}).click();await native.getByRole('button',{name:'选择 鸟瞰图 · 图1',exact:true}).last().click();await native.getByText('位置与大小',{exact:true}).click();await native.getByLabel('X (cm)',{exact:true}).fill('2');await native.getByRole('button',{name:'应用位置尺寸'}).click();await native.waitForFunction(()=>!WorkbenchOfficeEditor.busy);
+ assert.equal((await native.evaluate(()=>WorkbenchOfficeEditor.read())).view.slides[2].shapes.find(s=>s.type==='pic'&&s.imageSlot).x,720000);check('编排导出进入原生编辑器，图片可继续编辑，未匹配图片仍在文件中');
+ await page.screenshot({path:join(output,'native-generated.png')});assert.deepEqual(errors,[]);
+ await writeFile(join(output,'result.json'),JSON.stringify({projectId,checks,errors,documentId:state.document.documentId},null,2));console.log(JSON.stringify({output,checks:checks.length}));
+}catch(e){await page.screenshot({path:join(output,'failure.png')}).catch(()=>{});await writeFile(join(output,'failure.json'),JSON.stringify({checks,errors,error:e.stack},null,2));console.log('OUTPUT '+output);throw e;}finally{await browser.close();}

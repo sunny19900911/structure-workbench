@@ -1,0 +1,15 @@
+import {createServer} from 'vite';
+import {fileURLToPath} from 'node:url';
+import {join} from 'node:path';
+import {homedir} from 'node:os';
+import {mkdir} from 'node:fs/promises';
+import {officeDocumentApi} from '../../../server/office-document-api.mjs';
+import {officePptHistoryApi} from '../../../server/office-ppt-document-api.mjs';
+import {projectStoreApi} from '../../../server/project-store.mjs';
+import {portableHTML} from '../../../deploy/portable/runtime.mjs';
+const root=fileURLToPath(new URL('../../../',import.meta.url));
+const data=join(root,'qa/parallel-review-20261109/ppt');
+const env={WORKBENCH_PORTABLE:'1',WORKBENCH_PROJECT_STORE:join(data,'projects'),WORKBENCH_DATABASE_ROOT:data,WORKBENCH_CACHE_ROOT:join(data,'cache'),WORKBENCH_PYTHON:join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe')};
+await mkdir(data,{recursive:true});
+const server=await createServer({root,configFile:false,envDir:false,cacheDir:join(data,'vite-cache'),server:{host:'127.0.0.1',port:5442,strictPort:true,watch:{ignored:['**/qa/**','**/outputs/**']}},plugins:[{name:'ppt-qa',transformIndexHtml:html=>portableHTML(html),configureServer(server){server.middlewares.use('/api/portable/preferences',(_req,res)=>{res.setHeader('Content-Type','application/json');res.end(JSON.stringify({aiConfigured:false,dataRoot:data}));});}},projectStoreApi(env),officeDocumentApi(env),officePptHistoryApi(env)]});
+await server.listen();console.log('PPT QA http://127.0.0.1:5442/workbuddy-integrated-studio.html · '+data);
