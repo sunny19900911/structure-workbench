@@ -1,4 +1,5 @@
 import {numberedGeotechSections} from './geotech-numbered-sections.js';
+import {geotechTables} from './geotech-tables.js';
 import {sourceParagraphs,blockTableRecords,geotechTableRows,usable} from './intake-structure.js';
 // Section boundaries come from the uploaded report, not keyword-matched paragraphs repeated across chapters.
 const clean=s=>String(s||'').replace(/\s+/g,' ').trim();
@@ -14,6 +15,8 @@ export function detailedGeotech(source,unit='项目整体'){
  const physical=tableList.find(t=>has(t,/室内土工试验/));
  const siteTable=tableList.find(t=>has(t,/等效剪切波速/)&&has(t,/场地类别/));
  const tables=[['physical',physical],['strength',strength],['pile',pile],['site',siteTable]].filter(([,t])=>t).map(([key,t])=>({key,rows:geotechTableRows(key,t.records)||t.rows,rawRows:t.rows,records:t.records,source_id:source.source_id}));
+ // The reference template's fourth soil field is compression modulus, not c.
+ for(const table of tables.filter(t=>t.key==='strength'))table.rows=table.rows.map((r,i)=>r.map((v,c)=>c===4?(i?'':'压缩模量Es0.1-0.2（MPa）'):v));
  const seen=new Set();const images=(source.blocks?.images||[]).filter(i=>/地貌|区域地质|地壳|活动断裂|钻孔|岩溶|岩芯|地震动/.test(i.caption)).filter(i=>{if(seen.has(i.data))return false;seen.add(i.data);return true;}).map(i=>({...i,source_id:source.source_id}));
  // Word often places two photo captions in one paragraph. Match them in image order.
  const groups=Map.groupBy(images,i=>i.caption);
@@ -25,6 +28,9 @@ export function detailedGeotech(source,unit='项目整体'){
  const buckets=[terrain,strata,physics,seismic,site,liquid,soft,fracture,stability,suitability,engineering,water];
  const numbered=numberedGeotechSections(source,unit);
  if(numbered)numbered.buckets.slice(0,12).forEach((parts,i)=>buckets[i].splice(0,buckets[i].length,...parts));
+ const structured=geotechTables(source,numbered,unit);
+ structured.texts.slice(0,12).forEach((parts,i)=>buckets[i].push(...parts));
+ for(const table of structured.tables){const old=tables.findIndex(t=>t.key===table.key);if(old<0)tables.push(table);else tables[old]={...tables[old],...table};}
  for(const bucket of numbered?[]:buckets){const kept=bucket.filter(t=>accepted.has(clean(t)));bucket.splice(0,bucket.length,...kept);}
  // Reports with different numbering still feed the actual reference-report/Word chapter chain.
  const present=new Set(buckets.flat().map(clean));
@@ -46,5 +52,5 @@ export function detailedGeotech(source,unit='项目整体'){
   }
  }
  const text=[['4.1 场地地形及地貌',terrain],['4.2 场地地层岩性构成',strata],['4.3 地基土层物理力学参数',physics],['4.4 场地地震效应评价',[]],['4.4.1 抗震地段的划分',seismic],['4.4.2 场地类别',site],['4.4.3 场地地震液化判定',liquid],['4.4.4 软土震陷',soft],['4.4.5 断裂带',fracture],['4.5 岩土工程评价',[...stability,...suitability,...engineering]],['4.6 水文地质与腐蚀性',water]].map(([h,parts])=>h+'\n'+compact(parts)).join('\n\n');
- return {text,tables,images,report,sections:numbered?.sections||[],foundationText:(numbered?.buckets[12]||[]).join('\n'),antifloatText:(numbered?.buckets[13]||[]).join('\n'),source_id:source.source_id,evidence:(numbered?numbered.evidence:allowed.filter(f=>text.includes(clean(f.text))||clean(f.text).split(/(?<=[。])/).some(t=>text.includes(t.trim())&&t.trim()))).map(f=>({source_id:source.source_id,fragment_id:f.id,locator:f.locator,quote:f.text}))};
+ return {text,tables,images,report,sections:numbered?.sections||[],foundationText:[...(numbered?.buckets[12]||[]),...structured.texts[12]].join('\n'),antifloatText:[...(numbered?.buckets[13]||[]),...structured.texts[13]].join('\n'),source_id:source.source_id,evidence:[...(numbered?numbered.evidence:allowed.filter(f=>text.includes(clean(f.text))||clean(f.text).split(/(?<=[。])/).some(t=>text.includes(t.trim())&&t.trim()))),...structured.evidence].map(f=>({source_id:source.source_id,fragment_id:f.id,locator:f.locator,quote:f.text}))};
 }
