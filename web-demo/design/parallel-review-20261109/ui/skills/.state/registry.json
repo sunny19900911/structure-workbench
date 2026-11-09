@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "skills": {
+    "user-agents:non-paper-delivery": {
+      "id": "non-paper-delivery-6567244a",
+      "name": "non-paper-delivery",
+      "description": "执行非论文的网页软件、工程资料、报告PPT、学习调研和商业分析任务时，应用已整理的个人偏好与交付验收规则，减少重复纠正；不启动论文研究或代替专业制作技能。",
+      "source": "C:/Users/mj528/.agents/skills/non-paper-delivery/SKILL.md",
+      "namespace": "user-agents",
+      "updated_at": "2026-11-09T19:29:06+08:00",
+      "complete": true,
+      "hashes": {
+        "SKILL.md": "5e6ac323a747a839bfe0832cde3f1ea430e607810a98ddc6e558dc223669a91d",
+        "references/business.md": "8beb9d0da8fe9107b3b9fccd9b9b16b401538b703ae952a8b94ebfabb37c891a",
+        "references/demo-validation.md": "af7ee30211be49384b689a5bd29d989d3d97f83a6f22cbdb4702543712bbaf54",
+        "references/engineering.md": "f7f81654601b13c797dad04380d37513f4345a5847f27d94bd115d2e87c00da8",
+        "references/learning.md": "33fcb7d919eeb6fa2a8f5e4ace0d2b71d60d31d1f3bf44e8882ca82d09d1ca77",
+        "references/product-software.md": "b787ecd2a3355ce4fd18a7eecc96637bb4751b0e8707021787bcc615cfac9913",
+        "references/reports.md": "f1d78c89676692c6e0a85b86c0a26a838e55a8ee98b264dbfba081dba9749797"
+      },
+      "status": "已验证",
+      "use_when": "按用户最新范围精简工程应用，区分网页、服务和MCP能力",
+      "example": "按本项目MCP优先记录复查成果生成与浏览器依赖",
+      "outcome": "Word/PPT编辑退出网页主流程，保留真实生成预览下载；Excel保持现状；未将隐藏组件当成无浏览器服务",
+      "validation": "MCP依赖与本周收敛.md；28项回归；真实网页生成与无匹配浏览器接口测试"
+    },
+    "user-codex:project-skill-memory": {
+      "id": "project-skill-memory-8b86d7b4",
+      "name": "project-skill-memory",
+      "description": "在任务中实际使用了有帮助的Skill后，把用途、成果、验证依据和再次调用方法沉淀到当前项目；用户说“调出项目的Skill”“用之前沉淀的技能”时从索引检索复用。",
+      "source": "C:/Users/mj528/.codex/skills/project-skill-memory/SKILL.md",
+      "namespace": "user-codex",
+      "updated_at": "2026-11-09T14:13:12+08:00",
+      "complete": true,
+      "hashes": {
+        "SKILL.md": "fa6c2113cadf328906d88c2887573ed1dc1e1eeca2b4ae48290b3f8a44267e11",
+        "agents/openai.yaml": "242d40bcc52e71eddf538b17523ee2e5edbe6e35e751418c99327c97fda34ac3"
+      },
+      "status": "已验证",
+      "use_when": "并行工作树仅在专项子目录保存技能记录",
+      "example": "调出本界面专项的技能沉淀",
+      "outcome": "使用record_skill向明确专项目录生成索引和副本，未改根索引",
+      "validation": "本目录skills/技能沉淀.md及library副本"
+    }
+  }
+}
