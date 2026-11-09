@@ -97,7 +97,7 @@ export function geotechTables(source,numbered,unit='项目整体'){
  const safe=(item,key)=>!item.conflict&&item.values[key]?.size===1?[...item.values[key]][0]:'';
  const name=item=>[item.scope,item.id,item.name].filter(Boolean).join(' ');
  const strength=[['土层名称','重度（kN/m³）','','','压缩模量Es0.1-0.2（MPa）','承载力特征值（kPa）']];
- const methods=[...new Set(tables.flatMap(t=>t.records.flatMap(r=>r.fields.filter(c=>fields.side(c.label)||fields.end(c.label)).flatMap(c=>c.path.filter(p=>/预制桩|灌注桩|旋挖|人工挖孔/.test(p))))))];
+ const methods=[...new Set(tables.flatMap(t=>t.records.flatMap(r=>r.fields.filter(c=>fields.side(c.label)||fields.end(c.label)).flatMap(c=>c.path.filter(p=>/预制桩|预应力管桩|灌注桩|旋挖|人工挖孔/.test(p))))))];
  const pile=[['土层名称',methods.length===1?methods[0]:'桩基','桩端阻力（kPa）']];
  for(const item of soilRows.values()){
   if(['weight','compression','bearing'].some(k=>safe(item,k)))strength.push([name(item),safe(item,'weight'),'','',safe(item,'compression'),safe(item,'bearing')]);

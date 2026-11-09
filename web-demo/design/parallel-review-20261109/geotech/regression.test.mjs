@@ -4,6 +4,19 @@ import {detailedGeotech} from '../../../geotech-document.js';
 import {fragments} from '../../../intake-core.js';
 import {reportTable} from '../../../reference-report.js';
 const source=(paras,tables=[],ordered=[])=>{const blocks={paras,tables,ordered};return {name:'合成报告.docx',source_id:'synthetic',blocks,fragments:fragments(blocks)};};
+test('engineering properties retain parallel pile methods, length conditions and following notes',()=>{
+ const rows=[['地层编号及岩土名称','钻孔灌注桩','预应力管桩'],['地层编号及岩土名称','极限端阻力标准值qpk','极限端阻力标准值qpk'],['地层编号及岩土名称','kPa','kPa'],['⑤层黏土','500（10≤l＜15m）','1500（9≤l＜16m）']];
+ const s=source(['5 各土层的工程性质评价','各层性质如下。','表6 桩基工程设计参数建议值表','注：表中为极限值，不自动换算。','6 桩基施工建议','施工说明。'],[rows],[{type:'p',index:0},{type:'p',index:1},{type:'p',index:2},{type:'table',index:0},{type:'p',index:3},{type:'p',index:4},{type:'p',index:5}]);
+ const before=JSON.stringify(s),d=detailedGeotech(s);
+ assert.deepEqual(d.tables.find(t=>t.key==='source-1').rawRows,rows);
+ assert.match(d.text,/钻孔灌注桩\/极限端阻力标准值qpk\/kPa：500（10≤l＜15m）/);
+ assert.match(d.text,/预应力管桩\/极限端阻力标准值qpk\/kPa：1500（9≤l＜16m）/);
+ assert.match(d.text,/不自动换算/);assert.doesNotMatch(d.text,/施工说明/);
+ assert.equal(d.tables.find(t=>t.key==='pile'),undefined);assert.equal(JSON.stringify(s),before);
+ s.blocks.paras.unshift('1 勘察任务');s.blocks.paragraphMeta=s.blocks.paras.map((_,i)=>({headingLevel:i===0?0:1}));
+ s.blocks.ordered=s.blocks.ordered.map(b=>b.type==='p'?{...b,index:b.index+1}:b);s.blocks.ordered.unshift({type:'p',index:0});
+ assert.doesNotMatch(JSON.stringify(detailedGeotech(s)),/1500/);
+});
 test('automatic Word outline starts the body after a TOC without visible numeric text',()=>{
  const s=source(['目录','软土震陷……8','附图、附表：','土工试验成果表（2张）','场地地震效应评价','软土震陷','②层需考虑软土震陷的影响。']);
  s.blocks.paragraphMeta=[{},{},{},{},{headingLevel:0},{headingLevel:1},{}];
