@@ -150,7 +150,12 @@ def handle(w, cmd, b):
             try: numeric=float(value)
             except ValueError: raise b.OfficeError('数值筛选需要有效数字','INVALID_INPUT')
             if not math.isfinite(numeric): raise b.OfficeError('筛选数字无效','INVALID_INPUT')
-        if root.find('s:tableParts',b.NS) is not None or root.find('s:mergeCells',b.NS) is not None: raise b.OfficeError('合并单元格或表格对象暂不支持筛选','UNSUPPORTED_STRUCTURE')
+        if r1 == r2: raise b.OfficeError('请选择标题和至少一行数据','INVALID_INPUT')
+        if root.find('s:tableParts',b.NS) is not None: raise b.OfficeError('表格对象暂不支持筛选','UNSUPPORTED_STRUCTURE')
+        for merge in root.findall('s:mergeCells/s:mergeCell',b.NS):
+            a,c,z,d=region(merge.get('ref'),b)
+            if a<=r2 and z>=r1 and c<=c2 and d>=c1:
+                raise b.OfficeError('筛选选区不能包含合并单元格','UNSUPPORTED_STRUCTURE')
         cells=w.cells(item)
         if any(cells.get(f'{get_column_letter(col)}{r}') is not None and cells[f'{get_column_letter(col)}{r}'].find(tag('f')) is not None for r in range(r1+1,r2+1)): raise b.OfficeError('筛选列含公式，暂不使用可能失效的缓存','UNSUPPORTED_STRUCTURE')
         clear_filter(w,item,data,b)
@@ -165,7 +170,11 @@ def handle(w, cmd, b):
             cell=cells.get(f'{get_column_letter(col)}{r}'); raw=b.cell_info(cell,w.shared)['value'] if cell is not None else ''
             text='' if raw is None else str(raw)
             if operator=='contains': matches=value.casefold() in text.casefold()
-            elif operator=='equal': matches=value.casefold()==text.casefold()
+            elif operator=='equal':
+                matches=value.casefold()==text.casefold()
+                if cell is not None and cell.get('t','n')=='n':
+                    try: matches=math.isfinite(float(value)) and float(value)==float(text)
+                    except ValueError: matches=False
             else:
                 try: matches=math.isfinite(float(text)) and (float(text)>numeric if operator=='greaterThan' else float(text)<numeric)
                 except ValueError: matches=False

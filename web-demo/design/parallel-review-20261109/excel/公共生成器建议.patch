@@ -1,0 +1,40 @@
+--- a/web-demo/server/office-package.py
++++ b/web-demo/server/office-package.py
+@@ -331,7 +331,7 @@
+         sheet=wb.create_sheet(name)
+         for row in table['rows']:
+             if not isinstance(row,list) or len(row)>100: raise OfficeError('附表列数超出范围','INVALID_INPUT')
+-            sheet.append(['' if v is None else str(v) for v in row])
++            sheet.append(['' if v is None else v if isinstance(v,(bool,int,float)) else str(v) for v in row])
+     for sheet in wb:
+         sheet.freeze_panes='A3' if sheet==ws else 'A2'; sheet.sheet_view.showGridLines=False
+         header=2 if sheet==ws else 1
+@@ -339,7 +339,11 @@
+             for cell in row:
+                 # Generated project inputs are literals; formulas require an explicit cell.set.
+                 if cell.value is not None:
+-                    cell.value=str(cell.value);cell.data_type='s'
++                    if isinstance(cell.value,bool): cell.data_type='b'
++                    elif isinstance(cell.value,(int,float)):
++                        if not math.isfinite(cell.value): raise OfficeError('生成数值必须为有限数字','INVALID_INPUT')
++                        cell.data_type='n'
++                    else: cell.value=str(cell.value);cell.data_type='s'
+                 cell.font=Font(name='微软雅黑',size=11,color='183F35')
+                 cell.alignment=Alignment(vertical='center',wrap_text=True)
+                 if cell.row==header:
+
+--- a/web-demo/office-workbench.js
++++ b/web-demo/office-workbench.js
+@@ -75,7 +75,11 @@
+    outputs.push(await register(word,'docx','结构初步设计说明',identity));ensureCurrent();
+    outputs.push(await register(ppt.blob,'pptx','结构设计汇报',identity));ensureCurrent();
+    note('正在生成 Excel…');
+-   const parameters=Object.entries(params).filter(([,v])=>typeof v!=='object').map(([key,value])=>({name:[...document.querySelectorAll('[data-k]')].find(el=>el.dataset.k===key)?.closest('.fld')?.querySelector('label')?.textContent.trim()||key,value:String(value??''),source:'统一技术措施'}));
++   const parameters=Object.entries(params).filter(([,v])=>typeof v!=='object').map(([key,value])=>{
++    const field=[...document.querySelectorAll('[data-k]')].find(el=>el.dataset.k===key),text=String(value??'');
++    const numeric=typeof value==='number'||field?.type==='number'&&text.trim()!=='';
++    return {name:field?.closest('.fld')?.querySelector('label')?.textContent.trim()||key,value:numeric&&Number.isFinite(Number(value))?Number(value):text,source:'统一技术措施'};
++   });
+    const tables=Object.entries(spec.tables||{}).map(([key,t])=>({name:({units:'单体信息',analysis:'计算参数'})[key]||t.title||key,rows:(t.rows||[]).map(row=>row.values)})).filter(t=>t.rows.length);
+    outputs.push((await api(identity.projectId+'/generate-xlsx',{method:'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'office-documents'},body:JSON.stringify({title:'结构参数与指标',unit:identity.unit,sourceParameterVersion:identity.version,batchId:identity.batchId,parameters,tables})})).document);
+    ensureCurrent();
