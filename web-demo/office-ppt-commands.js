@@ -7,6 +7,8 @@ const extent={type:'number',minimum:1,maximum:100000000};
 const geometry={x:coordinate,y:coordinate,width:extent,height:extent};
 const text={type:'string',maxLength:20000};
 export const PPT_COMMAND_ARGUMENTS={
+ 'ppt.image.import':object({name:{type:'string',minLength:1,maxLength:240},reason:{type:'string',maxLength:200},data:{type:'string',maxLength:1800000,pattern:'^data:image/(png|jpeg);base64,'}},['name','data']),
+ 'ppt.image.place':object({slide,shapeId,imageId:{type:'string',pattern:'^[a-f0-9]{32}$'}},['slide','imageId']),
  'slide.add':object({slide},['slide']),
  'slide.duplicate':object({slide},['slide']),
  'slide.delete':object({slide},['slide']),
