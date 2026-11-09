@@ -1317,7 +1317,7 @@ function toast(s){const t=document.getElementById('toast');t.textContent=s;t.cla
    —— 每个模块声明为一张卡片（元数据 + 状态），页签与卡片墙都由声明渲染
    ══════════════════════════════════════════════════ */
 const ROLES=[['d','设计人员']];
-const WORKSPACE_NAV=[[1,'统一措施'],[3,'整理地方规范'],[2,'扩充说明'],[11,'汇报的 PPT'],[5,'用钢量'],[9,'计算书'],[10,'重难点'],[4,'反校核']].filter(([n])=>!window.WORKBENCH_PORTABLE||![4,10].includes(n));
+const WORKSPACE_NAV=[[1,'统一措施'],[3,'整理地方规范'],[2,'扩充说明'],[11,'汇报的 PPT'],[5,'用钢量'],[9,'计算书'],[10,'重难点'],[4,'反校核']].filter(([n])=>n!==11&&(!window.WORKBENCH_PORTABLE||![4,10].includes(n)));
 function arrangeWorkspaceNav(){
   const nav=document.querySelector('.topbar .tabs');
   for(const [n,label] of WORKSPACE_NAV){const b=document.getElementById('tab'+n);if(b){b.textContent=label;nav.append(b);}}

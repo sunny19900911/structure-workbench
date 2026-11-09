@@ -7,7 +7,7 @@
       "description": "执行非论文的网页软件、工程资料、报告PPT、学习调研和商业分析任务时，应用已整理的个人偏好与交付验收规则，减少重复纠正；不启动论文研究或代替专业制作技能。",
       "source": "C:/Users/mj528/.agents/skills/non-paper-delivery/SKILL.md",
       "namespace": "user-agents",
-      "updated_at": "2026-11-09T14:13:12+08:00",
+      "updated_at": "2026-11-09T19:29:06+08:00",
       "complete": true,
       "hashes": {
         "SKILL.md": "5e6ac323a747a839bfe0832cde3f1ea430e607810a98ddc6e558dc223669a91d",
@@ -19,10 +19,10 @@
         "references/reports.md": "f1d78c89676692c6e0a85b86c0a26a838e55a8ee98b264dbfba081dba9749797"
       },
       "status": "已验证",
-      "use_when": "精简现有工程办公界面，并按实际入口检查保存和导出",
-      "example": "按本项目界面精简验收记录复查生成与重开",
-      "outcome": "保留原生成服务，移除重复入口，完成三类文件真实编辑保存重开下载",
-      "validation": "browser-acceptance.mjs；qa/parallel-review-20261109/ui/browser-1794204523467/results.json"
+      "use_when": "按用户最新范围精简工程应用，区分网页、服务和MCP能力",
+      "example": "按本项目MCP优先记录复查成果生成与浏览器依赖",
+      "outcome": "Word/PPT编辑退出网页主流程，保留真实生成预览下载；Excel保持现状；未将隐藏组件当成无浏览器服务",
+      "validation": "MCP依赖与本周收敛.md；28项回归；真实网页生成与无匹配浏览器接口测试"
     },
     "user-codex:project-skill-memory": {
       "id": "project-skill-memory-8b86d7b4",
