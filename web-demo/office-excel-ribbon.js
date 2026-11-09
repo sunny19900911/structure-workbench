@@ -1,9 +1,10 @@
+import {mountParameterMenu} from './office-excel-parameters.js';
 // Functional ribbon based on observed online-spreadsheet control groups.
 // No remote code, branding, account features, or placeholder commands.
 export const RIBBON_TABS=['开始','插入','数据','公式','视图'];
 const node=(tag,className,text)=>{const e=document.createElement(tag);if(className)e.className=className;if(text!=null)e.textContent=text;return e;};
 
-export function mountExcelRibbon({tabs,tools,activeTab,onTab,run,selection,cellStyle,sheet,options,onError}){
+export function mountExcelRibbon({tabs,tools,activeTab,onTab,run,selection,cellStyle,sheet,options,onError,parameters=()=>[],insertParameter}){
  const action=(name,args={})=>Promise.resolve().then(()=>run(name,args)).catch(onError);
  const button=(label,title,fn,className='')=>{const b=node('button',className,label);b.type='button';b.title=title||label;b.setAttribute('aria-label',title||label);b.onclick=()=>Promise.resolve().then(fn).catch(onError);return b;};
  const menu=(label,items)=>{const d=node('details','excel-dropdown'),s=node('summary','',label+' ▾'),panel=node('div','excel-dropdown-panel');d.append(s,panel);panel.append(...items);return d;};
@@ -32,8 +33,8 @@ export function mountExcelRibbon({tabs,tools,activeTab,onTab,run,selection,cellS
   button('升序（保留首行标题）',null,()=>action('range.sort',{...target(),column:selection().c1,direction:'asc',header:true})),
   button('降序（保留首行标题）',null,()=>action('range.sort',{...target(),column:selection().c1,direction:'desc',header:true}))
  ]);
- const filter=()=>{const d=menu('筛选',[]),p=d.lastElementChild;const value=node('input');value.placeholder='筛选值';value.setAttribute('aria-label','筛选值');const op=choose('筛选条件',[['contains','包含'],['equal','等于'],['greaterThan','大于'],['lessThan','小于']],()=>{},'contains');p.append(node('span','excel-menu-note','选区首行为标题，按选区第一列筛选'),op,value,
-  button('应用筛选',null,()=>action('sheet.filter',{...target(),column:selection().c1,operator:op.value,value:value.value})),
+ const filter=()=>{const d=menu('筛选',[]),p=d.lastElementChild;const value=node('input');value.placeholder='筛选值';value.setAttribute('aria-label','筛选值');const op=choose('筛选条件',[['contains','包含'],['equal','等于'],['greaterThan','大于'],['lessThan','小于']],()=>{},'contains');const column=choose('筛选列',[],()=>{});d.ontoggle=()=>{if(!d.open)return;const s=selection(),previous=column.value;column.replaceChildren();for(let c=s.c1;c<=s.c2;c++){let label='',n=c;for(;n;n=Math.floor((n-1)/26))label=String.fromCharCode(65+(n-1)%26)+label;column.add(new Option(label+' 列',String(c)));}if([...column.options].some(o=>o.value===previous))column.value=previous;};p.append(node('span','excel-menu-note','选区首行为标题'),column,op,value,
+  button('应用筛选',null,()=>action('sheet.filter',{...target(),column:Number(column.value),operator:op.value,value:value.value})),
   button('清除筛选',null,()=>action('sheet.clearFilter',{sheet:sheet().name})));return d;};
  const conditional=()=>{const d=menu('条件格式',[]),p=d.lastElementChild;const op=choose('条件格式规则',[['greaterThan','大于'],['lessThan','小于'],['equal','等于']],()=>{},'greaterThan'),v=node('input');v.type='number';v.value='0';v.setAttribute('aria-label','条件格式数值');const color=node('input');color.type='color';color.value='#fff2cc';color.setAttribute('aria-label','条件格式颜色');p.append(op,v,color,button('应用规则',null,()=>action('range.conditional',{...target(),operator:op.value,value:Number(v.value),color:color.value})),button('清除选区规则',null,()=>action('range.clearConditional',target())));return d;};
  const find=()=>{const d=menu('查找替换',[]),p=d.lastElementChild,q=node('input'),replacement=node('input');q.placeholder='查找内容';q.setAttribute('aria-label','查找内容');replacement.placeholder='替换为';replacement.setAttribute('aria-label','替换为');p.append(q,replacement,button('查找下一处',null,()=>action('sheet.find',{sheet:sheet().name,text:q.value,after:selection().address})),button('替换选区文字',null,()=>action('range.replace',{...target(),find:q.value,replacement:replacement.value})));return d;};
@@ -57,9 +58,10 @@ export function mountExcelRibbon({tabs,tools,activeTab,onTab,run,selection,cellS
   group('对齐',row(choose('水平对齐',[['','水平对齐'],['left','左对齐'],['center','居中'],['right','右对齐']],v=>v&&style({horizontal:v})),choose('垂直对齐',[['','垂直对齐'],['top','顶端'],['center','居中'],['bottom','底端']],v=>v&&style({vertical:v}))),row(toggle('换行','自动换行','wrapText'),menu('合并',[button('合并单元格',null,()=>action('range.merge',target())),button('取消合并',null,()=>action('range.unmerge',target()))])));
   group('数字',number(),row(button('%','百分比样式',()=>action('range.format',{...target(),format:'percent'})),button(',','千位分隔样式',()=>action('range.format',{...target(),format:'thousands'}))));
   group('数据',row(filter(),sorting()),row(freeze(),sum()));
+  group('项目',mountParameterMenu({parameters,insert:insertParameter,onError}));
   group('操作',row(insertMenu(),protect()),row(find(),button('打印',null,()=>action('sheet.print',{sheet:sheet().name}))));
  }else if(activeTab==='插入'){
-  group('表格结构',insertMenu(),sizes());group('单元格',button('合并单元格',null,()=>action('range.merge',target())),button('取消合并',null,()=>action('range.unmerge',target())));group('格式',tableStyles(),number());
+  group('表格结构',insertMenu(),sizes());group('单元格',button('合并单元格',null,()=>action('range.merge',target())),button('取消合并',null,()=>action('range.unmerge',target())));group('格式',tableStyles(),number());group('项目',mountParameterMenu({parameters,insert:insertParameter,onError}));
  }else if(activeTab==='数据'){
   group('整理数据',filter(),sorting());group('标记数据',conditional(),clear());group('工作表',freeze(),protect());group('查找',find());
  }else if(activeTab==='公式'){

@@ -22,3 +22,5 @@
 .office-excel-tabs{padding:7px;background:#f5f6f8;border-bottom:1px solid #e2e5eb;gap:4px}.office-excel-tabs button{border:0;font-size:12px;background:transparent}.office-excel-tabs button[aria-selected=true]{color:#3e63e0;background:white;border-bottom:2px solid #4c6fff;border-radius:3px 3px 0 0}.office-excel [role=status]{padding:7px 12px;color:#78818e;font-size:11px}.office-excel.excel-dark{filter:invert(.88) hue-rotate(180deg)}
 #excel-print-area{display:none}@media print{body>*{display:none!important}body>#excel-print-area{display:block!important}#excel-print-area table{border-collapse:collapse;width:100%;font:11pt sans-serif}#excel-print-area td{border:1px solid #bbb;padding:5px;white-space:pre-wrap}}
 @media(max-width:1250px){.excel-ribbon-group{padding:0 5px}.office-excel-tools{flex-wrap:wrap;row-gap:10px}.excel-ribbon-tabs{gap:18px}}
+
+.office-excel-tools .excel-parameters select{width:260px;max-width:260px;min-height:120px}.excel-parameters .excel-dropdown-panel input{width:246px}.excel-parameters .excel-menu-note{max-width:260px}

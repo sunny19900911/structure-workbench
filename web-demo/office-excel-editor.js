@@ -1,6 +1,7 @@
 import './office-excel-editor.css';
 import {EXCEL_COMMANDS} from './office-excel-commands.js';
 import {mountExcelRibbon} from './office-excel-ribbon.js';
+import {workbookParameters,parameterInput} from './office-excel-parameters.js';
 
 export function columnName(n){let out='';for(;n;n=Math.floor((n-1)/26))out=String.fromCharCode(65+(n-1)%26)+out;return out;}
 export function coordinate(address){const m=/^([A-Z]{1,3})([1-9][0-9]{0,6})$/.exec(address||'');if(!m)throw Error('单元格地址无效');let c=0;for(const s of m[1])c=c*26+s.charCodeAt(0)-64;const r=Number(m[2]);if(c>16384||r>1048576)throw Error('单元格地址越界');return [r,c];}
@@ -33,7 +34,7 @@ export function displayCell(cell,styles=[],date1904=false){
 
 export async function mountExcelEditor({element,document:initial,view:initialView,onSaved=()=>{},request=fetch,autosaveDelay=700}){
  let record=initial,view=initialView,sheetName=view.sheets.find(s=>s.state==='visible')?.name||view.sheets[0]?.name;
- let anchor='A1',focus='A1',busy=false,destroyed=false,timer=null,savePromise=null,mutationPromise=null,editing=false,clipboard=null;
+ let anchor='A1',focus='A1',busy=false,destroyed=false,timer=null,savePromise=null,mutationPromise=null,editing=false,composing=false,clipboard=null;
  let pageRow=1,pageColumn=1,dragSelecting=false;const drafts=new Map(),undo=[],redo=[];
  let activeTab='开始',ribbon=null,brush=null;
  const options={gridlines:true,showZeros:true,showFormulas:false,highlight:false,dark:false,zoom:100};
@@ -55,7 +56,7 @@ export async function mountExcelEditor({element,document:initial,view:initialVie
  const button=(label,action)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>Promise.resolve().then(action).catch(fail);return b;};
  async function api(action,options={}){const r=await request(base()+'/'+action,options);if(!r.ok){let e={};try{e=await r.json();}catch{}throw Object.assign(Error(e.error||'文件操作失败'),{status:r.status,code:e.code});}return r;}
  function updateState(text){status.className='';status.textContent=text;}
- function stage(address,text){if(busy||destroyed)return;const original=map().get(address)?.text??'';if(original===text)drafts.delete(address);else drafts.set(address,{address,expectedText:original,text});updateState(drafts.size?'有修改 · 等待保存':'已保存 · 版本 '+record.fileRevision);clearTimeout(timer);if(drafts.size)timer=setTimeout(()=>save().catch(fail),autosaveDelay);}
+ function stage(address,text){if(busy||destroyed)return;const original=map().get(address)?.text??'';if(original===text)drafts.delete(address);else drafts.set(address,{address,expectedText:original,text});updateState(drafts.size?'有修改 · 等待保存':'已保存 · 版本 '+record.fileRevision);clearTimeout(timer);if(drafts.size&&!composing)timer=setTimeout(()=>save().catch(fail),autosaveDelay);}
  function select(address,extend=false){coordinate(address);rectangle((extend?anchor:address)+':'+address);if(!extend)anchor=address;focus=address;position.value=range();formula.value=raw(focus);editing=false;paintSelection();const cell=map().get(address);if(cell?.calculationMessage)fail(Error(address+'：'+cell.calculationMessage));}
  function paintSelection(){const [r1,c1,r2,c2]=rectangle(range()),[fr,fc]=coordinate(focus);for(const td of scroll.querySelectorAll('td[data-address]')){const [r,c]=coordinate(td.dataset.address);td.classList.toggle('selected',r>=r1&&r<=r2&&c>=c1&&c<=c2);td.classList.toggle('active',td.dataset.address===focus);td.classList.toggle('highlight',options.highlight&&(r===fr||c===fc));}ribbon?.sync();}
  async function refresh(){const latest=await(await api('view')).json();record=latest.document;view=latest.view;if(!view.sheets.some(s=>s.name===sheetName))sheetName=view.sheets.find(s=>s.state==='visible')?.name||view.sheets[0].name;render();}
@@ -78,7 +79,7 @@ export async function mountExcelEditor({element,document:initial,view:initialVie
    if(restoreFormula){formula.focus();formula.setSelectionRange(restoreFormula.start,restoreFormula.end);}
   }
  }
- async function save(){if(savePromise)return savePromise;if(mutationPromise)return mutationPromise;if(!drafts.size)return {document:record,dirty:false};savePromise=mutate({op:'cells.set',sheet:sheetName,cells:[...drafts.values()]}).finally(()=>savePromise=null);return savePromise;}
+ async function save(){if(composing)throw Error('请完成当前文字输入');if(savePromise)return savePromise;if(mutationPromise)return mutationPromise;if(!drafts.size)return {document:record,dirty:false};savePromise=mutate({op:'cells.set',sheet:sheetName,cells:[...drafts.values()]}).finally(()=>savePromise=null);return savePromise;}
  const restore=direction=>trackMutation(performRestore(direction));
  async function performRestore(direction){
   const from=direction==='undo'?undo:redo,to=direction==='undo'?redo:undo;
@@ -95,8 +96,8 @@ export async function mountExcelEditor({element,document:initial,view:initialVie
   // Never silently mix an external MCP edit with a user's unsaved input.
   if(drafts.size)throw Error('当前输入尚未保存，请先保存后再执行命令');
   if(name==='sheet.select'||name==='selection.set'){
-   if(!view.sheets.some(s=>s.name===args.sheet&&s.state==='visible'))throw Error('可见工作表不存在');sheetName=args.sheet;
-   const [r1,c1,r2,c2]=rectangle(name==='selection.set'?args.range:'A1');anchor=columnName(c1)+r1;focus=columnName(c2)+r2;pageRow=r1;pageColumn=c1;render();return read();
+   if(!view.sheets.some(s=>s.name===args.sheet&&s.state==='visible'))throw Error('可见工作表不存在');const switched=sheetName!==args.sheet;sheetName=args.sheet;
+   const [r1,c1,r2,c2]=rectangle(name==='selection.set'?args.range:'A1');anchor=columnName(c1)+r1;focus=columnName(c2)+r2;if(switched||r1<pageRow||r2>=pageRow+80)pageRow=r1;if(switched||c1<pageColumn||c2>=pageColumn+16)pageColumn=c1;render();return read();
   }
   if(name==='history.undo'||name==='history.redo')return restore(name.split('.')[1]);
   if(name==='view.options'){Object.assign(options,args);render();return read();}
@@ -117,6 +118,11 @@ export async function mountExcelEditor({element,document:initial,view:initialVie
   return mutate({...args,op:name});
  }
  async function action(name,args={}){await save();return executeCommand({name,args,expectedRevision:record.fileRevision});}
+ async function insertParameter(id){
+  await save();const p=workbookParameters(view).find(p=>p.id===id);if(!p?.available)throw Error('参数没有可用的计算结果');
+  const textFormat=view.styles?.[map().get(focus)?.style]?.numberFormat==='@';
+  return action('cell.set',{sheet:sheetName,address:focus,expectedText:raw(focus),text:parameterInput(p.value,textFormat)});
+ }
  function copyText(){const cells=map(),[r1,c1,r2,c2]=rectangle(range()),rows=[];for(let r=r1;r<=r2;r++){const row=[];for(let c=c1;c<=c2;c++){const a=columnName(c)+r;row.push(drafts.get(a)?.text??displayCell(cells.get(a),view.styles,view.date1904));}rows.push(row);}return toTSV(rows);}
  async function copy(event){if(editing)return;const text=copyText();clipboard={text,sheet:sheetName,range:range(),revision:record.fileRevision};if(event){event.preventDefault();event.clipboardData.setData('text/plain',text);}else await navigator.clipboard.writeText(text);}
  async function paste(event){if(editing)return;event.preventDefault();const text=event.clipboardData.getData('text/plain');await save();
@@ -145,7 +151,7 @@ export async function mountExcelEditor({element,document:initial,view:initialVie
  function render(){
   if(destroyed)return;const selected=current();if(!selected)return;
   root.classList.toggle('excel-dark',options.dark);root.classList.toggle('excel-no-grid',!options.gridlines);scroll.style.zoom=options.zoom/100;
-  ribbon=mountExcelRibbon({tabs:ribbonTabs,tools,activeTab,onTab:name=>{activeTab=name;render();},run:action,selection:()=>{const [r1,c1,r2,c2]=rectangle(range());return {range:range(),address:focus,r1,c1,r2,c2};},cellStyle:()=>view.styles?.[map().get(focus)?.style]||{},sheet:current,options,onError:fail});
+  ribbon=mountExcelRibbon({tabs:ribbonTabs,tools,activeTab,onTab:async name=>{await save();activeTab=name;render();},run:action,selection:()=>{const [r1,c1,r2,c2]=rectangle(range());return {range:range(),address:focus,r1,c1,r2,c2};},cellStyle:()=>view.styles?.[map().get(focus)?.style]||{},sheet:current,options,onError:fail,parameters:()=>workbookParameters(view),insertParameter});
   const columnWidth=c=>Math.max(40,Math.round((selected.columnWidths?.find(x=>c>=x.min&&c<=x.max)?.width||16)*7+5));
   const table=document.createElement('table');table.setAttribute('role','grid');table.setAttribute('aria-label',selected.name);const head=document.createElement('tr');head.append(document.createElement('th'));
   for(let c=pageColumn;c<Math.min(pageColumn+16,16385);c++){const th=document.createElement('th');th.textContent=columnName(c);th.style.width=columnWidth(c)+'px';th.style.minWidth=columnWidth(c)+'px';head.append(th);}table.append(head);
@@ -163,6 +169,7 @@ export async function mountExcelEditor({element,document:initial,view:initialVie
     if(selected.freeze?.columns>=c){td.style.position='sticky';td.style.left=(44+Array.from({length:c-pageColumn},(_,i)=>columnWidth(i+pageColumn)).reduce((a,b)=>a+b,0))+'px';td.style.zIndex=3;td.style.backgroundColor||='white';}
     input.onpointerdown=e=>{if(editing&&focus===address)return;dragSelecting=true;e.preventDefault();try{select(address,e.shiftKey);input.focus();if(brush){const source=brush;brush=null;dragSelecting=false;if(source.sheet!==sheetName)throw Error('格式刷请在同一工作表使用');action('range.copyStyle',{sheet:sheetName,source:source.source,range:range()}).catch(fail);}}catch(err){dragSelecting=false;fail(err);}};input.ondblclick=()=>{dragSelecting=false;beginEdit(input);};
     input.onpointerover=e=>{if(dragSelecting&&e.buttons===1&&!editing){try{select(address,true);}catch(err){fail(err);}}};
+    input.oncompositionstart=()=>{composing=true;clearTimeout(timer);};input.oncompositionend=()=>{composing=false;stage(address,input.value);formula.value=input.value;};
     input.oninput=()=>{stage(address,input.value);formula.value=input.value;td.classList.toggle('draft',drafts.has(address));};
     input.onblur=()=>{if(editing){editing=false;input.readOnly=true;save().catch(fail);}};
     td.append(input);tr.append(td);
@@ -176,10 +183,12 @@ export async function mountExcelEditor({element,document:initial,view:initialVie
  function beginEdit(input,replace){editing=true;input.readOnly=false;input.value=replace??raw(input.dataset.address);input.focus();if(replace!=null){stage(input.dataset.address,replace);formula.value=replace;}else input.select();}
  function focusCell(address){const [r,c]=coordinate(address);if(r<pageRow||r>=pageRow+80||c<pageColumn||c>=pageColumn+16){pageRow=r;pageColumn=c;render();}select(address);scroll.querySelector(`textarea[data-address="${address}"]`)?.focus();}
  position.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();action('selection.set',{sheet:sheetName,range:position.value.toUpperCase()}).catch(fail);}};
- formula.oninput=()=>stage(focus,formula.value);formula.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();stage(focus,formula.value);save().then(()=>focusCell(focus)).catch(fail);}};formula.onblur=()=>save().catch(fail);
+ formula.oncompositionstart=()=>{composing=true;clearTimeout(timer);};formula.oncompositionend=()=>{composing=false;stage(focus,formula.value);};
+ formula.oninput=()=>stage(focus,formula.value);formula.onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing&&e.keyCode!==229){e.preventDefault();stage(focus,formula.value);save().then(()=>focusCell(focus)).catch(fail);}};formula.onblur=()=>save().catch(fail);
  scroll.addEventListener('copy',e=>{try{copy(e);}catch(err){fail(err);}});scroll.addEventListener('paste',e=>paste(e).catch(fail));
  scroll.addEventListener('keydown',e=>{
   const input=e.target.closest('textarea[data-address]');if(!input)return;
+  if(e.isComposing||e.keyCode===229||e.key==='Process'){if(!editing){editing=true;input.readOnly=false;input.value='';}return;}
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();save().catch(fail);return;}
   if((e.ctrlKey||e.metaKey)&&['z','y'].includes(e.key.toLowerCase())&&!editing){e.preventDefault();action(e.key.toLowerCase()==='y'||e.shiftKey?'history.redo':'history.undo').catch(fail);return;}
   if(editing){if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();editing=false;save().then(()=>{const [r,c]=coordinate(focus);focusCell(columnName(e.key==='Tab'?Math.min(16384,c+1):c)+(e.key==='Enter'?Math.min(1048576,r+1):r));}).catch(fail);}else if(e.key==='Escape'){e.preventDefault();clearTimeout(timer);drafts.delete(focus);editing=false;render();}return;}
