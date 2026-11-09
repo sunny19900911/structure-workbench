@@ -1,5 +1,5 @@
 import {sourceParagraphs,blockTableRecords,usable,projectName} from './intake-structure.js';
-import {architecturalUnitSections} from './architectural-unit-sections.js';
+import {architecturalUnitSections,architecturalNarrativeUnits,architecturalGeometry,architecturalGeometryFields,applyArchitecturalGeometry} from './architectural-unit-sections.js';
 import {detailedGeotech} from './geotech-document.js';
 // Direct document composition from this project's uploaded sources, without
 // promoting extracted text to signed engineering decisions or model results.
@@ -35,6 +35,11 @@ export function composeDocument(sources=[],unit='项目整体'){
   const read=(re,group=1)=>{const f=find(re);if(!f)return '';remember(arch,f);return tidy(re.exec(f.text)?.[group]);};
   result.projectName=projectName(read(/(?:项目名称|工程名称)\s*[:：]\s*(.+?)(?=\s+设计证书|\s+项目编号|$)/).replace(/[。；].*$/,''));
   result.location=read(/(?:建设地点|项目地点|工程地点)\s*[:：]\s*([^。；]+)/);
+  if(!result.projectName){
+   const heading=(arch.blocks?.paras||[]).slice(0,8).map(tidy).find(t=>/^[^《》\n]{3,80}(?:项目|工程)(?:初步)?设计说明$/.test(t));
+   if(heading){result.projectName=heading.replace(/(?:初步)?设计说明$/,'');remember(arch,paras.find(f=>tidy(f.text)===heading));}
+  }
+  if(!result.location)result.location=read(/(?:本项目|本工程|项目|工程)(?:建设地点)?位于\s*([^。；]+)/);
   const tableId=f=>/表\s*(\d+)/.exec(f.locator||'')?.[1];
   const header=tableRows.find(f=>/栋号|单体名称|建筑名称/.test(f.cells.join('|'))&&/建筑面积/.test(f.cells.join('|')));
   if(header){
@@ -71,6 +76,10 @@ export function composeDocument(sources=[],unit='项目整体'){
     const wrongUnit=cell&&(/height/i.test(key)&&/mm|cm|毫米|厘米/i.test(cell.label)||/area/i.test(key)&&/公顷|亩|万/.test(cell.label));
     if(cell?.value&&!wrongUnit&&!u[key])u[key]=cell.value;
    }
+   for(const [key,field] of Object.entries(architecturalGeometryFields)){
+    const cell=row.fields.find(c=>c.path.some(p=>p.replace(/\s/g,'').replace(/[（(](?:m|米)[）)]/gi,'')===field.label));
+    if(cell&&/^[+-]?\d+(?:\.\d+)?$/.test(cell.value)&&!/mm|cm|毫米|厘米/i.test(cell.label))applyArchitecturalGeometry(u,[{key,value:cell.value,unit:'m',quote:cell.label+'：'+cell.value,locator:row.locator}],arch);
+   }
    const floor=row.fields.find(c=>/地上\s*[/／]\s*地下层数/.test(c.label));
    if(!u.floors&&floor&&/^\d+[/／]\d+$/.test(floor.value)){const [above,below]=floor.value.split(/[/／]/);u.floors=above+(Number(below)?'；地下'+below:'');}
    remember(arch,row);
@@ -81,6 +90,23 @@ export function composeDocument(sources=[],unit='项目整体'){
    if(!u){u={...section.unit,source_id:arch.source_id};result.units.push(u);}
    else for(const [key,value] of Object.entries(section.unit))if(value&&!u[key])u[key]=value;
    section.evidence.forEach(f=>remember(arch,f));
+  }
+  for(const candidate of architecturalNarrativeUnits(arch)){
+   const existing=result.units.find(u=>u.name===candidate.name);
+   if(!existing)result.units.push(candidate);
+   else{
+    for(const [key,value] of Object.entries(candidate))if(value&&!existing[key]&&!architecturalGeometryFields[key]&&!['geometryEvidence','geometryConflicts'].includes(key))existing[key]=value;
+    applyArchitecturalGeometry(existing,Object.values(candidate.geometryEvidence||{}).flat(),arch);
+   }
+  }
+  for(const u of result.units){
+   for(const f of paras.filter(f=>f.unit===u.name||new RegExp('^'+escape(u.name)+'\\s*[:：]').test(f.text))){
+    const values=architecturalGeometry(f.text).map(v=>({...v,locator:f.locator}));
+    applyArchitecturalGeometry(u,values,arch);if(values.length)remember(arch,f);
+   }
+   for(const evidence of Object.values(u.geometryEvidence||{}).flat())remember(arch,arch.fragments.find(f=>f.locator===evidence.locator));
+   if(u.areaEvidence)remember(arch,arch.fragments.find(f=>f.locator===u.areaEvidence.locator));
+   for(const [key,values] of Object.entries(u.geometryConflicts||{}))result.notes.push(`${u.name}的${architecturalGeometryFields[key].label}有不同取值：${values.join('、')}m，未自动选择。`);
   }
   // Header-only cells and feasibility-study columns are not project values.
   const totals={};for(const row of tableRows){for(const [key,label]of [['total','总建筑面积'],['above','地上建筑面积'],['below','地下建筑面积']]){const at=row.cells.findIndex(c=>tidy(c)===label);if(at>=0&&number(row.cells[at+1])&&!totals[key]){totals[key]=tidy(row.cells[at+1]);remember(arch,row);}}}

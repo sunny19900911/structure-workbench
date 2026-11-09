@@ -2,11 +2,14 @@ import {paragraphKinds,blockTableRecords,sourceParagraphs,usable,projectName} fr
 // Current-project evidence only. Historical retrieval never writes these facts.
 import {fingerprint} from './expansion-core.js';
 import {gradeParameters} from './seismic-grade-core.js';
+import {createDocumentComposer} from './document-intake.js';
+import {architecturalGeometry,architecturalGeometryFields,architecturalUnitSections} from './architectural-unit-sections.js';
 
 export const PROJECT='项目整体';
 export const FIELD_LABELS={geo_corrosivity:'腐蚀性评价',geo_seismic_site:'场地地震参数',bldg_area:'建筑面积（㎡）',height_planning_m:'规划高度（m）',height_fire_m:'消防高度（m）',project_name:'项目名称',project_code:'项目编号',region:'工程地点',unit_name:'单体名称',use:'建筑用途',floors_above:'地上层数',floors_below:'地下层数',height_m:'结构高度（m）',height_arch_m:'建筑高度（m）',span_m:'主要跨度（m）',struct_sys:'结构体系',site_class:'场地类别',geo_water:'地下水描述',water_depth:'抗浮水位采用值',geo_water_candidate:'抗浮水位建议',geo_foundation:'基础建议',geo_strata:'地层描述',geo_liquefaction:'液化情况',bldg_total:'总建筑面积（㎡）'};
 export const GLOBAL_KEYS=new Set(['project_name','project_code','region','site_class','water_depth']);
 export const UNIT_KEYS=new Set(['bldg_area','height_planning_m','height_fire_m','unit_name','use','floors_above','floors_below','height_m','height_arch_m','span_m','struct_sys']);
+for(const field of Object.values(architecturalGeometryFields)){FIELD_LABELS[field.fact]=field.label+'（m）';UNIT_KEYS.add(field.fact);}
 export function freshIntake(){return {schema:1,sources:[],facts:[],history:[],suggestions:{},locationQueries:[],revision:0};}
 const compact=s=>String(s??'').replace(/\s+/g,'').replace(/Ⅲ/g,'III').replace(/Ⅱ/g,'II').replace(/Ⅳ/g,'IV').replace(/Ⅰ/g,'I');
 export function fragments(blocks){
@@ -14,12 +17,13 @@ export function fragments(blocks){
   const kinds=paragraphKinds(blocks.paras||[]);
   const tables=(blocks.tables||[]).map((rows,t)=>blockTableRecords(blocks,t));
   const knownUnits=[...new Set(tables.flat().filter(usable).map(r=>r.unit).filter(Boolean))];
+  const sectionUnits=new Map(architecturalUnitSections({blocks}).flatMap(s=>s.evidence.map(f=>[f.locator,s.unit.name])));
   (blocks.paras||[]).forEach((p,i)=>{
     const text=String(p).trim();if(!text)return;
     const name=/(?:单体名称|建筑名称|单体)\s*[:：]\s*([^，。；;\n]+)/.exec(text);
     const namedUnit=knownUnits.find(unit=>text.startsWith(unit+'：')||text.startsWith(unit+':'));
     if(name)context=name[1].trim();else if(namedUnit)context=namedUnit;else if(kinds[i]==='heading'||kinds[i]==='requirement')context='';
-    result.push({id:'F'+(result.length+1),text,locator:'提取段落 '+(i+1),unit:context,kind:kinds[i]});
+    result.push({id:'F'+(result.length+1),text,locator:'提取段落 '+(i+1),unit:sectionUnits.get('提取段落 '+(i+1))||context,kind:kinds[i]});
   });
   (blocks.tables||[]).forEach((rows,t)=>{
     for(const row of tables[t])if(row.text)result.push({...row,id:'F'+(result.length+1),locator:'提取表 '+(t+1)+' 行 '+(row.index+1)});
@@ -46,6 +50,7 @@ export function validateExtraction(payload,source,{maxFacts=400}={}){
 export function extractLocal(source){
   const facts=[];const patterns={project_name:/(?:项目名称|工程名称|组团名称)\s*[:：]\s*([^。；;\n]+)/,project_code:/(?:项目编号|工程编号|设计编号)\s*[:：]\s*([\w-]+)/,region:/(?:工程地点|建设地点|项目地点|项目用地位于|工程位于)\s*[:：]?\s*([^。；;\n]+)/,unit_name:/(?:单体名称|建筑名称|单体)\s*[:：]\s*([^，。；;\n]+)/,use:/(?:建筑用途|使用功能|用途)\s*[:：]\s*([^，。；;\n]+)/,floors_above:/地上(?:层数)?\s*[:：]?\s*(\d+)\s*(?:层|(?=[；;，,]|$))/,floors_below:/地下(?:层数)?\s*[:：]?\s*(\d+)\s*(?:层|(?=[；;，,]|$))/,height_m:/(?:结构高度|结构总高)\s*(?:为|约|是|[:：])?\s*([\d.]+)\s*(?:m(?![a-z²2])|米)/i,height_arch_m:/(?:建筑高度)\s*(?:为|约|是|[:：])?\s*([\d.]+)\s*(?:m(?![a-z²2])|米)/i,span_m:/(?:主要跨度|最大跨度)\s*(?:为|约|[:：])?\s*([\d.]+)\s*(?:m(?![a-z²2])|米)/i,struct_sys:/(?:结构体系|结构形式)\s*(?:采用|为|[:：])?\s*([^，。；;\n]+)/,site_class:/场地类别\s*(?:为|[:：])?\s*((?:[ⅠⅡⅢⅣ]+|I[0-4V]*|III|II|IV)\s*类)/i,bldg_total:/总建筑面积\s*(?:为|[:：])?\s*([\d,.]+)\s*(?:m|㎡|平方米)/i};
   for(const f of [...sourceParagraphs(source),...source.fragments.filter(f=>/表\s*\d+/.test(f.locator||''))].filter(usable)){
+    if(source.slot==='bldg')for(const value of architecturalGeometry(f.text))facts.push({key:architecturalGeometryFields[value.key].fact,value:value.value,quote:f.text,fragment_id:f.id,unit:f.unit||PROJECT});
     for(const [key,re] of Object.entries(patterns)){const m=re.exec(f.text);if(m)facts.push({key,value:key==='project_name'?projectName(m[1]):m[1].trim(),quote:f.text,fragment_id:f.id,unit:UNIT_KEYS.has(key)?(key==='unit_name'?m[1].trim():f.unit||PROJECT):PROJECT});}
     for(const cell of f.fields||[]){
       const label=cell.label,value=cell.value;if(!cell.mapped||!value)continue;
@@ -114,11 +119,25 @@ export function adoptFact(state,id,{value,reason='',resolve=false}={}){
 }
 export function unitNames(state){return [...new Set([...state.facts.filter(f=>f.status==='confirmed'&&UNIT_KEYS.has(f.key)).map(f=>f.unit),...Object.keys(state.seismicGrades||{})])];}
 export function unitParameters(state,unit){return Object.fromEntries(state.facts.filter(f=>f.status==='confirmed'&&f.unit===unit&&['struct_sys','site_class','water_depth'].includes(f.key)).map(f=>[f.key,f.value]));}
+const composeForGrades=createDocumentComposer();
+export function resolveSeismicConfig(state,unit,parameters={}){
+ const manual=state.seismicGrades?.[unit]||{};
+ // Keystrokes with a manual override never revisit uploaded text or images.
+ if(Object.hasOwn(manual,'height'))return {config:{structure:parameters.struct_sys||'',...manual},heightSource:{kind:'manual',source_id:manual.source_id}};
+ const doc=composeForGrades(state.sources||[]),building=doc.units.find(u=>u.name===unit);
+ const adopted=(state.facts||[]).filter(f=>f.unit===unit&&f.key==='height_seismic_m'&&f.status==='confirmed'&&(state.sources||[]).some(s=>s.source_id===f.source_id));
+ const adoptedValues=[...new Set(adopted.map(f=>f.value))];
+ const height=adoptedValues.length===1?adoptedValues[0]:adoptedValues.length>1?'':building?.seismicHeight||'';
+ const evidence=Object.hasOwn(manual,'height')?{kind:'manual',source_id:manual.source_id}:adopted.length?{kind:'adopted',source_id:adopted[0].source_id,conflict:adoptedValues.length>1}:{kind:'architecture',source_id:building?.source_id,evidence:building?.geometryEvidence?.seismicHeight||[],conflict:!!building?.geometryConflicts?.seismicHeight};
+ return {config:{height,structure:parameters.struct_sys||building?.structuralType||'',buildingUse:/住宅/.test(building?.use||'')?'residential':'other',floors:building?.floors||'',...manual},heightSource:evidence};
+}
 export function combinedParameters(state,unit,global){
   const local=unitParameters(state,unit),result={...global,...local};
   if(local.struct_sys&&local.struct_sys!==global.struct_sys)for(const key of ['g_frame','g_wall','g_frame_m','g_wall_m'])result[key]='';
   if(local.site_class&&compact(local.site_class)!==compact(global.site_class))result.tg='';
-  Object.assign(result,gradeParameters(state.seismicGrades?.[unit],result));
+  const resolved=resolveSeismicConfig(state,unit,result);
+  const active=state.seismicGrades?.[unit]||resolved.config.height!=='';
+  Object.assign(result,active?gradeParameters(resolved.config,result):{},{seismic_height_m:resolved.config.height,seismic_height_source:resolved.heightSource});
   return result;
 }
 export function expansionEvidence(state,unit,parameters=null,includeCandidates=false){
