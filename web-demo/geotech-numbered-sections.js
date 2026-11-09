@@ -2,8 +2,8 @@
 const tidy=s=>String(s??'').replace(/\s+/g,' ').trim();
 const destinations=[
  [/地形.*地貌|地貌.*地形/,0],
- [/^(?:场地)?(?:地层(?:岩性.*|结构.*|分布.*|特征描述)|地质岩性构成|地基土(?:的)?(?:构成.*|分布规律))$/,1],
- [/物理力学|(?:室内|土工)试验.*指标|原位测试.*(?:指标|成果)|压缩模量|桩基设计参数|承载力.*计算参数|沉降.*参数|地基.*承载力(?:$|.*(?:确定|评价|特征值))/,2],
+ [/^(?:场地)?(?:地层(?:岩性.*|结构.*|分布.*|特征描述|概述)|地质岩性构成|地基土(?:的)?(?:构成.*|分布规律))$/,1],
+ [/物理力学|(?:室内|土工)试验.*指标|原位测试.*(?:指标|成果)|压缩模量|桩基设计参数|地基(?:岩土|土)?(?:设计)?参数(?:建议值|确定)|承载力.*计算参数|沉降.*参数|地基.*承载力(?:$|.*(?:确定|评价|特征值))/,2],
  [/抗震地段|场地地段划分|地震动参数|抗震设防烈度|抗震设计(?:参数|基本条件)/,3],
  [/场地类别|场地土类型|土的类型划分/,4],
  [/液化.*(?:判别|判定|评价|问题)|^(?:地震)?液化(?:土)?$/,5],
@@ -27,6 +27,7 @@ export function geotechDestination(title){
  return destinations.find(([re])=>re.test(title))?.[1]??-1;
 }
 function heading(text,meta){
+ if(Number.isInteger(meta?.headingLevel))text=text.replace(/[:：]$/,'');
  if(!text||text.length>85||/[。；：:《》]|[.．…·]{2,}|(?:第\s*\d.*条)|^图|^照片|^表\s*\d/.test(text))return null;
  const m=/^(?:([一二三四五六七八九十]+)[、．.]|[（(]([一二三四五六七八九十\d]+)[）)]|(\d+(?:[.．]\d+)*)(?:[.、．]|\s)*(?=[\u4e00-\u9fff]))\s*(.+)$/.exec(text);
  const title=(m?.[4]||text).replace(/\s+/g,'');
@@ -69,6 +70,13 @@ export function numberedGeotechSections(source,unit='项目整体'){
   }
   if(/表\s*\d+(?:[.－-]\d+)*\s*$/.test(line.text)){paragraphBuckets[line.index]=active;continue;}
   if(tocEntry(line.text)&&line.text.length<100)continue;
+  // A labelled stratum is content, even if Word styles it as a heading.
+  // Keep its identifier with the following description without changing hierarchy.
+  if(active===1&&/^(?:[（(]\d+[）)](?:\s*[-－]\s*\d+)?|[①-⑳](?:[-－]\d+)?)(?:层)?\s*[^。；]{0,45}(?:土|砂|岩|砾|卵石)/.test(line.text)){
+   const fragment=source.fragments?.find(f=>f.locator==='提取段落 '+(line.index+1));
+   if(fragment?.unit&&unit!=='项目整体'&&fragment.unit!==unit)continue;
+   flush();paragraphBuckets[line.index]=active;buffer.push(line);continue;
+  }
   const h=heading(line.text,source.blocks?.paragraphMeta?.[line.index]);
   if(frontMatter){
    const explicit=Number.isInteger(source.blocks?.paragraphMeta?.[line.index]?.headingLevel);

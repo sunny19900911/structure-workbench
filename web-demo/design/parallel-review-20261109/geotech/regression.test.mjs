@@ -39,3 +39,30 @@ test('foundation and anti-float remain separate and keep zone/period conditions'
  const d=detailedGeotech(source(['4 基础方案','4.1 天然地基','东区建议采用独立基础。','4.2 桩基','西区建议采用灌注桩。','4.3 抗浮设防水位','施工期按3m，永久期东区按5m、西区按6m。','4.4 桩基施工建议','泥浆配置说明。']));
  assert.match(d.foundationText,/东区.*\n西区/s);assert.match(d.antifloatText,/施工期按3m.*永久期东区按5m、西区按6m/);assert.doesNotMatch(d.foundationText,/泥浆|永久期/);
 });
+test('stratum labels retain their sublayer identifiers and descriptions without leaking into the next chapter',()=>{
+ const s=source(['2.6 地基土的构成与分布特征','（1）杂填土（mlQ4）','杂色，层厚0.5～2.0m。','（2）-1粉质黏土（alQ43）','灰黄色，层厚1.0～3.0m。','（2）-2黏质粉土（alQ43）','灰色，稍密。','2.7 场地类别','场地类别为Ⅱ类。']);
+ s.blocks.paragraphMeta=[{headingLevel:1},{headingLevel:2},{},{},{},{},{},{headingLevel:1},{}];
+ const d=detailedGeotech(s),strata=d.text.split('4.2 场地地层岩性构成\n')[1].split('\n\n4.3')[0];
+ assert.match(strata,/（1）杂填土（mlQ4）\n杂色/);assert.match(strata,/（2）-1粉质黏土（alQ43）\n灰黄色/);assert.match(strata,/（2）-2黏质粉土（alQ43）\n灰色/);
+ assert.doesNotMatch(strata,/Ⅱ类/);assert.ok(d.evidence.some(e=>e.locator==='提取段落 2'&&e.quote==='（1）杂填土（mlQ4）'));
+ for(const f of s.fragments.filter(f=>['提取段落 2','提取段落 3'].includes(f.locator)))f.unit='乙楼';
+ assert.doesNotMatch(detailedGeotech(s,'甲楼').text,/杂填土|杂色/);
+});
+test('strata overview and recommended soil parameters are recognized as sibling sections',()=>{
+ const s=source(['二、场地工程地质条件','（四）地层概述','①层 素填土，厚0.9m-5.2m。','②层 淤泥质黏土，层顶标高21.40-25m。','（五）地基土参数建议值','承载力特征值及压缩模量综合成果表 表9'],[[['层号','土层名称','承载力特征值(kPa)'],['①','素填土','80']]], [{type:'p',index:0},{type:'p',index:1},{type:'p',index:2},{type:'p',index:3},{type:'p',index:4},{type:'p',index:5},{type:'table',index:0}]);
+ const d=detailedGeotech(s);assert.match(d.text,/4.2 场地地层岩性构成\n①层 素填土/);assert.equal(d.tables.find(t=>t.key==='strength').rows[1].at(-1),'80');
+});
+test('all-header water schedules recover explicit building rows, units and source evidence without mutating input',()=>{
+ const s=source(['7 地下室抗浮','抗浮水位建议表 表7-1'],[[['序号','建筑物名称','±0.00对应绝对标高(m)','地上/地下层数','建议抗浮水位(m)'],['1','1#教学楼','1908.50','8/-1','1907.500'],['2','1#食堂','1909.00','3/0','1908.00']]], [{type:'p',index:0},{type:'p',index:1},{type:'table',index:0}]);
+ s.blocks.tableMeta=[{rows:s.blocks.tables[0].map(()=>({header:true}))}];const before=JSON.stringify(s);
+ const d=detailedGeotech(s);assert.match(d.antifloatText,/建筑物名称：1#教学楼.*±0.00对应绝对标高\(m\)：1908.50.*建议抗浮水位\(m\)：1907.500/);
+ assert.match(d.antifloatText,/建筑物名称：1#食堂.*建议抗浮水位\(m\)：1908.00/);assert.equal(d.tables.find(t=>t.key==='source-1').headerRecovery,true);
+ assert.ok(d.evidence.some(e=>e.locator==='提取表 1 行 2'));assert.equal(JSON.stringify(s),before);
+ const single=detailedGeotech(s,'1#食堂');assert.doesNotMatch(single.antifloatText,/1#教学楼/);assert.match(single.antifloatText,/1#食堂/);
+ s.blocks.tables[0][1][4]='水位待定';assert.equal(detailedGeotech(s).tables.find(t=>t.key==='source-1'),undefined);
+});
+test('an explicit Word chapter ending in a colon closes the preceding parameter section',()=>{
+ const s=source(['三、岩土测试','（四）地基土参数建议值','采用标准值。','四、岩土工程分析与评价：','（一）场地稳定性评价','场地稳定。']);
+ s.blocks.paragraphMeta=[{headingLevel:0},{headingLevel:1},{},{headingLevel:0},{headingLevel:1},{}];
+ const d=detailedGeotech(s);assert.match(d.text,/采用标准值/);assert.doesNotMatch(d.text,/四、岩土工程分析与评价/);assert.match(d.text,/4.5 岩土工程评价\n场地稳定/);
+});

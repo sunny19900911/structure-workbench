@@ -35,6 +35,18 @@ export function geotechTables(source,numbered,unit='项目整体'){
    rows=Array.from({length:rows[0].length},(_,c)=>data.map(r=>r[c]||''));meta={};
   }
   let records=tableRecords(rows,meta).map(r=>({...r,fields:r.fields.map(c=>({...c,label:label(c.label)}))}));
+  // Some Word schedules mark every row as a repeating header. Recover only
+  // an explicit building/water-level schedule with a demonstrable data body.
+  // Keep raw rows/meta intact; do not infer this from header formatting alone.
+  let headerRecovery=false;
+  if(!records.length&&rows.length>1&&meta?.rows?.length===rows.length&&meta.rows.every(r=>r.header)){
+   const headers=rows[0].map(label),serial=headers.findIndex(c=>c==='序号');
+   const building=headers.findIndex(c=>/^(?:建筑物|建筑|单体)名称$/.test(c));
+   const water=headers.findIndex(c=>/水位.*[（(]m[）)]/i.test(c));
+   if(serial>=0&&building>=0&&water>=0&&rows.slice(1).every(r=>/^\d+$/.test(clean(r[serial]))&&clean(r[building])&&/^[+-]?\d+(?:\.\d+)?$/.test(clean(r[water])))){
+    records=tableRecords(rows,{}).map(r=>({...r,fields:r.fields.map(c=>({...c,label:label(c.label)}))}));headerRecovery=true;
+   }
+  }
   if(!records.length&&rows.length===2&&rows[0].some(c=>/场地类别|地震分组/.test(c))&&rows[1].some(c=>/[ⅠⅡⅢⅣ]+类|[6-9]度|第[一二三]组/.test(c))){
    const fields=rows[1].map((v,c)=>({path:[rows[0][c]],label:label(rows[0][c]),value:clean(v),mapped:!!rows[0][c]}));
    records=[{index:1,kind:'table_row',fields,text:fields.map(c=>c.label+'：'+c.value).join('；')}];
@@ -60,7 +72,7 @@ export function geotechTables(source,numbered,unit='项目整体'){
   texts[destination].push(...[title,...lines,...notes].filter(Boolean));
   data.forEach(r=>tableEvidence.push({id:`GEO-T${index+1}-R${r.index+1}`,locator:`提取表 ${index+1} ${transposed?'列':'行'} ${r.index+1}`,text:r.text}));
   notes.forEach(text=>tableEvidence.push({id:`GEO-T${index+1}-NOTE`,locator:`提取表 ${index+1} 表注`,text}));
-  tables.push({key:'source-'+(index+1),rows,rawRows,records,source_id:source.source_id,locator:'提取表 '+(index+1),destination,transposed});
+  tables.push({key:'source-'+(index+1),rows,rawRows,records,source_id:source.source_id,locator:'提取表 '+(index+1),destination,transposed,headerRecovery});
   if(![2,10,12].includes(destination))continue;
   for(const r of data){
    const id=value(r,/(?:^|\/)(?:土层编号|地层编号|层序|层号|层次)(?:\/|$)/);

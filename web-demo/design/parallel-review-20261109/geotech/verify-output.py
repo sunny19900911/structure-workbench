@@ -1,8 +1,8 @@
 """Compare downloaded native Word values and render every available PDF page.
-Usage: python verify-output.py <private-round-directory> <private-qa-directory>
+Usage: python verify-output.py <private-round-directory> <private-qa-directory> [capture-glob]
 Set POPPLER_BIN to the bundled Poppler directory. Never rewrites the Word files.
 """
-import json, os, sys, zipfile
+import json, os, re, sys, zipfile
 from pathlib import Path
 from lxml import etree
 from pypdf import PdfReader
@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw
 root, qa = map(Path, sys.argv[1:3]); qa.mkdir(parents=True, exist_ok=True)
 ns = {'w':'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
 results=[]
-for capture in root.glob('*/*-capture.json'):
+for capture in root.glob(sys.argv[3] if len(sys.argv)>3 else '*/*-capture.json'):
     data=json.loads(capture.read_text(encoding='utf-8')); stem=capture.stem.removesuffix('-capture')
     docx=capture.with_name(stem+'.docx'); pdf=capture.with_name(stem+'.pdf')
     xml=etree.fromstring(zipfile.ZipFile(docx).read('word/document.xml'))
@@ -27,7 +27,11 @@ for capture in root.glob('*/*-capture.json'):
             wanted=[str(v or '') for v in item['values']]
             if cells!=wanted:differences.append({'table':ti+1,'row':ri+1,'expected':wanted,'actual':cells})
     if len(actual)!=len(expected):differences.append('table count')
-    record={'group':capture.parent.name,'id':stem,'tables':len(actual),'nativeValueDifferences':differences}
+    normalize=lambda text: re.sub(r'\s+', '', str(text or ''))
+    native_text=normalize(''.join(xml.xpath('.//w:t/text()',namespaces=ns)))
+    expected_text=[b['text'] for b in data['package']['blocks'] if b.get('text')]
+    missing_text=[text for text in expected_text if normalize(text) not in native_text]
+    record={'group':capture.parent.name,'id':stem,'tables':len(actual),'nativeValueDifferences':differences,'textBlocks':len(expected_text),'missingTextBlocks':missing_text}
     if pdf.exists():
         reader=PdfReader(pdf);record['pages']=len(reader.pages)
         pages=convert_from_path(str(pdf),dpi=45,poppler_path=os.environ.get('POPPLER_BIN'))
@@ -43,5 +47,5 @@ for capture in root.glob('*/*-capture.json'):
         sample=convert_from_path(str(pdf),dpi=120,first_page=ground+1,last_page=ground+1,poppler_path=os.environ.get('POPPLER_BIN'))[0]
         sample.save(qa/(capture.parent.name+'-'+stem+'-ground.png'))
     results.append(record)
-    print(json.dumps({k:v for k,v in record.items() if k!='nativeValueDifferences'},ensure_ascii=False),'differences',len(differences),flush=True)
+    print(json.dumps({k:v for k,v in record.items() if k not in ['nativeValueDifferences','missingTextBlocks']},ensure_ascii=False),'differences',len(differences),'missing text',len(missing_text),flush=True)
 (qa/'native-validation.json').write_text(json.dumps(results,ensure_ascii=False,indent=2),encoding='utf-8')
