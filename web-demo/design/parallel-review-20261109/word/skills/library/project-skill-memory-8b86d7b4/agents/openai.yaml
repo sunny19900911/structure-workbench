@@ -1,0 +1,4 @@
+interface:
+  display_name: "项目 Skill 沉淀"
+  short_description: "记录实际用过且有帮助的技能，保留来源、验证结果与再次调用方法"
+  default_prompt: "用 $project-skill-memory 把本次有效技能沉淀到当前项目，更新技能索引。"

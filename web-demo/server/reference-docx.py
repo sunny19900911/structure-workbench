@@ -38,6 +38,10 @@ def build(spec,dest):
      for n in list(c):
       if n not in [c.find('w:tcPr',N),p]:c.remove(n)
      text_into(p,value)
+     if key=='21':
+      # Parameter values are not prose; the retained template's first-line indent
+      # otherwise looks like an uneditable leading blank in the native editor.
+      for indent in p.findall('w:pPr/w:ind',N):indent.getparent().remove(indent)
     table.append(r)
    append(table)
   elif kind=='image':

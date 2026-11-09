@@ -1,5 +1,5 @@
 // Native document operations; page dimensions are converted from mm to API inches.
-export const EXTENDED_COMMANDS=['page.setup','page.margins','page.columns','page.headerDistance','insert.pageBreak','insert.lineBreak','insert.rule','link.set','link.remove','toc.insert','toc.update','note.insert','review.accept','review.reject','review.acceptAll','review.rejectAll','review.replace','format.clear','format.grow','format.shrink','table.merge','table.split','table.header','table.background','table.delete','text.replaceAll','format.superscript','format.subscript','comment.add'];
+export const EXTENDED_COMMANDS=['text.insert','page.setup','page.margins','page.columns','page.headerDistance','insert.pageBreak','insert.lineBreak','insert.rule','link.set','link.remove','toc.insert','toc.update','note.insert','review.accept','review.reject','review.acceptAll','review.rejectAll','review.replace','format.clear','format.grow','format.shrink','table.merge','table.split','table.header','table.background','table.delete','text.replaceAll','format.superscript','format.subscript','comment.add'];
 const simple={'insert.pageBreak':'insertPageBreak','insert.lineBreak':'insertLineBreak','insert.rule':'insertHorizontalRule','link.remove':'unsetLink','review.accept':'acceptTrackedChangeBySelection','review.reject':'rejectTrackedChangeOnSelection','review.acceptAll':'acceptAllTrackedChanges','review.rejectAll':'rejectAllTrackedChanges','table.merge':'mergeCells','table.split':'splitCell','table.header':'toggleHeaderRow','table.delete':'deleteTable'};
 function number(v,min,max,label){if(typeof v!=='number'||!Number.isFinite(v)||v<min||v>max)throw Error(label+'超出允许范围');return v;}
 function text(v,label,max=20000){if(typeof v!=='string'||!v.trim()||v.length>max)throw Error('请输入有效的'+label);return v;}
@@ -13,6 +13,12 @@ export function searchText(e,query){
 }
 export function outline(e){const result=[];e.state.doc.descendants((node,pos)=>{if(!node.isTextblock)return;const style=node.attrs.paragraphProperties?.styleId||node.attrs.styleId||'',match=/Heading([1-9])|标题\s*([1-9])/i.exec(style);if(match||node.type.name==='heading')result.push({position:pos+1,level:Number(match?.[1]||match?.[2]||node.attrs.level||1),text:node.textContent});return false;});return result;}
 export function runExtended(e,name,args={}){
+ if(name==='text.insert'){
+  const value=text(args.text,'插入文字');
+  if(/\{\{|\[\[/.test(value))throw Error('请选择已有参数值');
+  const tr=e.state.tr;
+  e.view.dispatch(args.targetText?tr.insertText(value,e.state.selection.to,e.state.selection.to):tr.insertText(value));e.view.focus();return true;
+ }
  if(simple[name])return checked(e.commands[simple[name]]());
  if(name.startsWith('page.')){
   const items=sections(e);const section=items.find(s=>s.address.sectionId===args.sectionId);

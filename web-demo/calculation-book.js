@@ -54,12 +54,16 @@ function calcbookParam(key, fallback = '') {
 function calcbookProject() {
   const stage = window.WorkbenchLegacy?.stage?.() || '扩初';
   const disciplineRaw = calcbookParam('discipline', '结构');
+  const unit = window.WorkbenchProjects?.loading ? '' : window.ExpansionWorkbench?.unit || '';
+  const parameters = unit ? window.WorkbenchIntake?.parameters?.(unit) || {} : {};
   return {
     project_name: calcbookParam('project_name', '待填写项目名称'),
     project_code: calcbookParam('project_code', '待填写'),
     stage,
     discipline: disciplineRaw.split('/')[0].trim() || '结构',
     company: calcbookParam('designer', '待填写设计单位'),
+    unit: unit === '项目整体' ? '' : unit,
+    software: String(parameters.software || calcbookParam('software')).trim(),
   };
 }
 

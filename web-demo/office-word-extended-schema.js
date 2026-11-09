@@ -5,6 +5,7 @@ const sectionId={type:'string',minLength:1,maxLength:100};
 const mm=(maximum=100)=>({type:'number',minimum:0,maximum});
 const shape=(properties={},required=[])=>({type:'object',properties,required,additionalProperties:false});
 export const EXTENDED_COMMAND_ARGUMENTS={};
+EXTENDED_COMMAND_ARGUMENTS['text.insert']=shape({targetText,text:string},['targetText','text']);
 for(const name of ['insert.pageBreak','insert.lineBreak','insert.rule','link.remove','review.accept','review.reject','format.clear','format.grow','format.shrink','format.superscript','format.subscript','table.split','table.header','table.delete'])EXTENDED_COMMAND_ARGUMENTS[name]=shape({targetText},['targetText']);
 // mergeCells needs an explicit browser cell selection; do not expose an ambiguous text-only MCP target.
 for(const name of ['toc.insert','toc.update','review.acceptAll','review.rejectAll'])EXTENDED_COMMAND_ARGUMENTS[name]=shape();
