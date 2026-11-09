@@ -1,10 +1,11 @@
+import {showWordParameters} from './office-word-parameters.js';
 // Tencent professional-ribbon interaction model; all writes use executeCommand.
 const $=id=>document.getElementById(id);
 const button=(label,action,icon='')=>`<button class="workspace-tool" data-action="${action}"><span aria-hidden="true">${icon}</span>${label}</button>`;
 const group=(panels,caption,body)=>`<div class="ribbon-group extended-group" data-panels="${panels}" ${panels.includes('home')?'':'hidden'}><div class="tool-row">${body}</div><span class="group-caption">${caption}</span></div>`;
 export function buildWordWorkspace(){
  const view=$('tab-view');for(const [id,label] of [['page','页面'],['reference','引用'],['review','审阅']]){const b=document.createElement('button');b.type='button';b.role='tab';b.id='tab-'+id;b.dataset.tab=id;b.setAttribute('aria-controls','office-ribbon');b.setAttribute('aria-selected','false');b.tabIndex=-1;b.textContent=label;view.before(b);}
- const tabs=document.querySelector('.office-tabs');tabs.insertAdjacentHTML('afterend','<div class="ribbon-utilities"><button data-action="search" title="查找替换 Ctrl+H">查找替换</button><select id="ribbon-mode" aria-label="工具栏显示"><option value="full">专业工具栏</option><option value="compact">简约工具栏</option><option value="hidden">隐藏工具栏</option></select></div>');
+ const tabs=document.querySelector('.office-tabs');tabs.insertAdjacentHTML('afterend','<div class="ribbon-utilities"><button data-action="parameters">参数</button><button data-action="search" title="查找替换 Ctrl+H">查找替换</button><select id="ribbon-mode" aria-label="工具栏显示"><option value="full">专业工具栏</option><option value="compact">简约工具栏</option><option value="hidden">隐藏工具栏</option></select></div>');
  document.querySelector('.ribbon-scroll').insertAdjacentHTML('beforeend',
   group('home','字体工具',button('增大字号','format.grow','A⁺')+button('减小字号','format.shrink','A⁻')+button('清除格式','format.clear','A⌫')+button('上标','format.superscript','x²')+button('下标','format.subscript','x₂'))+
   group('home','编辑',button('查找替换','search','⌕')+button('大纲','outline','☷'))+
@@ -39,6 +40,7 @@ export function mountWordWorkspace({getController,run,onError}){
  }
  async function action(name){const c=getController();if(!c)return;
   if(name==='search')return search();
+  if(name==='parameters')return showWordParameters(panel('项目参数'),{metadata:c.read().document,run,onError});
   if(name==='outline')return list('文档大纲',c.outline(),item=>c.selectRange({from:item.position,to:item.position}));
   if(name==='notes')return list('脚注',c.notes());
   if(name==='comments')return list('批注',c.comments());

@@ -1,0 +1,6 @@
+import {chromium} from 'file:///C:/Program Files/WindowsApps/OpenAI.CodexPrimaryRuntime.v26-1104-2876-0_26.1104.2876.0_x64__3k8sg7r9htsxt/dependencies/node/node_modules/playwright/index.mjs';
+const b=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});const p=await b.newPage({viewport:{width:1500,height:1000}});const errors=[];p.on('pageerror',e=>errors.push(e.message));
+await p.goto('http://127.0.0.1:5441/workbuddy-integrated-studio.html?project='+'1'.repeat(32));
+await p.waitForFunction(()=>window.ExpansionWorkbench?.capture()&&!window.WorkbenchProjects.loading,{timeout:90000});
+console.log(JSON.stringify(await p.evaluate(()=>({status:document.querySelector('#wp-status')?.textContent,id:window.WorkbenchProjects.id,expansion:window.ExpansionWorkbench.capture()?.identity,nav:[...document.querySelectorAll('button')].filter(b=>/计算书|扩充|扩初/.test(b.textContent)&&b.textContent.length<50).map(b=>({text:b.textContent,id:b.id,onclick:b.getAttribute('onclick')})),ready:document.querySelector('#calcbook-ready')?.textContent})),null,2));
+console.log(JSON.stringify({errors}));await p.screenshot({path:'qa/parallel-review-20261109/word/workbench.png'});await b.close();

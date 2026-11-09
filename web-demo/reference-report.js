@@ -1,12 +1,13 @@
 import {selectedRegulations,regulationNote,updateRegulationField} from './regulation-document.js';
 import {irregularityCategories,irregularityAnswer,irregularityMeasureBlocks} from './irregularity-library.js';
 import {REFERENCE_TABLES as T} from './reference-template-data.js';
+import {translationComponents,withFloor} from './model-out-results.js';
 export const referenceSections=[
  ['overview','1 工程概况'],['basis','2 设计依据'],['criteria','3 设计控制标准与等级'],['ground','4 工程地质'],['loads','5 荷载与作用'],['materials','6 主要结构材料'],['review','7 装配式'],['foundation','8 结构设计'],['selection','8.2 地下室及上部结构'],['model','9 结构计算分析'],['special','10 结构规则性判断与应对措施']
 ];
 export const isoEnabled=s=>['是','有','采用','1','true'].includes(String(s.parameters?.has_iso))||['是','有','采用','1','true'].includes(String(s.parameters?.has_damp));
-const aliases={found_gamma0:'gamma0_found',pile_grade:'pile',pile_safety:'pile',pile_gamma0:'pile_gamma',fire_class:'fire',fire_grade:'fire',period_factor:'period_reduce',eccentricity:'ecc_ratio',bidirectional:'bidir_eq',vertical_eq:'vert_eq',oblique_angle:'skew_angle',mode_method:'modal_combo',beam_stiffness:'stiff_amp'};
-const value=(s,k)=>String(s.parameters?.[k]||s.parameters?.[aliases[k]]||s.document?.parameters?.[k]||'');
+const aliases={found_gamma0:'gamma0_found',pile_grade:'pile',pile_gamma0:'pile_gamma',fire_class:'fire',fire_grade:'fire',period_factor:'period_reduce',eccentricity:'ecc_ratio',bidirectional:'bidir_eq',vertical_eq:'vert_eq',oblique_angle:'skew_angle',mode_method:'modal_combo',beam_stiffness:'stiff_amp'};
+const value=(s,k)=>String(s.parameters?.[k]??s.parameters?.[aliases[k]]??s.document?.parameters?.[k]??'').trim();
 const tok=(s,k)=>s.parameters?.[k]?`{{p:${k}}}`:s.document?.parameters?.[k]||'';
 const marker=k=>'[[table:'+k+']]';
 const image=k=>'[[image:'+k+']]';
@@ -105,7 +106,9 @@ function rawReportTable(s,key){
   const t=base(19,`表9.3 ${s.identity?.unit||'当前单体'}主要技术指标`),raw=s.model?.metrics||{},m={...raw,overturn_wind_x:raw.over_wind_x??raw.overturn_wind_x,overturn_wind_y:raw.over_wind_y??raw.overturn_wind_y,overturn_eq_x:raw.over_eq_x??raw.overturn_eq_x,overturn_eq_y:raw.over_eq_y??raw.overturn_eq_y};
   const map={0:['mass'],1:['unit_weight'],9:['angle'],11:['mass_coef_x','mass_coef_y'],12:['shear_x','shear_y'],13:['drift_wind_x','drift_wind_y'],14:['drift_env_x','drift_env_y'],15:['disp_ratio_x','disp_ratio_y'],16:['stiff_x','stiff_y'],17:['vcap_x','vcap_y'],18:['frame_moment_x','frame_moment_y'],19:['wall_axial_x','wall_axial_y'],20:['gravity_ratio_x','gravity_ratio_y'],21:['overturn_wind_x','overturn_wind_y'],22:['overturn_eq_x','overturn_eq_y']};
   for(const [index,keys]of Object.entries(map)){const r=t.rows[+index];keys.forEach((k,i)=>r.values[r.values.length-keys.length+i]=String(m[k]??''));}
-  for(let i=3;i<=8;i++){const r=t.rows[i],period=m.periods?.find(p=>p.n===i-2);r.values[2]=String(period?.T??m['T'+(i-2)]??'');r.values[3]=String(period?.tr??m['translation'+(i-2)]??'');r.values[4]=String(period?.tor??m['torsion'+(i-2)]??'');}
+  t.rows[14].values[1]='地震作用（本向及本向双向地震）';
+  for(const axis of ['x','y']){const col=axis==='x'?1:2;t.rows[15].values[col]=withFloor(m['disp_ratio_'+axis],m['disp_ratio_'+axis+'_floor']);}
+  for(let i=3;i<=8;i++){const r=t.rows[i],period=m.periods?.find(p=>p.n===i-2);r.values[2]=String(period?.T??m['T'+(i-2)]??'');r.values[3]=translationComponents(period,m['translation'+(i-2)]??'');r.values[4]=String(period?.tor??m['torsion'+(i-2)]??'');}
   for(const [index,axis] of [[12,'x'],[12,'y']]){const col=axis==='x'?2:3;t.rows[index].values[col]=[m['shear_'+axis],m['shear_'+axis+'_r']?m['shear_'+axis+'_r']+'%':''].filter(Boolean).join(' / ');}
   return t;
  }

@@ -1,0 +1,36 @@
+import {createServer} from 'vite';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {join} from 'node:path';
+import {createRequire} from 'node:module';
+import {patchSharedHTML,patchCalculationAPI,patchOfficeEditor} from './shared-patches.mjs';
+import {writePart,projectStoreApi} from '../../../server/project-store.mjs';
+import {officeDocumentApi} from '../../../server/office-document-api.mjs';
+import {portableHTML,RELEASE} from '../../../deploy/portable/runtime.mjs';
+import {createBrowserBridge} from '../../../server/mcp-browser-bridge.mjs';
+import {randomUUID} from 'node:crypto';
+import {intakeApi} from '../../../server/intake-api.mjs';
+const root=fileURLToPath(new URL('../../../',import.meta.url)),qa=join(root,'qa/parallel-review-20261109/word');
+await mkdir(qa,{recursive:true});
+const runtime=process.env.WORKBENCH_RUNTIME||'C:/Program Files/WindowsApps/OpenAI.CodexPrimaryRuntime.v26-1104-2876-0_26.1104.2876.0_x64__3k8sg7r9htsxt/dependencies';
+const env={WORKBENCH_PORTABLE:'1',WORKBENCH_PROJECT_STORE:join(qa,'projects'),WORKBENCH_DATABASE_ROOT:qa,WORKBENCH_CACHE_ROOT:join(qa,'cache'),WORKBENCH_PYTHON:join(runtime,'python/python.exe'),CALCBOOK_PYTHON:join(runtime,'python/python.exe'),CALCBOOK_SOURCE_DIR:join(qa,'sources'),CALCBOOK_UPLOAD_DIR:join(qa,'uploads'),EXPANSION_STORE_DIR:join(qa,'legacy'),IMA_BRIDGE_MODULE:join(qa,'not-configured.mjs'),DEEPSEEK_API_KEY_FILE:join(qa,'not-configured.txt')};
+Object.assign(process.env,env);
+const {expansionApi}=await import('../../../server/expansion-api.mjs');
+// Integrate the submitted shared patch in an ignored QA copy, without editing the shared owner file.
+const configURL=new URL('../../../vite.config.js',import.meta.url),require=createRequire(configURL);
+let config=patchCalculationAPI(await readFile(configURL,'utf8'));
+config=config.replace(/from '([^']+)'/g,(all,spec)=>'from '+JSON.stringify(spec.startsWith('node:')?spec:spec.startsWith('.')?new URL(spec,configURL).href:pathToFileURL(require.resolve(spec)).href));
+config=config.replaceAll('import.meta.url',JSON.stringify(configURL.href));
+const configFile=join(qa,'qa-vite-config.mjs');await writeFile(configFile,config);
+const {calculationBookLocalApi}=await import(pathToFileURL(configFile).href);
+const instanceId=randomUUID(),bridge=createBrowserBridge();
+const plugins=[{name:'word-qa-mcp-health',configureServer(server){server.middlewares.use('/api/portable/health',(_req,res)=>{res.setHeader('Content-Type','application/json');res.end(JSON.stringify({app:'structure-workbench-portable',version:RELEASE,pid:process.pid,instanceId,dataRoot:qa,local:true}));});}},bridge.plugin,{name:'word-qa-shared-integration',transform(source,id){if(id.replaceAll('\\','/').endsWith('/office-editor.js'))return patchOfficeEditor(source);},transformIndexHtml:{order:'pre',handler(html,ctx){return portableHTML(ctx.path.includes('workbuddy-integrated-studio')?patchSharedHTML(html):html,ctx.path);}}},officeDocumentApi(env),projectStoreApi(env),calculationBookLocalApi(env),expansionApi(env),intakeApi(env)];
+const server=await createServer({root,configFile:false,cacheDir:join(qa,'vite-cache'),server:{host:'127.0.0.1',port:5441,strictPort:true,watch:{ignored:['**/qa/**']}},plugins});
+await server.listen();
+const projectId='1'.repeat(32),parameters={project_name:'QA结构工作台教学楼',project_code:'QA-WORD-01',software:'QA计算软件 1.0',designer:'QA设计单位',pile_safety:'二级',foundation:'乙级 / 二级',pile:'甲级'};
+const existing=await fetch('http://127.0.0.1:5441/api/workbench-projects/'+projectId+'/main').then(r=>r.json());
+if(!existing.record)await writePart(env.WORKBENCH_PROJECT_STORE,projectId,'main',{parameters,mode:'blank',parameterVersion:1},0);
+let session;try{session=JSON.parse(await readFile(join(qa,'session.json'),'utf8'));}catch(error){if(error.code!=='ENOENT')throw error;
+ const response=await fetch('http://127.0.0.1:5441/api/office-documents/'+projectId+'?type=docx',{method:'POST',headers:{'x-workbench-request':'office-documents','x-file-name':encodeURIComponent('Word真实验收'),'x-document-unit':encodeURIComponent('QA教学楼')},body:await readFile(join(qa,'word-input.docx'))});
+ const result=await response.json();if(!response.ok)throw Error(JSON.stringify(result));session={projectId,documentId:result.document.documentId};await writeFile(join(qa,'session.json'),JSON.stringify(session));}
+console.log(JSON.stringify({url:'http://127.0.0.1:5441/office-editor.html?project='+projectId+'&document='+session.documentId,root,qa,pid:process.pid}));

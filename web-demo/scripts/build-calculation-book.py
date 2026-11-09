@@ -454,16 +454,18 @@ def apply_current_cover(document: Document, payload: dict) -> None:
         "26-AD-026": clean_text(payload.get("project_code")) or "【待填写项目编号】",
         "江南大学(江阴校区)二期科研创新组团": clean_text(payload.get("project_name")) or "【待填写项目名称】",
         "施工图": clean_text(payload.get("stage")) or "【待填写阶段】",
-        "63": "【待填写子项编号】", "媒体融合与创新创业学院": "【待填写子项名称】",
+        "63": "【待填写子项编号】", "媒体融合与创新创业学院": clean_text(payload.get("unit")) or "【待填写子项名称】",
         "结构": clean_text(payload.get("discipline")) or "结构",
         "基础及上部结构": "【按本次目录确认】",
         "周汉杰": "【待审核】", "刘浩晋": "【待校对】", "张涛冯锋": "【待填写专业负责人】",
         "张伊楚": "【待填写设计人】", "2026-07-10": "【待填写日期】",
         "V01": "【待填写版本】", "施工图出图": "工作草案，待复核",
-        "盈建科建筑结构设计软件": "【待填写计算软件】", "7.1.0": "【待填写软件版本】",
+        "盈建科建筑结构设计软件": clean_text(payload.get("software")) or "【待填写计算软件】", "7.1.0": clean_text(payload.get("software_version")) or "",
         "同济大学建筑设计研究院(集团)有限公司": clean_text(payload.get("company")) or "【待填写设计单位】",
         "TONGJIARCHITECTURALDESIGN(GROUP)CO.,LTD": "",
     }
+    fields = {"project_name": "项目名称", "project_code": "项目编号", "stage": "阶段", "unit": "子项名称", "company": "设计单位", "software": "计算软件", "discipline": "专业"}
+    replacements.update({"{{" + key + "}}": clean_text(payload.get(key)) or "【待填写" + label + "】" for key, label in fields.items()})
     namespace = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
     for paragraph in document.element.iter(namespace + "p"):
         texts = list(paragraph.iter(namespace + "t"))
@@ -472,6 +474,26 @@ def apply_current_cover(document: Document, payload: dict) -> None:
             texts[0].text = replacements[value]
             for node in texts[1:]:
                 node.text = ""
+
+
+def clean_cover_identity(document: Document) -> None:
+    """Clean the retained template only, before inserting current project values."""
+    # Strip every image relationship, including thumbnail and VML fallback images.
+    for part in list(document.part.package.parts):
+        element = getattr(part, "_element", None)
+        if element is not None:
+            for node in element.xpath(".//*[local-name()='drawing' or local-name()='pict' or local-name()='object' or local-name()='del' or local-name()='commentRangeStart' or local-name()='commentRangeEnd' or local-name()='commentReference']"):
+                if node.getparent() is not None: node.getparent().remove(node)
+            for node in element.iter():
+                for key in list(node.attrib):
+                    if key.rsplit('}', 1)[-1] in ('author', 'initials'): del node.attrib[key]
+        for rid, rel in list(part.rels.items()):
+            if rel.reltype.rsplit('/', 1)[-1] in ('image', 'comments', 'commentsExtended', 'people', 'thumbnail'):
+                part.drop_rel(rid)
+    for rid, rel in list(document.part.package.rels.items()):
+        if rel.reltype.endswith('/thumbnail'): del document.part.package.rels[rid]
+    props = document.core_properties
+    props.author = ''; props.last_modified_by = ''; props.comments = ''; props.keywords = ''
 
 
 def build(source_dir: Path, output_dir: Path, payload: dict) -> dict:
@@ -491,23 +513,14 @@ def build(source_dir: Path, output_dir: Path, payload: dict) -> dict:
     document = Document(output_path)
     # The reference cover contains historical signatures/stamps. Keep its text
     # layout, but never carry those images into a new project's generated draft.
-    for part in [document.part, *document.part.related_parts.values()]:
-        element = getattr(part, "_element", None)
-        if element is None:
-            continue
-        for node in element.xpath(".//*[local-name()='drawing'] | .//*[local-name()='shape'][.//*[local-name()='imagedata']]"):
-            if node.getparent() is not None:
-                node.getparent().remove(node)
-        for rid, rel in list(part.rels.items()):
-            if rel.reltype.endswith('/image') and not element.xpath(f'.//*[@*[local-name()="embed" or local-name()="id"]="{rid}"]'):
-                part.drop_rel(rid)
+    clean_cover_identity(document)
     apply_current_cover(document, payload)
     add_directory_page(document, sections)
     document.core_properties.title = f"{project_name} 结构计算书"
     document.core_properties.subject = "A3 结构计算书"
     document.core_properties.comments = (
         "来源：QS-324计算书封面、结构计算书内容母件、用户上传OUT及所选Excel；"
-        "状态：已人工确认；原始输入只读。"
+        "状态：工作草案；原始输入只读。"
     )
     excel_blocks = payload.get("excel_blocks") if isinstance(payload.get("excel_blocks"), list) else []
     out_files = payload.get("out_files") if isinstance(payload.get("out_files"), list) else []

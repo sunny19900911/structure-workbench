@@ -1,0 +1,48 @@
+import {chromium} from 'file:///C:/Program Files/WindowsApps/OpenAI.CodexPrimaryRuntime.v26-1104-2876-0_26.1104.2876.0_x64__3k8sg7r9htsxt/dependencies/node/node_modules/playwright/index.mjs';
+import {writeFile} from 'node:fs/promises';
+import {resolve,join} from 'node:path';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+const qa=resolve('qa/parallel-review-20261109/word');
+const projectId=randomUUID().replaceAll('-','');
+const seeded=await fetch('http://127.0.0.1:5441/api/workbench-projects/'+projectId+'/main',{method:'POST',headers:{'content-type':'application/json','x-workbench-request':'project-store'},body:JSON.stringify({expectedRevision:0,data:{mode:'blank',parameterVersion:1,parameters:{project_name:'QA结构工作台教学楼',project_code:'QA-WORD-01',software:'QA计算软件 1.0',designer:'QA设计单位',pile_safety:'二级',foundation:'乙级 / 二级',pile:'甲级'}}})});assert.ok(seeded.ok);
+const c=(n,title,den,floor,ratio='1.1',rfloor='2')=>`=== 工况${n} === ${title}\n最大层间位移角: 1/${den} (${floor}层)\n最大层间位移与平均层间位移的比值: ${ratio} (${rfloor}层)\n`;
+const displacement=[c(1,'X向地震作用',1000,2),c(2,'X向双向地震作用',900,3),c(3,'Y向地震作用',800,4),c(4,'Y向双向地震作用',750,5),c(5,'X向地震作用（考虑偶然偏心）',200,6),c(6,'30度地震作用',100,7),c(7,'X向30度地震作用',50,8),c(8,'X+方向规定水平力',1100,2,'1.25','8'),c(9,'Y-方向规定水平力',1200,3,'1.33','9'),c(10,'X向风荷载',1500,4)].join('\n');
+const files=[['WMASS.OUT','结构总质量 (t): 1234\n恒载总质量 (t): 1000\n活载总质量 (t): 234'],['WZQ.OUT','振型 周期\n1 0.51 0.0 1.0(1.0+0.0) 0.02\n2 0.43 90.0 1.0(0.0+1.0) 0.03'],['WDISP.OUT',displacement]];
+for(const [name,text] of files)await writeFile(join(qa,name),text);
+const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
+const page=await browser.newPage({viewport:{width:1500,height:1050}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+const ready=()=>page.waitForFunction(()=>window.WorkbenchFlow&&window.ExpansionWorkbench?.capture()&&!window.WorkbenchProjects.loading,{timeout:90000});
+try{
+ await page.goto('http://127.0.0.1:5441/workbuddy-integrated-studio.html?project='+projectId);await ready();
+ await page.locator('#wp-intake').click();
+ await page.locator('#flow-kind').selectOption('yjk');await page.locator('#flow-unit').fill('QA教学楼');
+ await page.locator('#flow-files').setInputFiles(files.map(([name])=>join(qa,name)));
+ await page.waitForFunction(()=>document.querySelector('#flow-jobs').textContent.includes('已更新 · 已保存')||document.querySelector('#flow-jobs').textContent.includes('失败'),{timeout:90000});
+ const job=await page.locator('#flow-jobs').textContent();assert.doesNotMatch(job,/失败/);
+ await page.locator('#flow-result').click();
+ const metrics=await page.evaluate(()=>window.ExpansionWorkbench.capture().model.metrics);
+ assert.equal(metrics.drift_env_x,'1/900（3 层）');assert.equal(metrics.drift_env_y,'1/750（5 层）');assert.equal(metrics.disp_ratio_x_floor,'8');assert.equal(metrics.disp_ratio_y_floor,'9');
+ await page.locator('#paper2 [data-action="local"]').click();
+ await page.waitForFunction(()=>window.ExpansionWorkbench.mcp.read().tables.metrics?.rows[3]?.values[3]==='(1.0 + 0.0)');
+ const valueCell=label=>page.locator('[data-table-key="classification"][data-table-col="0"]').filter({hasText:label}).locator('..').locator('[data-table-col="1"]');
+ const cell=valueCell('桩基结构安全等级');
+ await cell.fill('一级');await cell.press('Tab');
+ const gamma=valueCell('基础结构重要性系数');await gamma.fill('1.1');await gamma.press('Tab');
+ const pileGamma=valueCell('桩基结构重要性系数');await pileGamma.fill('桩土承载力 1.0；桩身承载力 1.1');await pileGamma.press('Tab');
+ await page.evaluate(()=>window.WorkbenchProjects.flush());
+ await page.reload();await ready();await page.locator('#tab2').click();
+ const tables=await page.evaluate(()=>window.ExpansionWorkbench.mcp.read().tables);
+ assert.equal(tables.classification.rows[7].values[1],'一级');assert.equal(tables.classification.rows[5].values[1],'1.1');assert.equal(tables.classification.rows[8].values[1],'桩土承载力 1.0；桩身承载力 1.1');
+ assert.equal(tables.metrics.rows[3].values[3],'(1.0 + 0.0)');assert.equal(tables.metrics.rows[15].values[1],'1.25（8 层）');
+ await page.locator('[data-editor="model"]').scrollIntoViewIfNeeded();await page.screenshot({path:join(qa,'model-results.png')});
+ const expansionDownload=page.waitForEvent('download',{timeout:90000});await page.locator('#paper2 [data-action="export"]').click();await(await expansionDownload).saveAs(join(qa,'expansion-downloaded.docx'));
+ await page.locator('#tab9').click();await page.waitForFunction(()=>document.querySelector('#calcbook-ready').textContent.includes('已就绪'));
+ await page.locator('.calcbook-template-reference summary').click();await page.locator('.calcbook-template-reference').scrollIntoViewIfNeeded();await page.screenshot({path:join(qa,'calculation-cover-preview.png')});
+ const current=await page.evaluate(()=>window.CalculationBook.mcp.read().project);assert.equal(current.unit,'QA教学楼');assert.equal(current.software,'QA计算软件 1.0');
+ await page.locator('#calcbook-confirmed').check();
+ const download=page.waitForEvent('download',{timeout:90000});await page.locator('#calcbook-export').click();await(await download).saveAs(join(qa,'calculation-downloaded.docx'));
+ await writeFile(join(qa,'workbench-result.json'),JSON.stringify({status:'passed',projectId,errors,job,project:current,metrics,tables,checks:['UI model files import','case and floor selection','generated native table edits','save/reopen','expansion DOCX export','calculation cover preview','calculation inherited unit/software','calculation DOCX download']},null,2));
+ console.log(JSON.stringify({status:'passed',errors,project:current}));
+}catch(error){await page.screenshot({path:join(qa,'workbench-failure.png')});console.error(JSON.stringify({error:error.message,errors,status:await page.locator('#calcbook-status').textContent(),expansionStatus:await page.locator('#ev-status').textContent()}));throw error;}
+finally{await browser.close();}

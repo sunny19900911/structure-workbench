@@ -1,0 +1,28 @@
+--- a/web-demo/workbuddy-integrated-studio.html
++++ b/web-demo/workbuddy-integrated-studio.html
+@@ -1231 +1231 @@
+-          <summary>Word 封面与目录原件预览</summary>
++          <summary>Word 封面与目录模板预览</summary>
+@@ -1234 +1234 @@
+-              <img src="./assets/calculation-book/cover-reference.png" alt="QS-324 原始计算书封面">
++              <img src="./assets/calculation-book/cover-reference.png" alt="已清除历史签名与注册章的计算书封面模板">
+@@ -3896,0 +3897 @@
++  window.WorkbenchModelResults?.correctModelResults(R, files, log);
+@@ -3961 +3962 @@
+-  pm.forEach(function(p){per.push(['T'+p.n, p.T, p.x, p.y, p.tor]);});
++  pm.forEach(function(p){per.push(['T'+p.n, p.T, ['('+p.x+' + '+p.y+')',2], p.tor]);});
+@@ -3977 +3978 @@
+-    ['楼层最大弹性层间位移角（楼层号）—— 地震作用（X 向地震与双向地震包络）',
++    ['楼层最大弹性层间位移角（楼层号）—— 地震作用（本向及本向双向地震）',
+--- a/web-demo/office-editor.js
++++ b/web-demo/office-editor.js
+@@ -98 +98 @@
+- return {read,save,exportBlob,executeCommand,sections:()=>sections(editor()),find:query=>searchText(editor(),query),outline:()=>outline(editor()),notes:()=>editor().doc.footnotes.list({limit:100}).items,comments:()=>editor().doc.comments.list({limit:100}).items.map(item=>({text:item.text||item.content||item.commentId})),changes:()=>editor().doc.trackChanges.list({limit:100}).items.map(item=>({text:({replacement:'替换',insertion:'插入',deletion:'删除',formatting:'格式'}[item.type]||'修订')+'：'+(item.excerpt||item.text||item.insertedText||item.deletedText||'请在正文中查看对应标记')})),statistics(){const e=editor(),text=e.state.doc.textContent;let paragraphs=0;e.state.doc.descendants(n=>{if(n.isTextblock)paragraphs++;});return {characters:text.replace(/\s/g,'').length,words:(text.match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/g)||[]).length,paragraphs};},selectRange(range){editor().commands.setTextSelection({from:range.from,to:range.to});editor().commands.focus();},setReviewMode(enabled){sd.setDocumentMode(enabled?'suggesting':'editing');},setZoom(value){if(value==='fit')sd.setZoomMode('fit-width');else sd.setZoom(Number(value));},replaceText:args=>executeCommand({name:'text.replace',args,expectedRevision:metadata.fileRevision}),get dirty(){return generation!==savedGeneration;},get busy(){return Boolean(savePending||mutationPending);},destroy(){destroyed=true;clearTimeout(autoSaveTimer);active.off('selectionUpdate',syncContext);active.off('transaction',syncContext);sd.destroy();}};
++ return {read,save,exportBlob,executeCommand,sections:()=>sections(editor()),find:query=>searchText(editor(),query),outline:()=>outline(editor()),notes:()=>editor().doc.footnotes.list({limit:100}).items,comments:()=>editor().doc.comments.list({limit:100}).items.map(item=>({text:item.text||item.content||item.commentId})),changes:()=>editor().doc.trackChanges.list({limit:100}).items.map(item=>({text:({replacement:'替换',insertion:'插入',deletion:'删除',formatting:'格式'}[item.type]||'修订')+'：'+(item.excerpt||item.text||item.insertedText||item.deletedText||'请在正文中查看对应标记')})),statistics(){const e=editor(),text=e.state.doc.textContent;let paragraphs=0;e.state.doc.descendants(n=>{if(n.isTextblock)paragraphs++;});return {characters:text.replace(/\s/g,'').length,words:(text.match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/g)||[]).length,paragraphs};},selectRange(range){editor().commands.setTextSelection({from:range.from,to:range.to});editor().view.focus();},setReviewMode(enabled){sd.setDocumentMode(enabled?'suggesting':'editing');},setZoom(value){if(value==='fit')sd.setZoomMode('fit-width');else sd.setZoom(Number(value));},replaceText:args=>executeCommand({name:'text.replace',args,expectedRevision:metadata.fileRevision}),get dirty(){return generation!==savedGeneration;},get busy(){return Boolean(savePending||mutationPending);},destroy(){destroyed=true;clearTimeout(autoSaveTimer);active.off('selectionUpdate',syncContext);active.off('transaction',syncContext);sd.destroy();}};
+--- a/web-demo/vite.config.js
++++ b/web-demo/vite.config.js
+@@ -313 +313,3 @@
+-          company: String(body.company || '').slice(0, 200),
++          company: String(body.company || '').slice(0, 200),
++          unit: String(body.unit || '').slice(0, 200),
++          software: String(body.software || '').slice(0, 200),
