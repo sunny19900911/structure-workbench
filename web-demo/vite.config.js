@@ -311,6 +311,8 @@ function calculationBookLocalApi(env) {
           stage: String(body.stage || '').slice(0, 40),
           discipline: String(body.discipline || '').slice(0, 40),
           company: String(body.company || '').slice(0, 200),
+          unit: String(body.unit || '').slice(0, 200),
+          software: String(body.software || '').slice(0, 200),
           confirmed: true,
           sections,
           out_files: outFiles,

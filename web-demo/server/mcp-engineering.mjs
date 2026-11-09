@@ -1,7 +1,7 @@
 // MCP guidance is a versioned workflow, not model training or a structural solver.
 // It reuses the workbench's verified rules and never mutates a project.
 import {seismicGrade,gradeInput,GRADE_VERSION,GRADE_SOURCES,SYSTEMS} from '../seismic-grade-core.js';
-import {combinedParameters} from '../intake-core.js';
+import {combinedParameters,resolveSeismicConfig} from '../intake-core.js';
 import {referenceSections} from '../reference-report.js';
 import {IRREGULARITY_LIBRARY} from '../irregularity-library-data.js';
 
@@ -107,12 +107,12 @@ MCP 工具/资源/提示词提供业务能力与上下文，不会训练模型�
 const documents=[
  ['office','院内工程办公成果流程',`# 工程办公成果
 source_id: USER-OFFICE-WORKFLOW-20261108；陈述类型：原文事实（用户需求）与AI推断（接口编排）。
-目标：自然语言调用院内流程，生成同项目、同单体、同参数版本的 Word、PPT、Excel，工程师直接编辑或下载。
+目标：自然语言调用院内流程，生成同项目、同单体、同参数版本的 Word、PPT、Excel，工程师下载原生文件后在本机 Office/WPS 中编辑。网页内 Word/PPT/Excel 编辑入口已移除。
 先列项目、读取 project.context，再读取 workflow、sources、parameters。补齐已有资料后用 expansion.generate 更新自动稿；人工稿保留。调用 office.generate 一次建立三份原生文件，同 batchId 和 sourceParameterVersion。生成完成与专业审签分别记录。
-office.list 列文件；office.open/read 取得当前文件及 fileRevision；office.command 沿用网页同一个命令入口。Word 按唯一文本定位改写或排版，Excel按工作表和单元格定位，PPT按页和shapeId定位。修改只影响成果文件，工程参数变更仍走统一措施。
+office.list 列文件，office.download 下载。office.open/read/command 为兼容保留的后台命令，仍可能依赖隐藏浏览器组件；不要求用户打开网页编辑界面。Word 按唯一文本定位改写或排版，Excel按工作表和单元格定位，PPT按页和shapeId定位。修改只影响成果文件，工程参数变更仍走统一措施。
 变更工程参数后生成新成果集，不覆盖已编辑的文件。文档保留来源参数版本和全部文件历史。office.download 返回本机原生文件；项目备份携带全部文档版本。
 内容简洁，直接写工程事实和措施。缺失资料留空，历史数值不作当前事实，不添加候选确认、填理由或无关说明。
-当前 Excel 编辑保存公式但不在网页完成公式重算；PPT 当前可改普通文字与位置，母版/图表等原部件保留，网页为基础预览。`],
+当前 Excel 只支持已实现的公式计算子集；PPT 保留原生部件。资料导入、参数修改、扩初及整套生成仍需同一服务的工作台页面在后台打开；文件清单、下载及保存状态检查可直接调用本机服务。`],
  ['workflow','初步结构设计工作流',workflow],['sources','资料职责与证据',sources],
  ['parameters','参数依赖与量纲',parameters],['chapters','扩初章节与资料来源',chapters],
  ['seismic','抗震等级查表边界',seismic],['capabilities','六模块能力与调用顺序',capabilities],
@@ -162,7 +162,7 @@ export function lookupSeismicGrade({config={},parameters={}}={}){
  return {...result,workflowVersion:ENGINEERING_VERSION,statement:'AI推断（按已登记条文实现的查表结果）',scope:'本地现有规则范围内的规范查表草案；未重新求解结构模型',ruleSources:Object.values(GRADE_SOURCES),written:false};
 }
 
-const parameterLabels={project_name:'项目名称',region:'项目地点',seismic_cat:'设防类别',intensity:'设防烈度',pga:'基本地震加速度',eq_group:'地震分组',site_class:'场地类别',tg:'特征周期',design_life:'设计工作年限',safety_grade:'结构安全等级',wind:'基本风压',wind_rough:'地面粗糙度',temp_low:'最低基本气温',temp_high:'最高基本气温',struct_sys:'结构体系',g_frame:'框架抗震等级',g_wall:'墙/筒体抗震等级',g_frame_m:'框架构造措施等级',g_wall_m:'墙/筒体构造措施等级'};
+const parameterLabels={seismic_height_m:'抗震查表高度',project_name:'项目名称',region:'项目地点',seismic_cat:'设防类别',intensity:'设防烈度',pga:'基本地震加速度',eq_group:'地震分组',site_class:'场地类别',tg:'特征周期',design_life:'设计工作年限',safety_grade:'结构安全等级',wind:'基本风压',wind_rough:'地面粗糙度',temp_low:'最低基本气温',temp_high:'最高基本气温',struct_sys:'结构体系',g_frame:'框架抗震等级',g_wall:'墙/筒体抗震等级',g_frame_m:'框架构造措施等级',g_wall_m:'墙/筒体构造措施等级'};
 function comparable(key,value){
  const s=String(value??'').trim();
  if(key==='site_class')return s.replace(/Ⅳ/g,'IV').replace(/Ⅲ/g,'III').replace(/Ⅱ/g,'II').replace(/Ⅰ/g,'I').replace(/\s|类/g,'');
@@ -204,11 +204,11 @@ export function inspectEngineeringProject({projectId,records={},unit='项目整�
   if(missingMetrics.length)add('MODEL_METRIC_MISSING','整体抗倾覆力矩比尚有未提取方向/工况；不能以框架倾覆力矩占比代替。','project:'+projectId+':'+expansionPart+':model',{keys:missingMetrics},'warning');
   for(const warning of list(s.model.warnings))add('MODEL_BATCH_NOTE',String(warning),'project:'+projectId+':'+expansionPart+':model',{},'warning');
  }
- const gradeConfig=intake.seismicGrades?.[unit];
- const grade=gradeConfig?seismicGrade(gradeInput(gradeConfig,effective)):null;
+ const resolvedGrade=resolveSeismicConfig(intake,unit,effective);
+ const grade=(intake.seismicGrades?.[unit]||resolvedGrade.config.height!=='')?seismicGrade(gradeInput(resolvedGrade.config,effective)):null;
  if(grade&&grade.status!=='ready')add('SEISMIC_GRADE_INCOMPLETE','当前单体抗震等级尚不能完整查取，保留缺项/专项条件。',grade.source_id||'project:'+projectId+':intake.seismicGrades',{status:grade.status,missing:grade.missing,notices:grade.notices},'warning');
  const regulations=list(s.regulations).filter(r=>r.selected).map(r=>({id:r.id,title:r.title,code:r.code,version:r.version,review:r.review,status:r.status,source_id:r.source_id}));
  if(regulations.some(r=>r.review!=='confirmed'||r.status!=='current'))add('REGULATION_STATUS','已选规范中有版本/适用性尚未核实的条目；不能把目录名称作为条文证明。','project:'+projectId+':'+expansionPart+':regulations',{},'warning');
  const knownUnits=[...new Set([...Object.keys(intake.seismicGrades||{}),...intake.facts.map(f=>f.unit),...Object.values(parts).filter(p=>p.identity).map(p=>p.identity.unit),...list(s.document?.units).map(u=>u.name)].filter(Boolean))];
- return {version:ENGINEERING_VERSION,projectId,unit,expansionPart:expansionPart||null,revisions,statement:'AI推断（对保存状态及现有规则的只读检查）',source_id:'MCP-DESIGN-INSPECTION-20261108',draftAllowed:!!parts.main&&!parts.lifecycle?.deleted,engineeringApproval:false,written:false,locks:{measures:main.cards?.c1===3,expansion:!!s.signed,deleted:!!parts.lifecycle?.deleted},parameters:Object.fromEntries(Object.keys(parameterLabels).filter(k=>present(effective[k])).map(k=>[k,effective[k]])),knownUnits,sources:inventory,sections:sectionStatus,regulations,seismicGrade:grade,model:s.model?{batch:s.model.batch,sourceIds:list(s.model.sourceIds),confirmed:!!s.model.confirmed,metricKeys:Object.keys(metrics)}:null,findings};
+ return {version:ENGINEERING_VERSION,projectId,unit,expansionPart:expansionPart||null,revisions,statement:'AI推断（对保存状态及现有规则的只读检查）',source_id:'MCP-DESIGN-INSPECTION-20261108',draftAllowed:!!parts.main&&!parts.lifecycle?.deleted,engineeringApproval:false,written:false,locks:{measures:main.cards?.c1===3,expansion:!!s.signed,deleted:!!parts.lifecycle?.deleted},parameters:Object.fromEntries(Object.keys(parameterLabels).filter(k=>present(effective[k])).map(k=>[k,effective[k]])),knownUnits,sources:inventory,sections:sectionStatus,regulations,seismicHeightSource:resolvedGrade.heightSource,seismicGrade:grade,model:s.model?{batch:s.model.batch,sourceIds:list(s.model.sourceIds),confirmed:!!s.model.confirmed,metricKeys:Object.keys(metrics)}:null,findings};
 }

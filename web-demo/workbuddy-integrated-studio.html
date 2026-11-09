@@ -1226,10 +1226,10 @@ td.stg{font-size:11.5px;color:#7b8794}
           <div class="calcbook-pdf-canvas"><img id="calcbook-pdf-image" alt="PDF 页面预览"></div>
         </div>
         <details class="calcbook-template-reference">
-          <summary>Word 封面与目录原件预览</summary>
+          <summary>Word 封面与目录模板预览</summary>
           <div class="calcbook-reference-grid">
             <figure class="calcbook-reference-page" aria-label="原始封面Word页面快照">
-              <img src="./assets/calculation-book/cover-reference.png" alt="QS-324 原始计算书封面">
+              <img src="./assets/calculation-book/cover-reference.png" alt="已清除历史签名与注册章的计算书封面模板">
               <figcaption>封面母件</figcaption>
             </figure>
             <figure class="calcbook-reference-page" aria-label="原始目录Word页面快照">
@@ -3892,6 +3892,7 @@ function parseYJK(files){
   if(ov) R.over_wind_x=ov[3]; if(ov2) R.over_wind_y=ov2[3];
   if(ov3) R.over_eq_x=ov3[3]; if(ov4) R.over_eq_y=ov4[3];
   if(ov) log.push('抗倾覆 Mr/Mov 风 X '+ov[3]+' / Y '+(ov2?ov2[3]:'—')+'；地震 X '+(ov3?ov3[3]:'—')+' / Y '+(ov4?ov4[3]:'—'));
+  window.WorkbenchModelResults?.correctModelResults(R, files, log);
   YJKRAW = R;                        /* 原始指标缓存：两张汇总表由参数即时构建 */
   updateShearFloorOptions();
   return {data:R,log:log};
@@ -3956,7 +3957,7 @@ function yjkTables(){
   const pm=(R.periods||[]).slice(0,mc);
   const per=[[['考虑双向及偶然偏心的周期（s）',1,pm.length+1],
               '振型号','周期（s）',['平动系数（X+Y）',2],'扭转系数（T）']];
-  pm.forEach(function(p){per.push(['T'+p.n, p.T, p.x, p.y, p.tor]);});
+  pm.forEach(function(p){per.push(['T'+p.n, p.T, ['('+p.x+' + '+p.y+')',2], p.tor]);});
 
   const rows=[
     ['计算项目',['X 向',2],['Y 向',2],'规范要求 / 备注'],
@@ -3972,7 +3973,7 @@ function yjkTables(){
     ['底部剪力（kN）和剪重比（%）',[shTxt(shx),2],[shTxt(shy),2],shNote],
     ['楼层最大弹性层间位移角（楼层号）—— 风荷载作用',
      [yjkNum(R.drift_wind_x),2],[yjkNum(R.drift_wind_y),2],'≤ 1/550，满足'],
-    ['楼层最大弹性层间位移角（楼层号）—— 地震作用（X 向地震与双向地震包络）',
+    ['楼层最大弹性层间位移角（楼层号）—— 地震作用（本向及本向双向地震）',
      [yjkNum(R.drift_env_x),2],[yjkNum(R.drift_env_y),2],'≤ 1/550，满足'],
     ['考虑偶然偏心的最大（层间）位移与平均（层间）位移的比值（楼层号）',
      [rTxt(rx),2],[rTxt(ry),2],rNote],

@@ -4,7 +4,7 @@ import {createDocumentComposer} from './document-intake.js';
 import './project-workspace.js';
 import {projectPart,clone} from './project-store-client.js';
 import {fingerprint} from './expansion-core.js';
-import {PROJECT,FIELD_LABELS,GLOBAL_KEYS,freshIntake,fragments,extractLocal,mergeCandidates,conflicts,adoptFact,unitNames,unitParameters,combinedParameters,expansionEvidence,matchLocation,sourceRemoval,removeSource,restoreSource} from './intake-core.js';
+import {PROJECT,FIELD_LABELS,GLOBAL_KEYS,freshIntake,fragments,extractLocal,mergeCandidates,conflicts,adoptFact,unitNames,unitParameters,combinedParameters,resolveSeismicConfig,expansionEvidence,matchLocation,sourceRemoval,removeSource,restoreSource} from './intake-core.js';
 import './intake-workbench.css';
 import {DECISION_CONDITIONS} from './regional-decision-guide.js';
 
@@ -48,8 +48,7 @@ function seismicInputs(){
  const doc=gradeDocument||composeDocument(state.sources),global=L.params();
  return [...new Set([...unitNames(state),...doc.allUnitNames])].filter(name=>name!==PROJECT).map(name=>{
   const unit=doc.units.find(u=>u.name===name),parameters=combinedParameters(state,name,global);
-  const height=state.facts.find(f=>f.unit===name&&f.key==='height_m'&&f.status==='confirmed')?.value||'';
-  return {name,parameters,config:{height,structure:parameters.struct_sys||unit?.structuralType||'',buildingUse:/住宅/.test(unit?.use||'')?'residential':'other',floors:unit?.floors||'',...state.seismicGrades?.[name]}};
+  return {name,parameters,config:resolveSeismicConfig(state,name,global).config};
  });
 }
 function applyDocumentIdentity(){

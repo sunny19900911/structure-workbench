@@ -331,7 +331,7 @@ def generate_workbook(spec):
         sheet=wb.create_sheet(name)
         for row in table['rows']:
             if not isinstance(row,list) or len(row)>100: raise OfficeError('附表列数超出范围','INVALID_INPUT')
-            sheet.append(['' if v is None else str(v) for v in row])
+            sheet.append(['' if v is None else v if isinstance(v,(bool,int,float)) else str(v) for v in row])
     for sheet in wb:
         sheet.freeze_panes='A3' if sheet==ws else 'A2'; sheet.sheet_view.showGridLines=False
         header=2 if sheet==ws else 1
@@ -339,7 +339,11 @@ def generate_workbook(spec):
             for cell in row:
                 # Generated project inputs are literals; formulas require an explicit cell.set.
                 if cell.value is not None:
-                    cell.value=str(cell.value);cell.data_type='s'
+                    if isinstance(cell.value,bool): cell.data_type='b'
+                    elif isinstance(cell.value,(int,float)):
+                        if not math.isfinite(cell.value): raise OfficeError('生成数值必须为有限数字','INVALID_INPUT')
+                        cell.data_type='n'
+                    else: cell.value=str(cell.value);cell.data_type='s'
                 cell.font=Font(name='微软雅黑',size=11,color='183F35')
                 cell.alignment=Alignment(vertical='center',wrap_text=True)
                 if cell.row==header:
