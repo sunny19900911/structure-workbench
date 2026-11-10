@@ -1,3 +1,4 @@
+import {completionSummary} from './intake-review-summary.js';
 import './integrated-modules.js';
 import './portable-projects-ui.js';
 import './workflow-ui.css';
@@ -27,7 +28,7 @@ async function run(job){
  running=true;job.error='';job.status='读取中';task.textContent='读取中 · '+job.name;render();
  try{
   if(job.slot==='yjk'){if(E.unit!==job.unit)throw Error('当前单体已改变，请切回 '+job.unit+' 后重试');await E.importFiles('yjk',job.files);}
-  else{const result=await I.readFiles(job.slot,job.files,{replaceSource:job.replaceSource});job.slot=result?.files?.[0]?.slot||job.slot;}
+  else{const result=await I.readFiles(job.slot,job.files,{replaceSource:job.replaceSource});job.slot=result?.files?.[0]?.slot||job.slot;job.review=result?.files?.[0]?.review;}
   job.status='已更新';task.textContent='已更新 · '+job.name;
   await W.flush('workflow');job.status='已更新 · 已保存';replacement=null;
  }catch(e){job.status='失败';job.error=e.message;task.textContent='处理失败 · '+e.message;}
@@ -42,7 +43,7 @@ q('#flow-files').onchange=async e=>{
   for(const file of files){const text=/\.(txt|md)$/i.test(file.name)?window.ExpansionHost.decode(await file.slice(0,32000).arrayBuffer()):'';classified.push({file,slot:target?.slot||(isModelFile(file.name,text)?'yjk':'auto')});}
   if(project!==W.id||unit!==E.unit)throw Error('项目或单体已切换，请重新选择文件');
   const models=classified.filter(item=>item.slot==='yjk').map(item=>item.file),groups=classified.filter(item=>item.slot!=='yjk').map(item=>({slot:item.slot,files:[item.file]}));if(models.length)groups.push({slot:'yjk',files:models});
-  for(const group of groups){const job={id:crypto.randomUUID(),project,slot:group.slot,unit,files:group.files,name:group.files.map(f=>f.name).join('、'),replaceSource:target?.source_id,status:'等待读取'};jobs.push(job);await run(job);}
+  const batch=[];for(const group of groups){const job={id:crypto.randomUUID(),project,slot:group.slot,unit,files:group.files,name:group.files.map(f=>f.name).join('、'),replaceSource:target?.source_id,status:'等待读取'};jobs.push(job);batch.push(job);await run(job);}task.textContent=completionSummary(batch);
  }catch(error){task.textContent='导入失败 · '+error.message;q('#flow-jobs').textContent=error.message;}
  finally{running=false;controls();}
 };
@@ -50,7 +51,7 @@ q('#flow-cancel-replace').onclick=()=>{replacement=null;render();};
 q('[data-close]').onclick=()=>dialog.close();
 q('#flow-result').onclick=()=>{dialog.close();window.WorkbenchLegacy.go(2);};
 dialog.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
- if(b.dataset.retry&&!running){const j=jobs.find(j=>j.id===b.dataset.retry);if(j)await run(j);}
+ if(b.dataset.retry&&!running){const j=jobs.find(j=>j.id===b.dataset.retry);if(j){await run(j);task.textContent=completionSummary([j]);}}
  if(b.hasAttribute('data-model-replace')){replacement={slot:'yjk',name:'当前模型批次'};render();q('#flow-files').click();}
  if(b.hasAttribute('data-model-remove')&&!running){try{await E.removeModel();render();}catch(e){task.textContent=e.message;}}
 });

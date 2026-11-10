@@ -9,6 +9,13 @@ spec=importlib.util.spec_from_file_location('reader',Path(__file__).with_name('e
 reader=importlib.util.module_from_spec(spec);spec.loader.exec_module(reader)
 
 class ReadingOrderTests(unittest.TestCase):
+    def test_page_frame_is_not_a_missing_table(self):
+        edges=[{'x0':x,'x1':x,'top':0,'bottom':300} for x in (0,100,200)]
+        edges += [{'x0':0,'x1':200,'top':y,'bottom':y} for y in (0,300)]
+        self.assertFalse(reader.unrestored_grid(edges,[]))
+        edges += [{'x0':0,'x1':200,'top':y,'bottom':y} for y in (100,200)]
+        self.assertTrue(reader.unrestored_grid(edges,[]))
+        self.assertFalse(reader.unrestored_grid(edges,[{'kind':'table'}]))
     def test_only_verified_marker_font_size_and_zero_advance_are_excluded(self):
         marker={'object_type':'char','fontname':'ABCDEF+ZWAdobeF','size':1.02,'adv':0,'x0':60,'x1':60,'text':'2B'}
         self.assertTrue(reader.nonprinting_marker(marker))

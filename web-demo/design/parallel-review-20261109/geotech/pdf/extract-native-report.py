@@ -283,6 +283,23 @@ def read_available_text(source, page, page_no, excluded_margins=(), verification
     return {'blocks': [], 'columnSplit': None, 'width': page.width, 'height': page.height}
 
 
+def unrestored_grid(edges,blocks):
+    if any(b['kind']=='table' for b in blocks):return False
+    vertical=[e for e in edges if abs(e['x1']-e['x0'])<2 and e['bottom']-e['top']>50]
+    horizontal=[e for e in edges if abs(e['bottom']-e['top'])<2 and e['x1']-e['x0']>70]
+    def distinct(values):
+        kept=[]
+        for value in sorted(values):
+            if not kept or value-kept[-1]>6:kept.append(value)
+        return kept
+    xs=distinct([e['x0'] for e in vertical]);ys=distinct([e['top'] for e in horizontal])
+    # Page frames and a two-column divider are not evidence of a missing table.
+    if not ((len(xs)>=3 and len(ys)>=4) or (len(xs)>=4 and len(ys)>=3)):return False
+    intersections={(round(v['x0']/6),round(h['top']/6)) for v in vertical for h in horizontal
+                   if h['x0']-2<=v['x0']<=h['x1']+2 and v['top']-2<=h['top']<=v['bottom']+2}
+    return len(intersections)>=12
+
+
 if __name__ == '__main__':
     manifest, output = map(Path, sys.argv[1:3]); output.mkdir(parents=True,exist_ok=True)
     verify_numeric = '--verify-numeric' in sys.argv[3:]
@@ -302,10 +319,11 @@ if __name__ == '__main__':
                 with (closing(verifier[i-1]) if verifier is not None and count else nullcontext(None)) as verification_page:
                     layout=read_available_text(source,page,i,margins.get(i,[]),verification_page)
                     blocks=layout['blocks']
-                if needs_ocr:
+                table_review=unrestored_grid(page.edges,blocks)
+                if needs_ocr and '--skip-ocr-images' not in sys.argv[3:]:
                     target=dest/'ocr-images'/f'page-{i:03}.png'
                     convert_from_path(str(source),dpi=180,first_page=i,last_page=i,poppler_path=os.environ.get('POPPLER_BIN'))[0].save(target)
-                pages.append({'page':i,**layout,'charCount':count,'method':'ocr_pending' if needs_ocr else 'native','nativeTextRetained':bool(blocks),'excludedMargins':margins.get(i,[]),'numericBoundaryAudited':bool(verify_numeric and count)})
+                pages.append({'page':i,**layout,'charCount':count,'method':'ocr_pending' if needs_ocr else 'native','tableReviewRequired':table_review,'nativeTextRetained':bool(blocks),'excludedMargins':margins.get(i,[]),'numericBoundaryAudited':bool(verify_numeric and count)})
                 print(json.dumps({'id':entry['id'],'page':i,'method':pages[-1]['method'],'tables':sum(b['kind']=='table' for b in blocks)},ensure_ascii=False),flush=True)
                 page.close()
         result={**entry,'name':source.name,'sha256':hashlib.sha256(source.read_bytes()).hexdigest(),'pageCount':len(pages),'pages':pages,
