@@ -1,4 +1,5 @@
 import {readWordSource} from './word-source.mjs';
+import {readGeotechPdfSource} from './geotech-pdf-source.mjs';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {FIELD_LABELS,validateExtraction} from '../intake-core.js';
@@ -45,12 +46,23 @@ export function intakeApi(env={},dependencies={}){
   }
   return {name:'workbench-intake',configureServer:register,configurePreviewServer:register};
   function register(server){server.middlewares.use('/api/intake',async(req,res)=>{
-    const reply=(status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
+    const reply=(status,value)=>{if(res.destroyed||res.writableEnded)return;res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
     try{
       if(req.headers.origin&&new URL(req.headers.origin).host!==req.headers.host)return reply(403,{error:'只允许同源访问'});
       const path=new URL(req.url,'http://localhost').pathname;
       if(req.method==='GET'&&path==='/status')return reply(200,{configured:Boolean(env.DEEPSEEK_API_KEY)});
       if(req.method!=='POST'||req.headers['x-workbench-request']!=='intake')return reply(403,{error:'请求来源无效'});
+      if(path==='/read-pdf'){
+        let chunks=[],size=0;for await(const c of req){size+=c.length;if(size>30*1024*1024)return reply(413,{error:'文件超过30MB，请按章节拆分'});chunks.push(c);}
+        let filename='';try{filename=decodeURIComponent(req.headers['x-file-name']||'');}catch{throw Error('文件名编码无效');}
+        const controller=new AbortController(),cancel=()=>{if(!res.writableEnded)controller.abort();};
+        res.once('close',cancel);
+        try{
+          const blocks=await (dependencies.readGeotechPdfSource||readGeotechPdfSource)(Buffer.concat(chunks),filename,env,{signal:controller.signal});
+          if(!res.destroyed)return reply(200,blocks);
+        }finally{res.off('close',cancel);}
+        return;
+      }
       if(path==='/read-word'){
         let chunks=[],size=0;for await(const c of req){size+=c.length;if(size>30*1024*1024)return reply(413,{error:'文件超过30MB'});chunks.push(c);}
         let filename='';try{filename=decodeURIComponent(req.headers['x-file-name']||'');}catch{throw Error('文件名编码无效');}

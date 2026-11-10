@@ -23,7 +23,7 @@ for capture in root.glob(sys.argv[3] if len(sys.argv)>3 else '*/*-capture.json')
         rows=table.findall('w:tr',ns)
         if len(rows)!=len(block['rows']):differences.append(f'table {ti+1}: row count')
         for ri,(row,item) in enumerate(zip(rows,block['rows'])):
-            cells=[''.join(c.xpath('.//w:t/text()',namespaces=ns)) for c in row.findall('w:tc',ns)]
+            cells=[''.join('\n' if etree.QName(n).localname in ('br','cr') else '\t' if etree.QName(n).localname=='tab' else (n.text or '') for n in c.xpath('.//w:t|.//w:br|.//w:cr|.//w:tab',namespaces=ns)) for c in row.findall('w:tc',ns)]
             wanted=[str(v or '') for v in item['values']]
             if cells!=wanted:differences.append({'table':ti+1,'row':ri+1,'expected':wanted,'actual':cells})
     if len(actual)!=len(expected):differences.append('table count')
