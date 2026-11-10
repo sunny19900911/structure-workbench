@@ -152,7 +152,7 @@ export function composeDocument(sources=[],unit='项目整体'){
   result.parameters.site_class=uniqueValue(/(?:建筑)?场地类别(?:划分为|为|属于|属)\s*([ⅠⅡⅢⅣIV]+类)(?![、～~])/g);
   result.parameters.pga=uniqueValue(/(?:地震动峰值加速度|设计基本地震加速度)(?:值)?(?:为|取|采用|：|:)?\s*([\d.]+g)/g);
   result.parameters.eq_group=uniqueValue(/设计地震分组(?:为|属于|：|:)?\s*(第[一二三]组)/g);
-  const intensity=uniqueValue(/(?:抗震设防烈度|地震烈度)(?:值)?(?:为|：|:)?\s*([ⅥⅦⅧⅨ6-9]+)度/g);
+  const intensity=uniqueValue(/(?:抗震设防烈度|地震烈度)(?:值)?(?:为|：|:)?\s*([ⅥⅦⅧⅨ6-9]+)\s*度/g);
   result.parameters.intensity=({'Ⅵ':'6','Ⅶ':'7','Ⅷ':'8','Ⅸ':'9'})[intensity]||intensity;
  }
 
