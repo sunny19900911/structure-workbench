@@ -1,3 +1,4 @@
+import {sourceReview,completionSummary,ocrReviewText} from './intake-review-summary.js';
 import {autoParameterUpdates} from './workflow-core.js';
 import {documentKind} from './design/parallel-review-20261109/ui/intake-routing.js';
 import {createDocumentComposer} from './document-intake.js';
@@ -75,14 +76,14 @@ function render(){
   renderKnowledge();renderSuggestions();renderMeasures();refreshGeo();controls();
 }
 // Populate collapsed original text only when the user opens that source.
-panel.addEventListener('toggle',event=>{const details=event.target;if(!details.open)return;const preview=details.querySelector?.('[data-source-preview]');if(!preview||preview.dataset.loaded)return;const source=state.sources.find(s=>s.source_id===preview.dataset.sourcePreview);if(source){preview.textContent=source.fragments.map(f=>f.locator+'\n'+f.text).join('\n\n');preview.dataset.loaded='true';}},true);
+panel.addEventListener('toggle',event=>{const details=event.target;if(!details.open)return;const preview=details.querySelector?.('[data-source-preview]');if(!preview||preview.dataset.loaded)return;const source=state.sources.find(s=>s.source_id===preview.dataset.sourcePreview);if(source){preview.textContent=[source.fragments.map(f=>f.locator+'\n'+f.text).join('\n\n'),ocrReviewText(source.blocks)].filter(Boolean).join('\n\n');preview.dataset.loaded='true';}},true);
 function refreshGeo(){const el=document.querySelector('#gc-res');if(!el)return;const facts=state.facts.filter(f=>f.key==='site_class'&&f.slot==='geo'&&f.status!=='rejected');el.textContent=facts.length?'本项目地勘候选：'+facts.map(f=>f.unit+' '+f.value+'（'+(f.status==='confirmed'?'已采用':'待确认')+'）').join('；')+'。当前公共参数：'+(L.params().site_class||'未采用')+'。请在上方候选表核对原文及适用范围。':'请在②扩初说明导入地勘资料，采用后自动计入统一措施。';}
 function renderMeasures(){const paper=document.querySelector('#paper1');if(!paper)return;let section=paper.querySelector('[data-intake-summary]');if(!section){section=document.createElement('section');section.dataset.intakeSummary='true';paper.append(section);}const names=[...new Set([...unitNames(state),...(state.facts.some(f=>f.unit===PROJECT&&f.status==='confirmed'&&DECISION_CONDITIONS.some(([key])=>key===f.key))?[PROJECT]:[])])];section.innerHTML=names.length?'<h1>本项目单体资料与方案采用记录</h1>'+names.map(n=>'<h2>'+esc(n)+'</h2><table><tbody>'+state.facts.filter(f=>f.status==='confirmed'&&f.unit===n).map(f=>'<tr><td>'+esc(f.label)+'</td><td>'+esc(f.value)+'</td><td>'+esc(f.filename+' · '+f.locator)+'</td></tr>').join('')+'</tbody></table>').join(''):'';}
 function renderKnowledge(){q('#intake-knowledge').innerHTML=!knowledge?'':`<p>${esc(knowledge.authority)}</p><p>方法检查缺项：${esc(knowledge.missing.map(k=>({name:'单体名称',use:'用途',floors_above:'地上层数',floors_below:'地下层数',structural_height_m:'结构高度',first_floor_height_m:'首层层高',typical_floor_height_m:'标准层层高',plan_length_m:'平面长度',plan_width_m:'平面宽度',typical_span_m:'主要跨度',basement:'地下室条件',irregularity_features:'不规则特征'})[k]||k).join('、')||'已填写所需字段')} ${knowledge.complexCandidate?'· 有复杂结构线索，需专项核对':''}</p>${knowledge.warnings.map(w=>'<p>'+esc(w)+'</p>').join('')}${knowledge.cases.map(c=>`<details><summary>历史案例 ${esc(c.case_id)} · ${esc(c.system)}</summary><p>用途：${esc(c.use||'未登记')}；地点：${esc(c.location?.city||'未登记')}</p><p>${esc(JSON.stringify(c.evidence))}</p><p>仅供比选，不自动带入参数或截面。</p></details>`).join('')}${knowledge.cards.map(c=>`<details><summary>${esc(c.title)} · ${esc(c.review_status)}</summary><p>${esc(c.source_id)}</p><pre>${esc(c.body)}</pre></details>`).join('')}`;}
 function renderSuggestions(){const item=state.suggestions[selectedUnit];const stale=item&&item.signature!==querySignature();q('#intake-suggestions').innerHTML=item?`<p>${stale?'资料或参数已变化，请重新生成建议。':'AI 推断 · 待核对采用'}</p>${item.options.map((o,i)=>`<article><h4>${esc(o.system)}</h4><p>${esc(o.reasons.join('；'))}</p><p>待验证：${esc(o.checks.join('；'))}</p><small>${esc(o.source_ids.join('、'))}</small><p><button data-plan="${i}" ${stale?'disabled':''}>采用为该单体体系方案</button></p></article>`).join('')}`:'';}
 async function digest(bytes){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');}
 async function ingest(slot,name,blocks,hash,replaceSource){
-  const parts=fragments(blocks);if(!parts.length)throw Error('未提取到可读文字，请使用文字版或粘贴摘录');
+  const parts=fragments(blocks);if(!parts.length&&ocrReviewText(blocks))parts.push({id:'OCR-REVIEW',locator:'OCR复核',text:'扫描页识别结果待核。'});if(!parts.length)throw Error('未提取到可读文字，请使用文字版或粘贴摘录');
   // Local import is independent of the model's per-request context limit.
   if(parts.length>30000||new TextEncoder().encode(JSON.stringify(parts)).length>8*1024*1024)throw Error('提取文字超过本地单份资料容量（8MB或30000段），请按章节拆分；原文件未修改');
   const source={source_id:'CURRENT-'+slot+'-'+hash.slice(0,20),name,slot,hash,fragments:parts,blocks,at:new Date().toISOString()};
@@ -90,7 +91,7 @@ async function ingest(slot,name,blocks,hash,replaceSource){
   const local=extractLocal(source);if(replaceSource&&replaceSource!==source.source_id){const plan=sourceRemoval(state,replaceSource,L.params());removeSource(state,plan);if(Object.keys(plan.clear).length)L.adoptParameters(plan.clear);}
   mergeCandidates(state,source,local.facts);applyDocumentIdentity();let warnings=[...local.warnings,...(blocks.warnings||[])];
 
-  updateLocations();for(const query of state.locationQueries)if(query.matches.length===1)addLocation(query.matches[0]);const count=state.facts.filter(f=>f.source_id===source.source_id).length;note('已读取「'+name+'」，内容已自动编入扩初说明。'+warnings.join('；'),'success');
+  updateLocations();for(const query of state.locationQueries)if(query.matches.length===1)addLocation(query.matches[0]);const count=state.facts.filter(f=>f.source_id===source.source_id).length;note(completionSummary([{review:sourceReview({...blocks,warnings})}]),'success');
 }
 function addLocation(match){const values=L.locationValues(match),sid='LOOKUP-'+fingerprint(match.label);const source={source_id:sid,name:'工作台内置地点表 · '+match.label,slot:'lookup',hash:fingerprint(values),fragments:[],at:new Date().toISOString()};const facts=Object.entries(values).map(([key,value])=>({id:sid+'-'+key,key,value,label:({intensity:'设防烈度',pga:'地震加速度',eq_group:'地震分组',wind:'基本风压',snow:'基本雪压',snow_zone:'雪荷载分区',temp_low:'最低气温',temp_high:'最高气温'})[key],unit:PROJECT,slot:'lookup',source_id:sid,filename:source.name,locator:match.label+' 表记录',quote:match.label+'：'+key+'='+value,statement:'原文事实（内置表转录，未核规范版本）',status:'candidate'}));source.fragments=facts.map(f=>({id:f.id,text:f.quote,locator:f.locator}));mergeCandidates(state,source,facts);}
 function updateLocations(){const found=state.facts.filter(f=>f.key==='region'&&f.status!=='rejected');state.locationQueries=found.map(f=>({text:f.value,source_id:f.source_id,matches:matchLocation(f.value,L.locations())}));}
@@ -113,16 +114,16 @@ async function readFiles(slot,files,{replaceSource}={}){
         if(file.size>30*1024*1024)throw Error('单份资料超过30MB，请拆分');
         const bytes=await file.arrayBuffer();let blocks;
         if(/\.(doc|docx|docm|dot|dotx|dotm)$/i.test(file.name)){const response=await fetch('/api/intake/read-word',{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Workbench-Request':'intake','X-Word-Format':/\.(doc|dot)$/i.test(file.name)?'doc':'docx','X-File-Name':encodeURIComponent(file.name)},body:bytes,signal:AbortSignal.timeout(180000)});blocks=await response.json();if(!response.ok)throw Error(blocks.error||'Word读取失败');}
-        else if(/\.pdf$/i.test(file.name)&&!window.WorkbenchPortable){note('正在读取「'+file.name+'」的PDF正文与表格…','busy');const response=await fetch('/api/intake/read-pdf',{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Workbench-Request':'intake','X-File-Name':encodeURIComponent(file.name)},body:bytes,signal:AbortSignal.timeout(180000)});blocks=await response.json();if(!response.ok)throw Error(blocks.error||'PDF增强读取失败');}
+        else if(/\.pdf$/i.test(file.name)&&!window.WorkbenchPortable){note('正在读取「'+file.name+'」的PDF正文与表格…','busy');const response=await fetch('/api/intake/read-pdf',{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Workbench-Request':'intake','X-File-Name':encodeURIComponent(file.name)},body:bytes,signal:AbortSignal.timeout(370000)});blocks=await response.json();if(!response.ok)throw Error(blocks.error||'PDF增强读取失败');}
         else if(/\.pdf$/i.test(file.name)){note('正在解析「'+file.name+'」的PDF文字，较大报告需要一些时间…','busy');let text;if(window.WorkbenchPortable)text=await H.readPdfJs(file);else try{text=await H.readPdfJs(file);}catch{text=(await H.readPdf(file)).text;}if(window.WorkbenchPortable&&!text?.trim())throw Error('此PDF没有可读取的文字，可能是扫描件。请先用OCR转换为文字版再导入，未写入空白资料');blocks=H.textBlocks(text||'');if(window.WorkbenchPortable){blocks.format=await window.WorkbenchPortable.inspectFile(file,'pdf');blocks.pdfReadReport=window.WorkbenchPortable.pdfReadReport(file);blocks.warnings=[...(blocks.format.warnings||[]),...(blocks.pdfReadReport?.warnings||[])];}}
         else if(/\.(txt|md)$/i.test(file.name))blocks=H.textBlocks(H.decode(bytes));
         else throw Error('支持DOC、DOCX、DOCM、DOT、DOTX、DOTM、文字PDF、TXT、MD；文件实际格式会在读取前校验');
         if(project!==W.id)throw Error('项目已切换，未写入资料');
         window.dispatchEvent(new CustomEvent('workbuddy:task-status',{detail:{projectId:project,text:'整理中 · '+file.name,phase:'整理中'}}));
-        const detected=slot==='auto'?documentKind(file.name,fragments(blocks).map(part=>part.text).join('\n')):slot;
+        const detected=slot==='auto'?documentKind(file.name,[fragments(blocks).map(part=>part.text).join('\n'),ocrReviewText(blocks)].join('\n')):slot;
         if(!detected)throw Error('未能识别建筑或地勘资料，请使用包含“建筑”或“地勘”的文件名后重新导入');
         await ingest(detected,file.name,blocks,await digest(bytes),replaceSource);
-        imported.push({name:file.name,slot:detected});
+        imported.push({name:file.name,slot:detected,review:sourceReview(blocks)});
       }catch(e){throw Error('「'+file.name+'」导入失败：'+e.message);}
     }
   },true);return {files:imported};}finally{importSlot=null;}

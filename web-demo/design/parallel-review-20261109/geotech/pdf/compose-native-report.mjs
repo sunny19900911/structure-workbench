@@ -57,6 +57,7 @@ export function nativeReportSource(input,{expectedHash,supplement,imageSupplemen
  blocks.pdfReadReport.mixedTextPages=mixedTextPages;
  blocks.pdfReadReport.excludedNonprintingGlyphs=report.pages.flatMap(p=>(p.excludedNonprintingGlyphs||[]).map(g=>({page:p.page,...g})));
  blocks.pdfReadReport.textReview=textReview;
+ blocks.pdfReadReport.unrestoredTablePages=report.pages.filter(p=>p.tableReviewRequired).map(p=>p.page);
  if(textReview.length)blocks.warnings.push('以下页的正文含未映射字形，原文和位置已保留，须对照原页核查；不能据文字层读取成功认定公式正确：'+[...new Set(textReview.map(r=>r.page))].join('、'));
  if(supplement)attachOcrCharts(blocks,report,supplement);
  if(imageSupplement)attachNativeImages(blocks,report,imageSupplement);

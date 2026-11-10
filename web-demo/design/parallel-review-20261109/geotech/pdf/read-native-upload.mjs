@@ -9,7 +9,7 @@ import {nativeReportSource} from './compose-native-report.mjs';
 const run=promisify(execFile);
 
 export async function readNativePdfUpload(bytes,{filename='report.pdf',python,artifactRoot,poppler,
- timeoutMs=120000,signal,ignoreFillBackgrounds=false,imageSupplement}={}){
+ timeoutMs=120000,signal,ignoreFillBackgrounds=false,imageSupplement,renderOcrImages=true}={}){
  if(!(bytes instanceof Uint8Array)||!bytes.length||bytes.length>64*1024*1024)throw new Error('PDF byte payload must be 1 byte to 64 MiB');
  const snapshot=Buffer.from(bytes);
  if(!snapshot.subarray(0,1024).includes(Buffer.from('%PDF-')))throw new Error('PDF signature missing');
@@ -27,6 +27,7 @@ export async function readNativePdfUpload(bytes,{filename='report.pdf',python,ar
  await writeFile(manifest,JSON.stringify([{id:'upload',input}]),{flag:'wx'});
  const args=[fileURLToPath(new URL('./extract-native-report.py',import.meta.url)),manifest,output,'--verify-numeric'];
  if(ignoreFillBackgrounds)args.push('--ignore-fill-backgrounds');
+ if(!renderOcrImages)args.push('--skip-ocr-images');
  const started=Date.now();
  try{
   if(imageSnapshot)await writeFile(join(dir,'image-supplement.json'),JSON.stringify(imageSnapshot),{flag:'wx'});

@@ -1,6 +1,7 @@
 // Local source checkout integration. Portable dependency packaging is separate.
 import {homedir,tmpdir} from 'node:os';
 import {join,isAbsolute} from 'node:path';
+import {reviewDifficultPages} from './geotech-ocr-review.mjs';
 let reading=false;
 
 export async function readGeotechPdfSource(bytes,filename='',env=process.env,{signal,reader}={}){
@@ -18,10 +19,11 @@ export async function readGeotechPdfSource(bytes,filename='',env=process.env,{si
       (process.platform==='win32'?join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe'):'/usr/bin/python3');
     if(!isAbsolute(python))throw new Error('WORKBENCH_PDF_PYTHON必须使用绝对路径');
     const read=reader||(await import('../design/parallel-review-20261109/geotech/pdf/read-native-upload.mjs')).readNativePdfUpload;
-    const result=await read(bytes,{filename,python,signal,timeoutMs:165000,
+    const result=await read(bytes,{filename,python,signal,timeoutMs:165000,renderOcrImages:false,
       artifactRoot:env.WORKBENCH_PDF_ARTIFACT_ROOT||join(tmpdir(),'workbench-geotech-pdf'),
       poppler:env.POPPLER_BIN||(process.platform==='win32'?join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/native/poppler/Library/bin'):undefined)});
-    if(result.status!=='extracted')throw Object.assign(new Error('未发现可读取的PDF文字或表格；扫描内容仍需OCR复核，未写入空白资料'),{status:422});
+    if(result.artifactDirectory)await reviewDifficultPages(result,env,signal);
+    if(!['extracted','review-only'].includes(result.status))throw Object.assign(new Error('未识别到可读内容，请核对扫描件或OCR配置'),{status:422});
     const blocks=result.source.blocks;
     return {...blocks,pdfReadReport:{...blocks.pdfReadReport,engine:'native-layout-v1',sourceHash:result.source.hash},
       warnings:[...(blocks.warnings||[])]};
