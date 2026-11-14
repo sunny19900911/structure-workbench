@@ -32,9 +32,9 @@ export async function scanCalculationPdfs(input,{metadata=pdfMetadata,maxFiles=2
  if(!isAbsolute(chosen)||/^\\\\/.test(chosen)||blocked(chosen))throw Error('请选择本机计算书输出文件夹的绝对路径');
  const root=await realpath(chosen);
  if(blocked(root)||(await lstat(chosen)).isSymbolicLink()||!(await stat(root)).isDirectory())throw Error('请选择普通文件夹，不使用快捷链接');
- const files=[],warnings=[];let entries=0,limited=false;
+ const files=[],warnings=[];let entries=0,pdfCandidates=0,eligiblePdfs=0,limited=false;
  async function visit(dir,group,depth){
-  if(depth>8){warnings.push('部分子目录超过 8 层，未继续扫描');return;}
+  if(depth>8){limited=true;warnings.push('部分子目录超过 8 层，未继续扫描');return;}
   for(const entry of (await readdir(dir,{withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name,'zh-CN',{numeric:true}))){
    if(++entries>maxEntries||files.length>=maxFiles){limited=true;return;}
    const path=join(dir,entry.name);
@@ -44,7 +44,8 @@ export async function scanCalculationPdfs(input,{metadata=pdfMetadata,maxFiles=2
     await visit(path,next,depth+1);
     continue;
    }
-   if(!group||!entry.isFile()||!entry.name.toLowerCase().endsWith('.pdf'))continue;
+   if(!entry.isFile()||!entry.name.toLowerCase().endsWith('.pdf'))continue;
+   pdfCandidates++;if(!group)continue;eligiblePdfs++;
    let handle;
    try{
     const actual=await realpath(path);if(!inside(root,actual))continue;
@@ -60,7 +61,8 @@ export async function scanCalculationPdfs(input,{metadata=pdfMetadata,maxFiles=2
  if(limited)warnings.push('已达到扫描上限，请选择更具体的计算书文件夹');
  const groups=['荷载校核','上部','基础','施工图'];
  files.sort((a,b)=>groups.indexOf(a.group)-groups.indexOf(b.group)||a.relativePath.localeCompare(b.relativePath,'zh-CN',{numeric:true}));
- return {root,files,warnings};
+ const emptyMessage=files.length?'':limited?'扫描范围过大，请选择具体的盈建科输出文件夹':eligiblePdfs?'找到的 PDF 无法读取，请检查文件格式或读取权限':pdfCandidates?'目录中有 PDF，但不在荷载校核、上部、基础或施工图子目录中，请选择对应的盈建科输出目录':'所选文件夹及子目录没有 PDF；资料如已移动，请选择当前存放目录。';
+ return {root,files,warnings,emptyMessage};
 }
 
 export function uploadLocation(root,project,batch,relativePath){
@@ -146,7 +148,7 @@ export function calculationPdfApi(env={},dependencies={}){
     for(const [id,f]of grants)if(f.expires<Date.now())grants.delete(id);
     const files=result.files.map(file=>{const id=randomUUID();grants.set(id,{...file,root:result.root,expires:Date.now()+2*3600000});const {path,...publicFile}=file;return {...publicFile,id};});
     while(grants.size>1000)grants.delete(grants.keys().next().value);
-    return json(res,200,{root:result.root,files,warnings:result.warnings});
+    return json(res,200,{root:result.root,files,warnings:result.warnings,emptyMessage:result.emptyMessage});
    }
    if(req.method!=='GET'||!['/page','/file'].includes(url.pathname))return json(res,404,{error:'接口不存在'});
    const file=await grantFile(url.searchParams.get('id'));

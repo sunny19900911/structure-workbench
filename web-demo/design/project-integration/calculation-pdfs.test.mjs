@@ -82,3 +82,33 @@ test('切换项目丢弃迟到扫描，清单按项目恢复且不保存临时�
  const saved=context.window.CalculationPDFs.capture();assert.equal(saved.path,'C:/model-b');assert.equal(saved.files[0].name,'B.pdf');assert.equal(saved.files[0].id,undefined);
  assert.equal(el('calcbook-pdf-scan').disabled,false);assert.match(el('calcbook-pdf-list').innerHTML,/disabled/);
 });
+
+
+test('空的迁移旧目录、未分类PDF和损坏PDF分别返回准确提示',async()=>{
+ const root=await mkdtemp(join(qa,'empty-moved-'));
+ await mkdir(join(root,'计算书/上部'),{recursive:true});
+ const empty=await scanCalculationPdfs(root,{metadata});
+ assert.equal(empty.files.length,0);assert.match(empty.emptyMessage,/没有 PDF.*已移动/);
+ await writeFile(join(root,'参考.pdf'),'%PDF-1.4 fixture');
+ const ungrouped=await scanCalculationPdfs(root,{metadata});
+ assert.equal(ungrouped.files.length,0);assert.match(ungrouped.emptyMessage,/不在荷载校核/);
+ await writeFile(join(root,'计算书/上部/损坏.pdf'),'broken');
+ const damaged=await scanCalculationPdfs(root,{metadata});
+ assert.match(damaged.emptyMessage,/无法读取/);assert.ok(damaged.warnings.some(x=>x.includes('不是有效 PDF')));
+});
+
+test('嵌套盈建科输出目录及直接选择分类文件夹均可读，空扫描页面不再暗示可导出',async()=>{
+ const root=await mkdtemp(join(qa,'nested-'));
+ const file=join(root,'学生宿舍/YJK/结果/计算书/上部/结果.pdf');
+ await mkdir(join(file,'..'),{recursive:true});await writeFile(file,'%PDF-1.4 fixture');
+ const nested=await scanCalculationPdfs(root,{metadata});assert.equal(nested.files.length,1);assert.equal(nested.files[0].group,'上部');assert.equal(nested.emptyMessage,'');
+ const direct=await scanCalculationPdfs(join(file,'..'),{metadata});assert.equal(direct.files.length,1);
+ const elements=new Map();
+ const el=id=>{if(!elements.has(id))elements.set(id,{value:'',textContent:'',innerHTML:'',listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},querySelectorAll:()=>[],removeAttribute(){}});return elements.get(id);};
+ const emptyMessage='所选文件夹及子目录没有 PDF；资料如已移动，请选择当前存放目录。';
+ const context=vm.createContext({document:{getElementById:el},window:{WorkbenchProjects:{id:'empty',scheduleSave(){}}},URL,URLSearchParams,AbortController,setTimeout,clearTimeout,fetch:async()=>({ok:true,json:async()=>({root:'C:/moved',files:[],warnings:[],emptyMessage})})});
+ vm.runInContext(await readFile(new URL('../../calculation-pdfs.js',import.meta.url),'utf8'),context);
+ el('calcbook-pdf-path').value='C:/moved';await el('calcbook-pdf-scan').listeners.click();
+ assert.equal(el('calcbook-pdf-status').textContent,emptyMessage);assert.equal(el('calcbook-pdf-export').disabled,true);
+ assert.equal(context.window.CalculationPDFs.capture().path,'C:/moved');
+});

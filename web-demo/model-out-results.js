@@ -7,7 +7,7 @@ export function displacementCase(description) {
  const tail=text.slice(direction[0].length);
  const kind=/规定水平力/.test(tail)?'dlf':/风荷载/.test(tail)?'wind':/双向地震/.test(tail)?'bi':/地震/.test(tail)?'eq':null;
  if(!kind)return null;
- return {axis:direction[2].toLowerCase(),kind,eccentric:/偶然偏心/.test(tail)||Boolean(direction[1]||direction[3])};
+ return {axis:direction[2].toLowerCase(),kind,eccentric:kind!=='wind'&&(/偶然偏心/.test(tail)||Boolean(direction[1]||direction[3]))};
 }
 const floorValue=(value,floor)=>value&&floor!==undefined&&floor!==''?`${value}（${floor} 层）`:String(value??'');
 export function withFloor(value,floor){return /[（(][^）)]*层/.test(String(value))?String(value):floorValue(value,floor);}

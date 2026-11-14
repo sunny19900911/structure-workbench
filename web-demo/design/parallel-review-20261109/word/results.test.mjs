@@ -48,3 +48,11 @@ test('corrected case summaries replace legacy diagnostics',()=>{
  const metrics=correctModelResults({},[{name:'WDISP.OUT',text:displacementFixture}],log);
  assert.deepEqual(log.slice(0,1),['质量保持']);assert.doesNotMatch(log.join('\n'),/旧|1\/50/);assert.match(log.join('\n'),/1\/900（3 层）/);assert.equal(metrics.ratios.X[0].floor,8);
 });
+test('signed wind directions contribute to the wind envelope with corresponding floors',()=>{
+ const source=[caseText(1,'+X 方向风荷载作用下的楼层最大位移',1800,3),caseText(2,'-X 方向风荷载作用下的楼层最大位移',1500,5),caseText(3,'+Y 方向风荷载作用下的楼层最大位移',2100,4),caseText(4,'-Y 方向风荷载作用下的楼层最大位移',2200,6)].join('\n');
+ const metrics=parseDisplacementResults(source);
+ assert.equal(metrics.drift_wind_x,'1/1500（5 层）');
+ assert.equal(metrics.drift_wind_y,'1/2100（4 层）');
+ const row=reportTable({model:{metrics}},'metrics').rows[13];
+ assert.deepEqual(row.values.slice(-2),['1/1500（5 层）','1/2100（4 层）']);
+});

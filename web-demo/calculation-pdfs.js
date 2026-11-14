@@ -57,7 +57,7 @@
   try{
    const result=await post('/api/calculation-pdfs/scan',{path});if(ticket!==scanTicket||project!==window.WorkbenchProjects?.id)return;
    adopt(result);
-   status(state.files.length?`已读取 ${state.files.length} 份 PDF`:'未找到 PDF，请检查荷载校核或计算书子目录');
+   status(state.files.length?`已读取 ${state.files.length} 份 PDF`:(result.emptyMessage||'所选目录未找到可读取的 PDF，请核对当前存放位置'));
    if(state.files.length)await show(state.files[0].id,1);
   }catch(e){if(ticket===scanTicket&&project===window.WorkbenchProjects?.id)status(e.message||'读取失败');}
   finally{if(ticket===scanTicket)setBusy(false);}
@@ -80,7 +80,7 @@
    if(ticket!==scanTicket||project!==window.WorkbenchProjects?.id)return;
    status('正在读取 PDF 页数…');const result=await post('/api/calculation-pdfs/scan',{path:root});
    if(ticket!==scanTicket||project!==window.WorkbenchProjects?.id)return;
-   adopt(result);status(`已读取 ${result.files.length} 份 PDF，可合并导出。`);
+   adopt(result);status(result.files.length?`已读取 ${result.files.length} 份 PDF，可合并导出。`:(result.emptyMessage||'所选目录未找到可读取的 PDF，请核对当前存放位置'));
    if(result.files.length)await show(result.files[0].id,1);
   }catch(e){if(ticket===scanTicket)status(e.message);}finally{if(ticket===scanTicket)setBusy(false);}
  }

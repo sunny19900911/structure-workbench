@@ -54,9 +54,9 @@ class CoverTests(unittest.TestCase):
         # revision IDs can change, but all page/column/margin children must match.
         self.assertEqual([etree.tostring(e,method='c14n') for e in doc.sections[0]._sectPr],[etree.tostring(e,method='c14n') for e in reference.sections[0]._sectPr])
         self.assertIn('QA_OUT_RETAINED','\n'.join(p.text for p in doc.paragraphs));self.assertEqual(len(doc.sections),3)
-        for section in doc.sections:
+        for section, expected in zip(doc.sections, ('1','1','2')):
             columns=section._sectPr.find(qn('w:cols'))
-            self.assertEqual(columns.get(qn('w:num'),'1'),'1')
+            self.assertEqual(columns.get(qn('w:num'),'1'),expected)
             self.assertEqual(len(columns),0)
         self.assertFalse(doc.element.xpath('.//w:br[@w:type="column"]'))
         original=Document(QA/'reference/reference.docx')

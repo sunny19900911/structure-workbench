@@ -270,6 +270,15 @@ def configure_a3_content(section) -> None:
     set_single_column(section)
 
 
+def configure_a3_out_columns(section) -> None:
+    # OUT text uses its own section; the reviewed cover and catalog remain single-column.
+    configure_a3_content(section)
+    columns = section._sectPr.find(qn('w:cols'))
+    columns.set(qn('w:num'), '2')
+    columns.set(qn('w:space'), '650')
+    columns.set(qn('w:equalWidth'), '1')
+
+
 def configure_a3_single_page(section) -> None:
     section.orientation = WD_ORIENT.LANDSCAPE
     section.page_width = Mm(420)
@@ -442,10 +451,10 @@ def decode_out(file: dict) -> tuple[str, str]:
     return name, raw.decode("latin1")
 
 
-def add_out_file(document: Document, file: dict) -> None:
+def add_out_file(document: Document, file: dict, *, start_new_page: bool = True) -> None:
     name, content = decode_out(file)
     heading = document.add_paragraph()
-    heading.paragraph_format.page_break_before = True
+    heading.paragraph_format.page_break_before = start_new_page
     set_run_font(heading.add_run(name.upper()), "黑体", 11, True)
     for line in content.splitlines():
         paragraph = document.add_paragraph()
@@ -565,17 +574,16 @@ def build(source_dir: Path, output_dir: Path, payload: dict) -> dict:
     )
     excel_blocks = payload.get("excel_blocks") if isinstance(payload.get("excel_blocks"), list) else []
     out_files = payload.get("out_files") if isinstance(payload.get("out_files"), list) else []
-    if excel_blocks or out_files:
+    if excel_blocks:
         section = document.add_section(WD_SECTION.NEW_PAGE)
         configure_a3_content(section)
         for block in excel_blocks[:4]:
             add_excel_block(document, source_dir, block)
-        for file in out_files[:3]:
-            add_out_file(document, file)
-    for section in document.sections:
-        set_single_column(section)
-    for column_break in document.element.xpath('.//w:br[@w:type="column"]'):
-        column_break.getparent().remove(column_break)
+    if out_files:
+        section = document.add_section(WD_SECTION.NEW_PAGE)
+        configure_a3_out_columns(section)
+        for index, file in enumerate(out_files[:3]):
+            add_out_file(document, file, start_new_page=index > 0)
     document.save(output_path)
     return {"path": str(output_path), "filename": filename}
 
