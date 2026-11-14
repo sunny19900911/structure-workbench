@@ -1,6 +1,6 @@
-// Local source checkout integration. Portable dependency packaging is separate.
+// Shared native PDF reader for the web page, MCP and local manager.
 import {homedir,tmpdir} from 'node:os';
-import {join,isAbsolute} from 'node:path';
+import {join,isAbsolute,dirname} from 'node:path';
 import {reviewDifficultPages} from './geotech-ocr-review.mjs';
 let reading=false;
 
@@ -20,8 +20,8 @@ export async function readGeotechPdfSource(bytes,filename='',env=process.env,{si
     if(!isAbsolute(python))throw new Error('WORKBENCH_PDF_PYTHON必须使用绝对路径');
     const read=reader||(await import('../design/parallel-review-20261109/geotech/pdf/read-native-upload.mjs')).readNativePdfUpload;
     const result=await read(bytes,{filename,python,signal,timeoutMs:165000,renderOcrImages:false,
-      artifactRoot:env.WORKBENCH_PDF_ARTIFACT_ROOT||join(tmpdir(),'workbench-geotech-pdf'),
-      poppler:env.POPPLER_BIN||(process.platform==='win32'?join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/native/poppler/Library/bin'):undefined)});
+      artifactRoot:env.WORKBENCH_PDF_ARTIFACT_ROOT||join(env.WORKBENCH_CACHE_ROOT||tmpdir(),'workbench-geotech-pdf'),
+      poppler:env.POPPLER_BIN||(env.WORKBENCH_PDFINFO?dirname(env.WORKBENCH_PDFINFO):undefined)||(process.platform==='win32'?join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/native/poppler/Library/bin'):undefined)});
     if(result.artifactDirectory)await reviewDifficultPages(result,env,signal);
     if(!['extracted','review-only'].includes(result.status))throw Object.assign(new Error('未识别到可读内容，请核对扫描件或OCR配置'),{status:422});
     const blocks=result.source.blocks;

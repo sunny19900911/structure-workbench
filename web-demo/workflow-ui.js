@@ -11,7 +11,8 @@ document.body.append(dialog);
 const q=s=>dialog.querySelector(s);let jobs=[],running=false,replacement=null;
 const panel=document.querySelector('#intake-panel');dialog.append(panel);
 // Remove redundant upload controls and their direct event paths; parser-bound labels remain optional.
-panel.querySelector('#intake-files').remove();
+panel.querySelector('#intake-files')?.remove();
+panel.hidden=false;
 const oldModel=document.querySelector('#box-yjk')?.closest('.panel-card');oldModel?.remove();
 document.querySelector('.topbar #word-export-btn')?.remove();
 const guide=document.querySelector('.side .flow');if(guide)guide.textContent='导入资料 → 编辑正文 → 生成成果';

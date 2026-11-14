@@ -313,6 +313,7 @@ function calculationBookLocalApi(env) {
           company: String(body.company || '').slice(0, 200),
           unit: String(body.unit || '').slice(0, 200),
           software: String(body.software || '').slice(0, 200),
+          software_version: String(body.software_version || '').slice(0, 80),
           confirmed: true,
           sections,
           out_files: outFiles,

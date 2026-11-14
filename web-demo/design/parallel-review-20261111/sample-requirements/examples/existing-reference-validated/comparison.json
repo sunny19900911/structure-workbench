@@ -1,0 +1,3111 @@
+{
+  "schema": "sample-comparison/1",
+  "reference": {
+    "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+    "path": "E:\\11-工作\\001-workbuddy spaceV1\\001-workbuddy space\\301-例子\\05-云南旅游学院\\输出\\！结构初步设计说明-汇总版本.docx",
+    "sha256": "565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+    "name": "！结构初步设计说明-汇总版本.docx"
+  },
+  "actual": {
+    "source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+    "path": "C:\\Users\\mj528\\Documents\\004 工作\\web-demo\\qa\\deployment-fixes-20261014\\表格修复验收.docx",
+    "sha256": "57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+    "name": "表格修复验收.docx"
+  },
+  "checks": [
+    {
+      "requirement_id": "heading-001",
+      "kind": "heading",
+      "title": "第四章 结构设计",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[1]",
+        "body_index": 1
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-001",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[1]",
+        "body_index": 1
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-002",
+      "kind": "heading",
+      "title": "1. 工程概况",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[2]",
+        "body_index": 2
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-002",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[2]",
+        "body_index": 2
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-003",
+      "kind": "table",
+      "title": "表1 结构单体性质和基本信息",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[8]",
+        "body_index": 8
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "table-003",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[5]",
+        "body_index": 5
+      },
+      "row_structure": {
+        "reference_rows": 10,
+        "actual_rows": 2,
+        "equal": false,
+        "status": "observed_only"
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "image-004",
+      "kind": "image",
+      "title": "图1.1 各单体总平布置图",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[10]//*[local-name()=\"drawing\"])[2]",
+        "body_index": 10
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "image-005",
+      "kind": "image",
+      "title": "图1.2 各单体总平布置鸟瞰图",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[12]//*[local-name()=\"drawing\"])[2]",
+        "body_index": 12
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "heading-006",
+      "kind": "heading",
+      "title": "2. 设计依据",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[14]",
+        "body_index": 14
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-004",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[7]",
+        "body_index": 7
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-007",
+      "kind": "heading",
+      "title": "2.1 国家设计标准与规范",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[15]",
+        "body_index": 15
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-005",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[8]",
+        "body_index": 8
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-008",
+      "kind": "table",
+      "title": "表2.1 国家设计标准与规范",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[17]",
+        "body_index": 17
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "table-006",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[10]",
+        "body_index": 10
+      },
+      "row_structure": {
+        "reference_rows": 34,
+        "actual_rows": 34,
+        "equal": true,
+        "status": "observed_only"
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-009",
+      "kind": "heading",
+      "title": "2.2 云南省地方设计标准与规范",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[20]",
+        "body_index": 20
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "table-010",
+      "kind": "table",
+      "title": "表2.2 地方设计标准与规范",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[22]",
+        "body_index": 22
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "heading-011",
+      "kind": "heading",
+      "title": "2.3 岩土勘察报告",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[25]",
+        "body_index": 25
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-009",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[16]",
+        "body_index": 16
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-012",
+      "kind": "heading",
+      "title": "2.4 相关资料",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[28]",
+        "body_index": 28
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-010",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[17]",
+        "body_index": 17
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-013",
+      "kind": "heading",
+      "title": "3. 设计控制标准与等级",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[31]",
+        "body_index": 31
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-011",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[19]",
+        "body_index": 19
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-014",
+      "kind": "heading",
+      "title": "3.1 建筑结构分类等级",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[32]",
+        "body_index": 32
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-012",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[20]",
+        "body_index": 20
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-015",
+      "kind": "table",
+      "title": "表3.1 建筑结构分类等级",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[35]",
+        "body_index": 35
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "table-013",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[22]",
+        "body_index": 22
+      },
+      "row_structure": {
+        "reference_rows": 14,
+        "actual_rows": 14,
+        "equal": false,
+        "status": "observed_only"
+      },
+      "status": "difference",
+      "differences": [
+        {
+          "property": "grid_twips",
+          "reference": [
+            2405,
+            2098,
+            5393
+          ],
+          "actual": [
+            2405,
+            7491
+          ]
+        },
+        {
+          "property": "rows",
+          "reference": [
+            {
+              "header": true,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": "restart"
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": "restart"
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": "continue"
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": "continue"
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 2,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            }
+          ],
+          "actual": [
+            {
+              "header": true,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": "restart"
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": "continue"
+                }
+              ]
+            },
+            {
+              "header": false,
+              "cells": [
+                {
+                  "column": 0,
+                  "span": 1,
+                  "verticalMerge": ""
+                },
+                {
+                  "column": 1,
+                  "span": 1,
+                  "verticalMerge": ""
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-016",
+      "kind": "heading",
+      "title": "3.2 结构耐久性",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[38]",
+        "body_index": 38
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-014",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[23]",
+        "body_index": 23
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-017",
+      "kind": "heading",
+      "title": "3.2.1 混凝土结构耐久性设计",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[39]",
+        "body_index": 39
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-015",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[24]",
+        "body_index": 24
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-018",
+      "kind": "table",
+      "title": "表3.2.1 混凝土构件的环境类别",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[42]",
+        "body_index": 42
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "table-016",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[26]",
+        "body_index": 26
+      },
+      "row_structure": {
+        "reference_rows": 5,
+        "actual_rows": 5,
+        "equal": true,
+        "status": "observed_only"
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-019",
+      "kind": "heading",
+      "title": "3.3 抗震设计控制标准",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[45]",
+        "body_index": 45
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-017",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[27]",
+        "body_index": 27
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-020",
+      "kind": "heading",
+      "title": "3.3.1 地震作用",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[49]",
+        "body_index": 49
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-018",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[28]",
+        "body_index": 28
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-021",
+      "kind": "table",
+      "title": "表3.3.1 地震作用设计参数",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[51]",
+        "body_index": 51
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "table-019",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[30]",
+        "body_index": 30
+      },
+      "row_structure": {
+        "reference_rows": 7,
+        "actual_rows": 7,
+        "equal": true,
+        "status": "observed_only"
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-022",
+      "kind": "heading",
+      "title": "3.3.2 地震作用下结构侧移控制标准",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[53]",
+        "body_index": 53
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "table-023",
+      "kind": "table",
+      "title": "无题注表格 7",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[58]",
+        "body_index": 58
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_assessed",
+      "reason": "无稳定匹配标识或存在多节，未按序号强行配对"
+    },
+    {
+      "requirement_id": "heading-024",
+      "kind": "heading",
+      "title": "3.3.3 抗震性能目标",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[60]",
+        "body_index": 60
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "table-025",
+      "kind": "table",
+      "title": "表3.3.3 结构构件抗震性能目标",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[66]",
+        "body_index": 66
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "heading-026",
+      "kind": "heading",
+      "title": "3.3.4 抗震等级",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[69]",
+        "body_index": 69
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-020",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[31]",
+        "body_index": 31
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-027",
+      "kind": "table",
+      "title": "表3.3.4 结构构件抗震等级",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[73]",
+        "body_index": 73
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "table-021",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[33]",
+        "body_index": 33
+      },
+      "row_structure": {
+        "reference_rows": 10,
+        "actual_rows": 3,
+        "equal": false,
+        "status": "observed_only"
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-028",
+      "kind": "heading",
+      "title": "3.4 楼盖舒适度控制标准",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[78]",
+        "body_index": 78
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-022",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[34]",
+        "body_index": 34
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-029",
+      "kind": "table",
+      "title": "表3.4 竖向振动舒适度限值",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[81]",
+        "body_index": 81
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "table-023",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[36]",
+        "body_index": 36
+      },
+      "row_structure": {
+        "reference_rows": 5,
+        "actual_rows": 5,
+        "equal": true,
+        "status": "observed_only"
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-030",
+      "kind": "heading",
+      "title": "4. 工程地质",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[83]",
+        "body_index": 83
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-024",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[37]",
+        "body_index": 37
+      },
+      "status": "difference",
+      "differences": [
+        {
+          "property": "format",
+          "reference": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "24"
+                }
+              }
+            ]
+          },
+          "actual": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "22"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-031",
+      "kind": "heading",
+      "title": "4.1 场地地形及地貌",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[84]",
+        "body_index": 84
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "heading-032",
+      "kind": "heading",
+      "title": "4.2 场地地层岩性构成",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[86]",
+        "body_index": 86
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-025",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[40]",
+        "body_index": 40
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-033",
+      "kind": "heading",
+      "title": "4.3 地基土层物理力学参数",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[99]",
+        "body_index": 99
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-026",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[41]",
+        "body_index": 41
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-034",
+      "kind": "table",
+      "title": "无题注表格 11",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[100]",
+        "body_index": 100
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_assessed",
+      "reason": "无稳定匹配标识或存在多节，未按序号强行配对"
+    },
+    {
+      "requirement_id": "heading-035",
+      "kind": "heading",
+      "title": "4.4 场地地震效应评价",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[102]",
+        "body_index": 102
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-028",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[44]",
+        "body_index": 44
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-036",
+      "kind": "heading",
+      "title": "4.4.1抗震地段的划分",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[103]",
+        "body_index": 103
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "heading-037",
+      "kind": "heading",
+      "title": "4.4.2 场地类别",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[105]",
+        "body_index": 105
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "table-038",
+      "kind": "table",
+      "title": "无题注表格 12",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[108]",
+        "body_index": 108
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_assessed",
+      "reason": "无稳定匹配标识或存在多节，未按序号强行配对"
+    },
+    {
+      "requirement_id": "heading-039",
+      "kind": "heading",
+      "title": "4.4.3 场地地震液化判定",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[112]",
+        "body_index": 112
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "heading-040",
+      "kind": "heading",
+      "title": "4.4.4 软土震陷",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[114]",
+        "body_index": 114
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "heading-041",
+      "kind": "heading",
+      "title": "4.4.5 断裂带",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[116]",
+        "body_index": 116
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "image-042",
+      "kind": "image",
+      "title": "无题注图位",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[118]//*[local-name()=\"drawing\"])[2]",
+        "body_index": 118
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_assessed",
+      "reason": "无稳定匹配标识或存在多节，未按序号强行配对"
+    },
+    {
+      "requirement_id": "heading-043",
+      "kind": "heading",
+      "title": "4.5 岩土工程评价",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[121]",
+        "body_index": 121
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-029",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[45]",
+        "body_index": 45
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-044",
+      "kind": "heading",
+      "title": "5. 荷载与作用",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[124]",
+        "body_index": 124
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-030",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[46]",
+        "body_index": 46
+      },
+      "status": "difference",
+      "differences": [
+        {
+          "property": "format",
+          "reference": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "24"
+                }
+              }
+            ]
+          },
+          "actual": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "22"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-045",
+      "kind": "heading",
+      "title": "5.1 楼屋面荷载",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[125]",
+        "body_index": 125
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-031",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[47]",
+        "body_index": 47
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-046",
+      "kind": "table",
+      "title": "表5.1-1 楼面活荷载标准值",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[129]",
+        "body_index": 129
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "table-032",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[51]",
+        "body_index": 51
+      },
+      "row_structure": {
+        "reference_rows": 17,
+        "actual_rows": 18,
+        "equal": false,
+        "status": "observed_only"
+      },
+      "status": "difference",
+      "differences": [
+        {
+          "property": "grid_twips",
+          "reference": [
+            5075,
+            2729,
+            2092
+          ],
+          "actual": [
+            5075,
+            4821
+          ]
+        }
+      ],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-047",
+      "kind": "table",
+      "title": "表5.1-2 屋面活荷载标准值",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[133]",
+        "body_index": 133
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "table-033",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[53]",
+        "body_index": 53
+      },
+      "row_structure": {
+        "reference_rows": 5,
+        "actual_rows": 4,
+        "equal": false,
+        "status": "observed_only"
+      },
+      "status": "difference",
+      "differences": [
+        {
+          "property": "grid_twips",
+          "reference": [
+            5007,
+            2504,
+            2385
+          ],
+          "actual": [
+            5007,
+            4889
+          ]
+        }
+      ],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-048",
+      "kind": "table",
+      "title": "表5.1-3设备用房活荷载标准值",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[136]",
+        "body_index": 136
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "table-034",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[55]",
+        "body_index": 55
+      },
+      "row_structure": {
+        "reference_rows": 9,
+        "actual_rows": 10,
+        "equal": false,
+        "status": "observed_only"
+      },
+      "status": "difference",
+      "differences": [
+        {
+          "property": "grid_twips",
+          "reference": [
+            4948,
+            2474,
+            2474
+          ],
+          "actual": [
+            4948,
+            4948
+          ]
+        }
+      ],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-049",
+      "kind": "table",
+      "title": "表5.1-4汽车通道及客车停车库的楼面均布活载标准值",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[138]",
+        "body_index": 138
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "heading-050",
+      "kind": "heading",
+      "title": "5.2 风荷载",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[140]",
+        "body_index": 140
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-035",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[56]",
+        "body_index": 56
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-051",
+      "kind": "heading",
+      "title": "5.3 温度作用",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[144]",
+        "body_index": 144
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-036",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[58]",
+        "body_index": 58
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-052",
+      "kind": "heading",
+      "title": "5.4 地下水位",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[147]",
+        "body_index": 147
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-037",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[60]",
+        "body_index": 60
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-053",
+      "kind": "heading",
+      "title": "6. 主要结构材料",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[150]",
+        "body_index": 150
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-039",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[76]",
+        "body_index": 76
+      },
+      "status": "difference",
+      "differences": [
+        {
+          "property": "format",
+          "reference": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "24"
+                }
+              }
+            ]
+          },
+          "actual": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "22"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-054",
+      "kind": "heading",
+      "title": "6.1 混凝土",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[151]",
+        "body_index": 151
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-040",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[77]",
+        "body_index": 77
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-055",
+      "kind": "table",
+      "title": "表6.1 本项目结构构件混凝土强度等级",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[154]",
+        "body_index": 154
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "heading-056",
+      "kind": "heading",
+      "title": "6.2 钢筋",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[157]",
+        "body_index": 157
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-042",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[80]",
+        "body_index": 80
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-057",
+      "kind": "heading",
+      "title": "6.3 钢材",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[160]",
+        "body_index": 160
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-043",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[83]",
+        "body_index": 83
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-058",
+      "kind": "heading",
+      "title": "6.4 填充墙体",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[163]",
+        "body_index": 163
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-044",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[85]",
+        "body_index": 85
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-059",
+      "kind": "heading",
+      "title": "7. 装配式",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[169]",
+        "body_index": 169
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "actual_id": "heading-045",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[87]",
+        "body_index": 87
+      },
+      "status": "difference",
+      "differences": [
+        {
+          "property": "format",
+          "reference": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "24"
+                }
+              }
+            ]
+          },
+          "actual": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "22"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-060",
+      "kind": "heading",
+      "title": "8. 结构设计",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[174]",
+        "body_index": 174
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-047",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[89]",
+        "body_index": 89
+      },
+      "status": "difference",
+      "differences": [
+        {
+          "property": "format",
+          "reference": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "24"
+                }
+              }
+            ]
+          },
+          "actual": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "22"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-061",
+      "kind": "heading",
+      "title": "8.1 地基基础",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[175]",
+        "body_index": 175
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-048",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[90]",
+        "body_index": 90
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-062",
+      "kind": "heading",
+      "title": "8.1.1 连廊1基础",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[178]",
+        "body_index": 178
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "heading-063",
+      "kind": "heading",
+      "title": "8.1.2  1#学生宿舍和1#学生食堂基础",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[181]",
+        "body_index": 181
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "image-064",
+      "kind": "image",
+      "title": "无题注图位",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[184]//*[local-name()=\"drawing\"])[2]",
+        "body_index": 184
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "heading-065",
+      "kind": "heading",
+      "title": "8.1.3  其他单体及地下室基础（共用一个整体地下室）",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[185]",
+        "body_index": 185
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "heading-066",
+      "kind": "heading",
+      "title": "8.2 地下室结构",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[190]",
+        "body_index": 190
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-049",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[91]",
+        "body_index": 91
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "image-067",
+      "kind": "image",
+      "title": "无题注图位",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[194]//*[local-name()=\"drawing\"])[2]",
+        "body_index": 194
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_assessed",
+      "reason": "无稳定匹配标识或存在多节，未按序号强行配对"
+    },
+    {
+      "requirement_id": "image-068",
+      "kind": "image",
+      "title": "无题注图位",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[197]//*[local-name()=\"drawing\"])[2]",
+        "body_index": 197
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_assessed",
+      "reason": "无稳定匹配标识或存在多节，未按序号强行配对"
+    },
+    {
+      "requirement_id": "image-069",
+      "kind": "image",
+      "title": "图8.2  地下室及上部单体整体结构计算分析模型",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[206]//*[local-name()=\"drawing\"])[1]",
+        "body_index": 206
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "heading-070",
+      "kind": "heading",
+      "title": "8.3 上部结构",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[210]",
+        "body_index": 210
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-050",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[92]",
+        "body_index": 92
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-071",
+      "kind": "heading",
+      "title": "8.3.1 1#教学实训楼",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[211]",
+        "body_index": 211
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "image-072",
+      "kind": "image",
+      "title": "图8.3.1  1#教学实训楼结构计算分析模型",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[216]//*[local-name()=\"drawing\"])[2]",
+        "body_index": 216
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "heading-073",
+      "kind": "heading",
+      "title": "8.3.2 1#学生宿舍",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[219]",
+        "body_index": 219
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "image-074",
+      "kind": "image",
+      "title": "无题注图位",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[224]//*[local-name()=\"drawing\"])[1]",
+        "body_index": 224
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "heading-075",
+      "kind": "heading",
+      "title": "8.3.3 2#学生宿舍",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[228]",
+        "body_index": 228
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "image-076",
+      "kind": "image",
+      "title": "图8.3.3  2#学生宿舍结构计算分析模型",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[232]//*[local-name()=\"drawing\"])[1]",
+        "body_index": 232
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "heading-077",
+      "kind": "heading",
+      "title": "8.3.4 3#学生宿舍",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[236]",
+        "body_index": 236
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "image-078",
+      "kind": "image",
+      "title": "图8.3.4  3#学生宿舍结构计算分析模型",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[241]//*[local-name()=\"drawing\"])[1]",
+        "body_index": 241
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "heading-079",
+      "kind": "heading",
+      "title": "8.3.5 2#学生食堂",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[244]",
+        "body_index": 244
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "image-080",
+      "kind": "image",
+      "title": "图8.3.5  2#学生食堂结构计算分析模型",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[249]//*[local-name()=\"drawing\"])[1]",
+        "body_index": 249
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "heading-081",
+      "kind": "heading",
+      "title": "8.3.6 1#学生食堂",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[252]",
+        "body_index": 252
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "image-082",
+      "kind": "image",
+      "title": "图8.3.6  1#学生食堂结构计算分析模型",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[257]//*[local-name()=\"drawing\"])[1]",
+        "body_index": 257
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "heading-083",
+      "kind": "heading",
+      "title": "8.3.7 连廊1",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[260]",
+        "body_index": 260
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "image-084",
+      "kind": "image",
+      "title": "图8.3.7  连廊1结构模型示意图",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[265]//*[local-name()=\"drawing\"])[1]",
+        "body_index": 265
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "heading-085",
+      "kind": "heading",
+      "title": "8.3.8 连廊2",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[268]",
+        "body_index": 268
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "image-086",
+      "kind": "image",
+      "title": "图8.3.8  连廊2结构模型示意图",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "(/w:document/w:body/*[275]//*[local-name()=\"drawing\"])[1]",
+        "body_index": 275
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "heading-087",
+      "kind": "heading",
+      "title": "9. 结构计算分析",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[278]",
+        "body_index": 278
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-051",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[93]",
+        "body_index": 93
+      },
+      "status": "difference",
+      "differences": [
+        {
+          "property": "format",
+          "reference": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "24"
+                }
+              }
+            ]
+          },
+          "actual": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "22"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-088",
+      "kind": "heading",
+      "title": "9.1 计算程序",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[279]",
+        "body_index": 279
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-052",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[94]",
+        "body_index": 94
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-089",
+      "kind": "heading",
+      "title": "9.2计算分析主要参数",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[284]",
+        "body_index": 284
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-053",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[95]",
+        "body_index": 95
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-090",
+      "kind": "table",
+      "title": "表9.2主要输入计算参数汇总表",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[291]",
+        "body_index": 291
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "table-054",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[98]",
+        "body_index": 98
+      },
+      "row_structure": {
+        "reference_rows": 21,
+        "actual_rows": 21,
+        "equal": true,
+        "status": "observed_only"
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-091",
+      "kind": "heading",
+      "title": "9.3 主要计算结果汇总",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[293]",
+        "body_index": 293
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-055",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[99]",
+        "body_index": 99
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "table-092",
+      "kind": "table",
+      "title": "表9.3.1 1#教学实训楼结构计算分析结果汇总",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[296]",
+        "body_index": 296
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "table-093",
+      "kind": "table",
+      "title": "表9.3.2 1#学生宿舍结构计算分析结果汇总",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[299]",
+        "body_index": 299
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "table-094",
+      "kind": "table",
+      "title": "表9.3.3 2#学生宿舍结构计算分析结果汇总",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[302]",
+        "body_index": 302
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "table-095",
+      "kind": "table",
+      "title": "表9.3.4 3#学生宿舍结构计算分析结果汇总",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[306]",
+        "body_index": 306
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "table-096",
+      "kind": "table",
+      "title": "表9.3.5 2#学生食堂结构计算分析结果汇总",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[310]",
+        "body_index": 310
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "table-097",
+      "kind": "table",
+      "title": "表9.3.6 1#学生食堂结构计算分析结果汇总",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[314]",
+        "body_index": 314
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "table-098",
+      "kind": "table",
+      "title": "表9.3.7 连廊1结构计算分析结果汇总",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[318]",
+        "body_index": 318
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "table-099",
+      "kind": "table",
+      "title": "表9.3.8 连廊2结构计算分析结果汇总",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[321]",
+        "body_index": 321
+      },
+      "scope": "applicability_unknown",
+      "mandatory": false,
+      "status": "applicability_unknown",
+      "reason": "样稿含专项条件，当前项目适用性未提供，不判必需或缺失"
+    },
+    {
+      "requirement_id": "heading-100",
+      "kind": "heading",
+      "title": "10. 结构规则性判断与应对措施",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[323]",
+        "body_index": 323
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-057",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[102]",
+        "body_index": 102
+      },
+      "status": "difference",
+      "differences": [
+        {
+          "property": "format",
+          "reference": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "24"
+                }
+              }
+            ]
+          },
+          "actual": {
+            "paragraph": {
+              "spacing": {
+                "line": "300",
+                "lineRule": "auto"
+              },
+              "ind": {
+                "firstLineChars": "0",
+                "firstLine": "0"
+              },
+              "jc": {
+                "val": "both"
+              }
+            },
+            "runs": [
+              {
+                "rFonts": {
+                  "ascii": "黑体",
+                  "eastAsia": "黑体",
+                  "hAnsi": "黑体",
+                  "cs": "Times New Roman"
+                },
+                "sz": {
+                  "val": "24"
+                },
+                "szCs": {
+                  "val": "22"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "heading-101",
+      "kind": "heading",
+      "title": "10.1 结构规则性判断",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[324]",
+        "body_index": 324
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "heading-102",
+      "kind": "heading",
+      "title": "10.1 一般不规则项判断表",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[326]",
+        "body_index": 326
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_found",
+      "reason": "未找到同章同名项目；改名、移章或未采用均可能，不能直接判漏项"
+    },
+    {
+      "requirement_id": "table-103",
+      "kind": "table",
+      "title": "无题注表格 27",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[327]",
+        "body_index": 327
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "status": "not_assessed",
+      "reason": "无稳定匹配标识或存在多节，未按序号强行配对"
+    },
+    {
+      "requirement_id": "heading-104",
+      "kind": "heading",
+      "title": "10.2 结构不规则应对措施",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[339]",
+        "body_index": 339
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "heading-060",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[106]",
+        "body_index": 106
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    },
+    {
+      "requirement_id": "page-105",
+      "kind": "page",
+      "title": "页面与分栏",
+      "source_id": "docx:565f86fb3ed4c0ec2f2f13be0e234b0190f35d66ccf469bb1d17f8519363ff53",
+      "source_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[345]",
+        "body_index": 345
+      },
+      "scope": "sample_only",
+      "mandatory": false,
+      "actual_id": "page-061",
+      "actual_source_id": "docx:57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a",
+      "actual_locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/*[107]",
+        "body_index": 107
+      },
+      "status": "same",
+      "differences": [],
+      "meaning": "仅表示本次结构/格式属性比较，不表示内容完整或工程合格"
+    }
+  ],
+  "counts": {
+    "same": 41,
+    "not_found": 19,
+    "difference": 11,
+    "not_assessed": 7,
+    "applicability_unknown": 27
+  },
+  "extra_actual": [
+    "heading-007",
+    "table-008",
+    "table-027",
+    "heading-038",
+    "table-041",
+    "heading-046",
+    "table-056",
+    "heading-058",
+    "table-059"
+  ],
+  "warnings": [],
+  "pass_rate": null,
+  "excluded_checks": [
+    "全部为样稿观察或结构推断，未自动成为所有项目必选要求",
+    "不提取正文工程数值为参数，不判规范现行性或设计合格",
+    "参数到成果位置映射暂缓；历史项目内容不作为当前事实",
+    "XML位置不是Word页码；未检查页内溢出、字体替换、页眉页脚或实际分页"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "source_id": "UI-CLEANUP-20261111",
+  "files": [
+    {
+      "path": "workbuddy-integrated-studio.html",
+      "sha256": "aa2dc82b96ceb2988c33043bd84ba43c87763830d5a4e0a17955098d5b8f80ce",
+      "before_sha256": "d52a17128d5334d2b645b16c36d8f01d9bce034f1b7edb8f22163a249a4ebbb7"
+    },
+    {
+      "path": "integrated-modules.js",
+      "sha256": "9e91b987eb5f3abe3729868dff610f26f4e2562edb287afe008bc840006bd939",
+      "before_sha256": "74bd45efde41675fadf2a9703f7ce63e67cf7d909df7cec3d0dd1305966cdf41"
+    },
+    {
+      "path": "expansion-workbench.js",
+      "sha256": "33ce14114f727ec8bd7894af5c6a26577dbe2f8c7a17d860c5521a17551e5aed",
+      "before_sha256": "18069c9ffd1b094b3cc7cf9b15baab3f01e8cbdb8a7e8e2623807f5e071cea04"
+    },
+    {
+      "path": "portable-mode.js",
+      "sha256": "aa66fa5b4d361e3d86f36739c2155fdd294e4f5f8a7122b973e4014b62cd0330",
+      "before_sha256": "4dc9e3794b41a4e29f4bc8e6b361080cfe0d8a77b323e2fa41b7451cd3710296"
+    },
+    {
+      "path": "workflow-ui.js",
+      "sha256": "87f2ccc1e1773cfa1d93d507c0e1b735a716411ae6c950c40729b1efd95acc7f",
+      "before_sha256": "ea4da2d2e33e907ee74f7e124f3cfc27505a74700b6b058b9722b83241aaa552"
+    },
+    {
+      "path": "intake-workbench.js",
+      "sha256": "e5a233cd9be73ffacce3f16846950b31bc79ec303cced0e4036b9a0aa116ed7a",
+      "before_sha256": "badf2759c7ddc0f16a17e3ad6fe8d4ddf9fe81035d9d6284f736ff4319a2afaa"
+    },
+    {
+      "path": "design/parallel-tasks/06-ppt-report/prototype.html",
+      "sha256": "925679f0481e53fee441079bf761abb965c36da660ca61e239e8a41e2684a79c",
+      "before_sha256": "b7d47f05cb6463f3b3cf35707e8078720443a6d32499992dd95eeb0d680e5ad5"
+    },
+    {
+      "path": "design/parallel-tasks/06-ppt-report/prototype.js",
+      "sha256": "6c7ac976c136a2c0acf287095f31ea76675f2bd34d6485710126ba56d1e24e79",
+      "before_sha256": "d0bf183af05ca563804416e8b1fe5b61b119a38acf9ad54648e24413040accd3"
+    }
+  ],
+  "dependent_file": "calculation-book.js（Word专项负责）"
+}

@@ -29,9 +29,15 @@ export async function cafeteriaBlob(slides,images=new Map()){
   const response=await fetch(new URL('../../ppt-template/cafeteria-base.pptx',import.meta.url));if(!response.ok)throw Error('食堂模板读取失败');
   const zip=await window.JSZip.loadAsync(await response.arrayBuffer());
   const types=parse(await zip.file('[Content_Types].xml').async('string'));let imageNo=0;
+  // Read all source parts before writing any destination (slide 19 is also a destination).
+  const sources=new Map();
+  for(const number of new Set(slides.map(page=>page.sourceSlideNumber||page.number))){
+    sources.set(number,{slide:await zip.file(`ppt/slides/slide${number}.xml`).async('string'),rels:await zip.file(`ppt/slides/_rels/slide${number}.xml.rels`).async('string')});
+  }
   for(const page of slides){
-    const path=`ppt/slides/slide${page.number}.xml`,doc=parse(await zip.file(path).async('string')),tree=all(doc,P,'spTree')[0];
-    const relPath=`ppt/slides/_rels/slide${page.number}.xml.rels`,rels=parse(await zip.file(relPath).async('string'));
+    const source=sources.get(page.sourceSlideNumber||page.number);
+    const path=`ppt/slides/slide${page.number}.xml`,doc=parse(source.slide),tree=all(doc,P,'spTree')[0];
+    const relPath=`ppt/slides/_rels/slide${page.number}.xml.rels`,rels=parse(source.rels);
     for(const item of page.shapes){
       const node=[...tree.children].find(n=>all(n,P,'cNvPr')[0]?.getAttribute('id')===item.id);
       if(item.kind==='text'){if(node){fillText(node,item.text,item.style.size);const pr=all(node,P,'spPr')[0];const old=pr&&all(pr,A,'xfrm')[0];if(old)old.replaceWith(transform(doc,item.box));}continue;}
@@ -42,6 +48,7 @@ export async function cafeteriaBlob(slides,images=new Map()){
         const ext=all(node,P,'xfrm')[0]?.getElementsByTagNameNS(A,'ext')[0];if(ext)ext.setAttribute('cy',emu(item.heights.reduce((a,b)=>a+b,0)));continue;
       }
       if(item.kind!=='image')continue;
+      if(node)node.remove();
       const data=images.get(`${page.number-1}-${item.name}`);const id=1000+(++imageNo);
       if(!data){tree.append(placeholder(doc,id,item));continue;}
       const img=new Image();img.src=data;await img.decode();let output=data;
@@ -55,6 +62,26 @@ export async function cafeteriaBlob(slides,images=new Map()){
     }
     zip.file(path,xml(doc));zip.file(relPath,xml(rels));
   }
+  const presentation=parse(await zip.file('ppt/presentation.xml').async('string'));
+  const presentationRels=parse(await zip.file('ppt/_rels/presentation.xml.rels').async('string'));
+  const list=all(presentation,P,'sldIdLst')[0],oldIds=[...list.children].map(node=>node.getAttribute('id'));
+  list.replaceChildren();
+  for(const node of [...presentationRels.documentElement.children])if(node.getAttribute('Type')===R+'/slide')node.remove();
+  for(const node of [...types.documentElement.children])if(node.getAttribute('ContentType')==='application/vnd.openxmlformats-officedocument.presentationml.slide+xml')node.remove();
+  for(const [index,page] of slides.entries()){
+    const rid='rIdWorkbenchSlide'+page.number,node=create(presentation,P,'p:sldId',{id:oldIds[index]||String(Math.max(255,...oldIds.map(Number))+index+1)});
+    node.setAttributeNS(R,'r:id',rid);list.append(node);
+    presentationRels.documentElement.append(create(presentationRels,presentationRels.documentElement.namespaceURI,'Relationship',{Id:rid,Type:R+'/slide',Target:`slides/slide${page.number}.xml`}));
+    types.documentElement.append(create(types,types.documentElement.namespaceURI,'Override',{PartName:`/ppt/slides/slide${page.number}.xml`,ContentType:'application/vnd.openxmlformats-officedocument.presentationml.slide+xml'}));
+  }
+  zip.file('ppt/presentation.xml',xml(presentation));zip.file('ppt/_rels/presentation.xml.rels',xml(presentationRels));
+  const app=parse(await zip.file('docProps/app.xml').async('string')),ep=app.documentElement.namespaceURI,vt='http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes';
+  const slideCount=all(app,ep,'Slides')[0];if(slideCount)slideCount.textContent=String(slides.length);
+  const headings=all(all(app,ep,'HeadingPairs')[0],vt,'i4'),oldCount=Number(headings.at(-1)?.textContent||oldIds.length);
+  if(headings.length)headings.at(-1).textContent=String(slides.length);
+  const titles=all(all(app,ep,'TitlesOfParts')[0],vt,'vector')[0];
+  if(titles){const retained=[...titles.children].slice(0,Math.max(0,titles.children.length-oldCount));titles.replaceChildren(...retained);for(const page of slides){const title=create(app,vt,'vt:lpstr');title.textContent=page.title;titles.append(title);}titles.setAttribute('size',titles.children.length);}
+  zip.file('docProps/app.xml',xml(app));
   const leftovers=[...images].filter(([key])=>key.startsWith('__unplaced__'));
   if(leftovers.length){
     const library=parse('<images/>'),relsNS='http://schemas.openxmlformats.org/package/2006/relationships',links=parse(`<Relationships xmlns="${relsNS}"/>`),rootLinks=parse(await zip.file('_rels/.rels').async('string'));

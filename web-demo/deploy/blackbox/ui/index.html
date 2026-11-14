@@ -1,0 +1,12 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>小黑箱 · 结构工作台</title><link rel="stylesheet" href="/blackbox/style.css"></head><body>
+<main><header><h1><span class="mark" aria-hidden="true"></span>小黑箱</h1><button class="text" id="settings">设置</button></header>
+<section class="health" aria-live="polite"><h2><span id="dot" class="dot"></span><span id="service">正在读取状态</span></h2><p id="browser">正在检查工作台页面…</p></section>
+<section class="project"><h2>当前项目</h2><div id="project-name">尚未选择项目</div><p id="project-path">在设置中选择项目文件夹。</p><button class="primary" id="open">打开工作台</button></section>
+<section class="connections"><h2>AI 连接</h2><div class="row"><button id="workbuddy">连接 WorkBuddy</button><button id="kimi">连接 Kimi</button></div><p id="clients">尚未检测到客户端连接</p><p class="muted">豆包 · 待核实</p></section>
+<section class="parameters"><button id="parameters" class="primary" disabled>核心参数</button><p>在统一技术措施页面填写并保存，与小黑箱共用当前项目。</p></section>
+<nav><button class="text" id="results">查看成果</button><span aria-hidden="true">|</span><button class="text" id="input">项目文件夹</button></nav>
+<footer><span>关闭窗口后，后台继续运行。</span><button id="stop">退出后台</button></footer><p id="message" role="status" hidden></p></main>
+<dialog id="settings-dialog"><form id="settings-form"><header><h2>设置</h2><button type="button" class="text" data-close>关闭</button></header><label for="folder">项目输入文件夹</label><div class="folder-row"><input id="folder" placeholder="粘贴文件夹绝对路径" required><button type="button" id="browse">选择</button></div><p>成果保存到该目录的“工作台成果”，每批保留。原始资料不改动。</p><p id="version" class="muted"></p><button class="primary" type="submit">保存设置</button><p id="settings-error" role="alert"></p></form></dialog>
+<dialog id="connect-dialog"><header><h2 id="connect-title">连接 AI</h2><button class="text" data-close>关闭</button></header><p id="connect-note"></p><textarea id="config" readonly aria-label="MCP 配置"></textarea><p id="config-path" class="muted"></p><button id="copy" class="primary">复制配置</button><p>项目保存在本机。工具返回的资料会进入调用方 AI 的会话。</p></dialog>
+<script type="module" src="/blackbox/app.js"></script></body></html>
+

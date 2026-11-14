@@ -12,6 +12,7 @@ import re
 import shutil
 import sys
 import uuid
+from copy import deepcopy
 from pathlib import Path
 
 from docx import Document
@@ -20,7 +21,7 @@ from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Mm, Pt
+from docx.shared import Mm, Pt, Twips
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 
@@ -67,7 +68,7 @@ def find_one(source_dir: Path, pattern: str) -> Path | None:
 
 def sources(source_dir: Path) -> dict[str, Path | None]:
     result = {
-        "cover": find_one(source_dir, "*计算书封面*.DOC"),
+        "cover": Path(__file__).resolve().parents[1] / "assets/calculation-book/cover-reference.docx",
         "catalog": find_one(source_dir, "*结构计算书内容*.docx"),
         "column": find_one(source_dir, "*穿层柱计算书*.docx"),
     }
@@ -135,7 +136,9 @@ def status_payload(source_dir: Path) -> dict:
         "word_count": sum(1 for key in required if src.get(key)),
         "sections": sections,
         "templates": {
-            "cover": src["cover"].name if src.get("cover") else None,
+            # Null is the existing API contract for the bundled cover fallback.
+            # Never select an older cover from a project's external source directory.
+            "cover": None,
             "catalog": src["catalog"].name if src.get("catalog") else None,
         },
         "workbooks": workbook_manifest(source_dir),
@@ -233,7 +236,29 @@ def set_run_font(run, name: str, size: float, bold: bool | None = None) -> None:
         run.bold = bold
 
 
-def configure_a3_two_columns(section) -> None:
+def set_single_column(section) -> None:
+    for columns in list(section._sectPr.findall(qn('w:cols'))):
+        section._sectPr.remove(columns)
+    columns = OxmlElement('w:cols')
+    columns.set(qn('w:num'), '1')
+    section._sectPr.insert_element_before(columns, 'w:formProt', 'w:vAlign', 'w:noEndnote', 'w:titlePg', 'w:textDirection', 'w:bidi', 'w:rtlGutter', 'w:docGrid')
+
+
+def configure_cover_layout(document: Document) -> None:
+    section = document.sections[0]
+    columns = section._sectPr.find(qn('w:cols'))
+    count = int(columns.get(qn('w:num'), '1')) if columns is not None else 1
+    if count > 1:
+        # Retain the master's left text region when removing its column layout.
+        # Its native centered paragraphs/tables are centered inside this region.
+        spacing = int(columns.get(qn('w:space'), '0'))
+        available = section.page_width.twips - section.left_margin.twips - section.right_margin.twips - section.gutter.twips
+        first_column_width = (available - spacing * (count - 1) + count - 1) // count
+        section.right_margin = Twips(section.page_width.twips - section.left_margin.twips - section.gutter.twips - first_column_width)
+    set_single_column(section)
+
+
+def configure_a3_content(section) -> None:
     section.orientation = WD_ORIENT.LANDSCAPE
     section.page_width = Mm(420)
     section.page_height = Mm(297)
@@ -241,14 +266,8 @@ def configure_a3_two_columns(section) -> None:
     section.bottom_margin = Mm(14)
     section.left_margin = Mm(16)
     section.right_margin = Mm(16)
-    sect_pr = section._sectPr
-    cols = sect_pr.find(qn("w:cols"))
-    if cols is None:
-        cols = OxmlElement("w:cols")
-        sect_pr.append(cols)
-    cols.set(qn("w:num"), "2")
-    cols.set(qn("w:space"), "650")
-    cols.set(qn("w:equalWidth"), "1")
+    section.gutter = Mm(0)
+    set_single_column(section)
 
 
 def configure_a3_single_page(section) -> None:
@@ -259,11 +278,7 @@ def configure_a3_single_page(section) -> None:
     section.bottom_margin = Mm(0)
     section.left_margin = Mm(0)
     section.right_margin = Mm(0)
-    cols = section._sectPr.find(qn("w:cols"))
-    if cols is None:
-        cols = OxmlElement("w:cols")
-        section._sectPr.append(cols)
-    cols.set(qn("w:num"), "1")
+    set_single_column(section)
 
 
 def configure_catalog_section(section) -> None:
@@ -274,12 +289,8 @@ def configure_catalog_section(section) -> None:
     section.bottom_margin = Mm(31.75)
     section.left_margin = Mm(25.4)
     section.right_margin = Mm(25.4)
-    cols = section._sectPr.find(qn("w:cols"))
-    if cols is None:
-        cols = OxmlElement("w:cols")
-        section._sectPr.append(cols)
-    cols.set(qn("w:num"), "2")
-    cols.set(qn("w:space"), "425")
+    section.gutter = Mm(0)
+    set_single_column(section)
 
 
 def set_table_borders(table) -> None:
@@ -449,46 +460,76 @@ def safe_filename(value: str) -> str:
 
 
 def apply_current_cover(document: Document, payload: dict) -> None:
-    """Retain the template layout while replacing historical project facts in the derived copy."""
-    replacements = {
-        "26-AD-026": clean_text(payload.get("project_code")) or "【待填写项目编号】",
-        "江南大学(江阴校区)二期科研创新组团": clean_text(payload.get("project_name")) or "【待填写项目名称】",
-        "施工图": clean_text(payload.get("stage")) or "【待填写阶段】",
-        "63": "【待填写子项编号】", "媒体融合与创新创业学院": clean_text(payload.get("unit")) or "【待填写子项名称】",
-        "结构": clean_text(payload.get("discipline")) or "结构",
-        "基础及上部结构": "【按本次目录确认】",
-        "周汉杰": "【待审核】", "刘浩晋": "【待校对】", "张涛冯锋": "【待填写专业负责人】",
-        "张伊楚": "【待填写设计人】", "2026-07-10": "【待填写日期】",
-        "V01": "【待填写版本】", "施工图出图": "工作草案，待复核",
-        "盈建科建筑结构设计软件": clean_text(payload.get("software")) or "【待填写计算软件】", "7.1.0": clean_text(payload.get("software_version")) or "",
-        "同济大学建筑设计研究院(集团)有限公司": clean_text(payload.get("company")) or "【待填写设计单位】",
-        "TONGJIARCHITECTURALDESIGN(GROUP)CO.,LTD": "",
-    }
-    fields = {"project_name": "项目名称", "project_code": "项目编号", "stage": "阶段", "unit": "子项名称", "company": "设计单位", "software": "计算软件", "discipline": "专业"}
-    replacements.update({"{{" + key + "}}": clean_text(payload.get(key)) or "【待填写" + label + "】" for key, label in fields.items()})
-    namespace = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
-    for paragraph in document.element.iter(namespace + "p"):
-        texts = list(paragraph.iter(namespace + "t"))
-        value = re.sub(r"\s+", "", "".join(node.text or "" for node in texts))
-        if value in replacements and texts:
-            texts[0].text = replacements[value]
-            for node in texts[1:]:
-                node.text = ""
+    """Fill only verified native cells of the 2026-11-12 QS-324 master."""
+    tables = document.tables
+    if len(tables) != 5 or len(tables[1].rows) != 24:
+        fail("计算书封面母件与 QS-324 新版不匹配。")
+
+    def paragraph_text(paragraph, value):
+        texts = list(paragraph._p.iter(qn('w:t')))
+        if not texts and value:
+            run = OxmlElement('w:r')
+            # Empty native cells carry their font in the paragraph-end properties.
+            properties = paragraph._p.find('w:pPr/w:rPr', paragraph._p.nsmap)
+            if properties is not None:
+                run.append(deepcopy(properties))
+            text = OxmlElement('w:t');run.append(text);paragraph._p.append(run)
+            texts = [text]
+        for index, node in enumerate(texts):
+            node.text = value if index == 0 else ''
+
+    def fill(table, row, label, value):
+        cell = tables[table].cell(row, 1)
+        if re.sub(r'\s+', '', tables[table].cell(row, 0).text) != label:
+            fail("计算书封面字段位置不匹配：" + label)
+        for index, paragraph in enumerate(cell.paragraphs):
+            paragraph_text(paragraph, value if index == 0 else '')
+
+    def current(key):
+        value = clean_text(payload.get(key))
+        if '{{' in value or '}}' in value:
+            fail('计算书封面参数仍有未替换占位符：' + key)
+        return value
+
+    fill(0, 0, '项目编号：', current('project_code'))
+    for row, label, key in [(0,'项目名称：','project_name'),(2,'设计阶段：','stage'),
+                            (6,'子项名称：','unit'),(8,'设计专业：','discipline')]:
+        fill(1, row, label, current(key))
+    # No reliable shared value exists for these slots. Keep the rows, not sample facts.
+    for row, label in [(4,'子项编号：'),(12,'技术审定人：'),(14,'审核人：'),
+                       (16,'校对人：'),(18,'专业负责人：'),(20,'设计人：'),
+                       (22,'日期：'),(23,'版本号：')]:
+        fill(1, row, label, '')
+    fill(2, 0, '版本说明：', '')
+    fill(3, 0, '计算软件/版本号：', '')
+    software_paragraphs = tables[3].cell(0, 1).paragraphs
+    paragraph_text(software_paragraphs[0], current('software'))
+    if len(software_paragraphs) > 1:
+        paragraph_text(software_paragraphs[1], current('software_version'))
+    company = current('company')
+    native_company = '同济大学建筑设计研究院(集团)有限公司'
+    if company and company.replace('（','(').replace('）',')') != native_company:
+        for index, paragraph in enumerate(tables[4].cell(0, 1).paragraphs):
+            paragraph_text(paragraph, company if index == 0 else '')
+    if any('{{' in (node.text or '') or '}}' in (node.text or '') for node in document.element.iter(qn('w:t'))):
+        fail('计算书封面仍有未替换占位符。')
 
 
 def clean_cover_identity(document: Document) -> None:
-    """Clean the retained template only, before inserting current project values."""
-    # Strip every image relationship, including thumbnail and VML fallback images.
+    """Clear personal metadata/signature slots without removing the master's institute logo."""
+    for row in (12, 14, 16, 18, 20):
+        for node in document.tables[1].cell(row, 1)._tc.xpath(".//*[local-name()='drawing' or local-name()='pict' or local-name()='object']"):
+            node.getparent().remove(node)
     for part in list(document.part.package.parts):
         element = getattr(part, "_element", None)
         if element is not None:
-            for node in element.xpath(".//*[local-name()='drawing' or local-name()='pict' or local-name()='object' or local-name()='del' or local-name()='commentRangeStart' or local-name()='commentRangeEnd' or local-name()='commentReference']"):
+            for node in element.xpath(".//*[local-name()='del' or local-name()='commentRangeStart' or local-name()='commentRangeEnd' or local-name()='commentReference']"):
                 if node.getparent() is not None: node.getparent().remove(node)
             for node in element.iter():
                 for key in list(node.attrib):
                     if key.rsplit('}', 1)[-1] in ('author', 'initials'): del node.attrib[key]
         for rid, rel in list(part.rels.items()):
-            if rel.reltype.rsplit('/', 1)[-1] in ('image', 'comments', 'commentsExtended', 'people', 'thumbnail'):
+            if rel.reltype.rsplit('/', 1)[-1] in ('comments', 'commentsExtended', 'people', 'thumbnail'):
                 part.drop_rel(rid)
     for rid, rel in list(document.part.package.rels.items()):
         if rel.reltype.endswith('/thumbnail'): del document.part.package.rels[rid]
@@ -511,10 +552,10 @@ def build(source_dir: Path, output_dir: Path, payload: dict) -> dict:
     output_path = output_dir / f"{uuid.uuid4().hex}_{filename}"
     shutil.copy2(cover_reference, output_path)
     document = Document(output_path)
-    # The reference cover contains historical signatures/stamps. Keep its text
-    # layout, but never carry those images into a new project's generated draft.
+    # Use the reviewed native QS-324 form, never reconstruct its tables or page geometry.
     clean_cover_identity(document)
     apply_current_cover(document, payload)
+    configure_cover_layout(document)
     add_directory_page(document, sections)
     document.core_properties.title = f"{project_name} 结构计算书"
     document.core_properties.subject = "A3 结构计算书"
@@ -526,11 +567,15 @@ def build(source_dir: Path, output_dir: Path, payload: dict) -> dict:
     out_files = payload.get("out_files") if isinstance(payload.get("out_files"), list) else []
     if excel_blocks or out_files:
         section = document.add_section(WD_SECTION.NEW_PAGE)
-        configure_a3_two_columns(section)
+        configure_a3_content(section)
         for block in excel_blocks[:4]:
             add_excel_block(document, source_dir, block)
         for file in out_files[:3]:
             add_out_file(document, file)
+    for section in document.sections:
+        set_single_column(section)
+    for column_break in document.element.xpath('.//w:br[@w:type="column"]'):
+        column_break.getparent().remove(column_break)
     document.save(output_path)
     return {"path": str(output_path), "filename": filename}
 

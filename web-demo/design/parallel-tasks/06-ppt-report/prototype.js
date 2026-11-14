@@ -1,11 +1,16 @@
 import {templatePages,buildCafeteriaSlides} from './cafeteria-core.js';
 import {cafeteriaHTML} from './cafeteria-view.js';
 import {downloadCafeteria,cafeteriaBlob} from './cafeteria-export.js';
-import { validateRewrite, parameterEvidence, rewriteGuidance } from './report-core.js';
 import {projectPart} from '../../../project-store-client.js';
-import {matchImageFiles,readPptImage} from '../../../office-ppt-assets.js';
+import {matchImageFiles,readPptImage,reportImageAliases} from '../../../office-ppt-assets.js';
+import {restorePptDraft,serializePptDraft} from './ppt-draft.js';
+import {singleImageLayoutId} from './single-image-layout.js';
 let draftStore, snapshotQueue=Promise.resolve(), draftLoading=false;
 let unitDrafts={}, imageLoading=false;
+const imageStatus=document.querySelector('#batch-image-status'),imageRetry=document.querySelector('#batch-image-retry');
+const paint=()=>new Promise(resolve=>setTimeout(resolve,0));
+function imageNotice(text,failed=false){imageStatus.textContent=text;imageRetry.hidden=!failed;}
+function imageControls(){const disabled=imageLoading||state.exporting||draftLoading||state.snapshot?.context?.canEdit===false;els.unitName.disabled=disabled;document.querySelector('#batch-image-upload').disabled=disabled;els.imageUploadList.querySelectorAll('button,select').forEach(el=>el.disabled=disabled||(el.tagName==='SELECT'&&!el.options.length)||(el.tagName==='BUTTON'&&el.parentElement.querySelector('select')?.options.length===0));els.canvas.querySelectorAll('[data-upload]').forEach(el=>el.disabled=disabled);}
 const embedded=new URL(location.href).searchParams.get('embedded')==='1'&&window.parent!==window;
 
 const pages = templatePages;
@@ -66,7 +71,7 @@ const imageKey = (pageIndex, name) => `${pageIndex}-${name}`;
 
 const imageRequirements = pages.flatMap((page, pageIndex) => {
   const names = page.slots || (page.slot ? [page.slot] : []);
-  return names.map((name) => ({ pageIndex, pageTitle: page.title, name }));
+  return names.map((name) => ({ pageIndex, pageTitle: page.title, name, aliases:page.aliases||[] }));
 });
 
 function measureValue(key, fallback = '[填写]') {
@@ -114,7 +119,6 @@ function renderSlide() {
   const page = buildCafeteriaSlides(state.snapshot||{},els.unitName.value,state.edits)[state.current];
   els.canvas.innerHTML = cafeteriaHTML(page,imageSlot);
   document.querySelector('#page-count').textContent=pages.length+'页';
-  updateRewriteControls();
   els.currentNumber.textContent = String(state.current + 1).padStart(2, '0');
   els.currentTitle.textContent = page.title;
   els.pagerLabel.textContent = `${state.current + 1} / ${pages.length}`;
@@ -125,7 +129,6 @@ function renderSlide() {
   if(readOnly)els.canvas.querySelectorAll('[contenteditable="true"]').forEach(n=>n.contentEditable='false');
   els.unitName.disabled=readOnly||imageLoading;
   for(const el of [els.confirm,els.imageManagerButton])if(el)el.disabled=readOnly||state.exporting||imageLoading;
-  if(readOnly)document.querySelector('#rewrite-btn').disabled=true;
   els.canvas.querySelectorAll('[data-upload]').forEach(b=>b.disabled=readOnly||imageLoading);
 }
 
@@ -138,7 +141,7 @@ function renderPageList() {
 
 function renderImageManager() {
   const uploaded = imageRequirements.filter(({ pageIndex, name }) => state.images.has(imageKey(pageIndex, name))).length;
-  els.imageProgress.textContent = `${uploaded} / ${imageRequirements.length}`;
+  els.imageProgress.textContent = `${uploaded} / ${imageRequirements.length} 个图位 · ${[...state.images.keys()].filter(k=>k.startsWith('__unplaced__')).length} 张待放置`;
   els.imageUploadList.innerHTML = imageRequirements.map(({ pageIndex, pageTitle, name }) => {
     const hasImage = state.images.has(imageKey(pageIndex, name));
     return `
@@ -154,9 +157,10 @@ function renderImageManager() {
    const select=document.createElement('select');select.setAttribute('aria-label','选择图位 '+key.slice(46));
    for(const slot of imageRequirements.filter(r=>!state.images.has(imageKey(r.pageIndex,r.name))))select.add(new Option(`${slot.pageIndex+1} · ${slot.pageTitle} · ${slot.name}`,imageKey(slot.pageIndex,slot.name)));
    const place=document.createElement('button');place.type='button';place.textContent='放入图位';place.disabled=!select.options.length||state.snapshot?.context?.canEdit===false;
-   place.onclick=async()=>{if(imageLoading||state.exporting||state.snapshot?.context?.canEdit===false)return;try{if(state.images.has(select.value))throw Error('图位已有图片');state.images.set(select.value,state.images.get(key));state.images.delete(key);invalidateReview();await saveDraft();renderSlide();renderImageManager();}catch(e){showToast(e.message);}};
+   place.onclick=async()=>{if(imageLoading||state.exporting||state.snapshot?.context?.canEdit===false)return;imageLoading=true;imageControls();try{if(!select.value||state.images.has(select.value))throw Error('请重新选择空图位');state.images.set(select.value,state.images.get(key));state.images.delete(key);invalidateReview();imageNotice('正在保存图片位置…');await paint();await saveDraft();imageNotice('图片位置已保存。');}catch(e){imageNotice('图片位置保存尚未确认：'+e.message+'；请保持本页打开。',true);}finally{imageLoading=false;renderSlide();renderImageManager();if(state.pendingSnapshot){const snapshot=state.pendingSnapshot;state.pendingSnapshot=null;applyMeasureSnapshot(snapshot);}}};
    row.append(name,select,place);els.imageUploadList.append(row);
   }
+  imageControls();
 }
 
 function setImageManager(open) {
@@ -248,8 +252,10 @@ async function loadMeasureSnapshot(snapshot) {
       els.unitName.innerHTML=(snapshot.units||[{name:saved.unit||'项目整体'}]).map(u=>`<option>${escapeHtml(u.name)}</option>`).join('');
       els.unitName.value = saved.unit || '项目整体';
       if(!els.unitName.value)els.unitName.selectedIndex=0;
-      unitDrafts=saved.unitDrafts||{};
-      state.images=new Map(Object.entries(saved.images||{}).filter(([,v])=>/^data:image\/(png|jpeg|webp);base64,/i.test(v)));
+      const restored=restorePptDraft(saved,els.unitName.value);unitDrafts=restored.drafts;
+      state.edits=restored.current.edits||{};state.provenance=restored.current.provenance||{};
+      state.images=new Map(Object.entries(restored.current.images||{}).filter(([,v])=>/^data:image\/(png|jpeg|webp);base64,/i.test(v)));
+      imageNotice('已载入 '+state.images.size+' 张图片；待放置图片可在下方选择图位。');
     } finally {draftLoading=false;}
   }
   const selectedUnit=els.unitName.value;
@@ -301,7 +307,6 @@ function goTo(index) {
   if (index < 0 || index >= pages.length) return;
   state.current = index;
   state.revision += 1;
-  clearProposal();
   renderSlide();
 }
 
@@ -324,43 +329,37 @@ els.imageUploadList.addEventListener('click', (event) => {
   startImageUpload(Number(button.dataset.uploadPage), button.dataset.uploadName);
 });
 
-els.imageInput.addEventListener('change', async () => {
-  const [file] = els.imageInput.files;
-  if (!file || !state.activeUpload) return;
-  if(!draftStore||draftLoading){showToast('请先载入项目');return;}
-  if(!/^image\/(png|jpeg|webp)$/.test(file.type)||file.size>4*1024*1024){showToast('请选择不超过4MB的PNG、JPEG或WebP图片');return;}
-  const project=projectKey(),unit=els.unitName.value;
-  const { pageIndex, name } = state.activeUpload;
-  const key = imageKey(pageIndex, name);
-  const oldUrl = state.images.get(key);
-  if (oldUrl) URL.revokeObjectURL(oldUrl);
-  imageLoading=true;let data;try{data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}finally{imageLoading=false;}
-  if(project!==projectKey()||unit!==els.unitName.value)return;
-  state.images.set(key, data);
-  invalidateReview();
-  renderSlide();
-  renderImageManager();
-  saveDraft().catch(e=>showToast(e.message));
-  showToast(`${name}已更新`);
-});
-
-els.imageManagerButton.addEventListener('click', () => {
-  setImageManager(!els.imageManager.classList.contains('open'));
-});
-els.imageManagerClose.addEventListener('click', () => setImageManager(false));
+async function uploadImages(files,singleSlot=null){
+ if(!files.length||!draftStore||draftLoading||imageLoading||state.exporting||state.snapshot?.context?.canEdit===false)return;
+ const project=projectKey(),unit=els.unitName.value,known=new Set(state.images.values());
+ const targets=imageRequirements.map(r=>({key:imageKey(r.pageIndex,r.name),occupied:state.images.has(imageKey(r.pageIndex,r.name)),aliases:[...r.aliases,r.name,`${r.pageIndex+1}-${r.name}`,`${r.pageTitle}-${r.name}`,...(imageRequirements.filter(s=>s.pageIndex===r.pageIndex).length===1?[r.pageTitle]:[])]}));
+ const plans=singleSlot?files.map(file=>({file,target:{key:singleSlot}})):matchImageFiles(files,targets,{aliases:reportImageAliases,suffix:true});
+ imageLoading=true;imageControls();const failures=[];let placed=0,retained=0,duplicates=0,completed=0;
+ try{
+  for(const plan of plans){
+   imageNotice(`读取 ${completed+1} / ${files.length}：${plan.file.name}`);await paint();
+   try{
+    const {data}=await readPptImage(plan.file,{maxBytes:4*1024*1024});
+    if(project!==projectKey()||unit!==els.unitName.value)throw Error('项目或单体已切换');
+    if(!singleSlot&&known.has(data)){duplicates++;}
+    else if(singleSlot||(!plan.reason&&!state.images.has(plan.target.key))){state.images.set(plan.target.key,data);known.add(data);placed++;}
+    else{state.images.set('__unplaced__'+crypto.randomUUID().replaceAll('-','')+'__'+plan.file.name,data);known.add(data);retained++;}
+   }catch(e){failures.push(plan.file.name+'：'+e.message);}
+   completed++;imageNotice(`已读取 ${completed} / ${files.length} · 新增 ${placed+retained} 张 · 重复 ${duplicates} 张`);await paint();
+  }
+  if(placed||retained)invalidateReview();
+  renderSlide();renderImageManager();imageNotice(`已读取 ${files.length} / ${files.length}，正在保存…`);await paint();
+  await saveDraft();
+  imageNotice(`完成：${placed} 张已放置，${retained} 张新增待放置，${duplicates} 张重复已跳过。图片已保存。`+(retained?' 待放置图片请在下方选择图位。':'')+(failures.length?'\n未导入 '+failures.length+' 张：'+failures.join('；'):''));
+ }catch(e){imageNotice('图片保存尚未确认：'+e.message+'\n请保持此页打开，核对保存状态后重试。',true);}
+ finally{imageLoading=false;renderSlide();renderImageManager();if(state.pendingSnapshot){const snapshot=state.pendingSnapshot;state.pendingSnapshot=null;applyMeasureSnapshot(snapshot);}}
+}
+els.imageInput.addEventListener('change',async()=>{const files=[...els.imageInput.files];els.imageInput.value='';if(state.activeUpload)await uploadImages(files,imageKey(state.activeUpload.pageIndex,state.activeUpload.name));});
+els.imageManagerButton.addEventListener('click',()=>setImageManager(!els.imageManager.classList.contains('open')));
+els.imageManagerClose.addEventListener('click',()=>setImageManager(false));
 document.querySelector('#batch-image-upload').onclick=()=>{if(!imageLoading&&!state.exporting&&state.snapshot?.context?.canEdit!==false)document.querySelector('#batch-image-input').click();};
-document.querySelector('#batch-image-input').onchange=async event=>{
- const files=[...event.target.files];event.target.value='';if(!files.length||!draftStore||draftLoading||imageLoading||state.snapshot?.context?.canEdit===false)return;
- const project=projectKey(),unit=els.unitName.value;
- const targets=imageRequirements.map(r=>({key:imageKey(r.pageIndex,r.name),occupied:state.images.has(imageKey(r.pageIndex,r.name)),aliases:[r.name,`${r.pageIndex+1}-${r.name}`,`${r.pageTitle}-${r.name}`,...(imageRequirements.filter(s=>s.pageIndex===r.pageIndex).length===1?[r.pageTitle]:[])]}));
- imageLoading=true;els.unitName.disabled=true;const failures=[];let placed=0,retained=0;
- try{for(const plan of matchImageFiles(files,targets)){try{const {data}=await readPptImage(plan.file);if(project!==projectKey()||unit!==els.unitName.value)throw Error('项目或单体已切换');
-   if(!plan.reason&&!state.images.has(plan.target.key)){state.images.set(plan.target.key,data);placed++;}
-   else{state.images.set('__unplaced__'+crypto.randomUUID().replaceAll('-','')+'__'+plan.file.name,data);retained++;}
-  }catch(e){failures.push(plan.file.name+'：'+e.message);}}
-  invalidateReview();await saveDraft();showToast(`${placed} 张已放置，${retained} 张未放置`+(failures.length?'；'+failures.join('；'):''));
- }catch(e){showToast(e.message);}finally{imageLoading=false;renderSlide();renderImageManager();if(state.pendingSnapshot){const snapshot=state.pendingSnapshot;state.pendingSnapshot=null;applyMeasureSnapshot(snapshot);}}
-};
+document.querySelector('#batch-image-input').onchange=async event=>{const files=[...event.target.files];event.target.value='';await uploadImages(files);};
+imageRetry.onclick=async()=>{if(imageLoading)return;imageLoading=true;imageControls();imageNotice('正在重试保存…');await paint();try{await saveDraft();imageNotice('图片已保存。');}catch(e){imageNotice('图片保存尚未确认：'+e.message+'；请保持本页打开。',true);}finally{imageLoading=false;renderSlide();renderImageManager();if(state.pendingSnapshot){const snapshot=state.pendingSnapshot;state.pendingSnapshot=null;applyMeasureSnapshot(snapshot);}}};
 els.imageManagerBackdrop.addEventListener('click', () => setImageManager(false));
 els.measureLinkButton.addEventListener('click', connectMeasures);
 
@@ -401,7 +400,7 @@ els.generate.addEventListener('click', async () => {
 
 let renderedUnit='';
 els.unitName.addEventListener('change', async () => {
-  if(renderedUnit)unitDrafts[renderedUnit]={edits:state.edits,provenance:state.provenance,images:Object.fromEntries(state.images)};
+  if(renderedUnit)unitDrafts[renderedUnit]={...unitDrafts[renderedUnit],layoutId:singleImageLayoutId,edits:state.edits,provenance:state.provenance,images:Object.fromEntries(state.images)};
   const saved=unitDrafts[els.unitName.value]||{};state.edits=saved.edits||{};state.provenance=saved.provenance||{};state.images=new Map(Object.entries(saved.images||{}));
   invalidateReview();await saveDraft();renderSlide();renderImageManager();
 });
@@ -409,16 +408,14 @@ els.unitName.addEventListener('change', async () => {
 function projectKey() {
   return state.snapshot?.project_id||'';
 }
+function draftPayload(){return serializePptDraft(els.unitName.value,state.snapshot?.parameter_version,unitDrafts,{edits:state.edits,provenance:state.provenance,images:Object.fromEntries(state.images)});}
 function saveDraft() {
   if (!state.measureParams||!draftStore||draftLoading) return Promise.resolve();
   if(state.snapshot?.context?.canEdit===false)return draftStore.flush();
-  unitDrafts[els.unitName.value]={edits:state.edits,provenance:state.provenance,images:Object.fromEntries(state.images)};
-  return draftStore.save({layoutVersion:3,edits:state.edits,provenance:state.provenance,unit:els.unitName.value,images:Object.fromEntries(state.images),unitDrafts,parameterVersion:state.snapshot?.parameter_version}).catch(e=>{showToast('PPT未保存到项目库：'+e.message);throw e;});
-}
-function clearProposal() {
-  state.proposal = null;
-  document.querySelector('#rewrite-apply').disabled = true;
-  document.querySelector('#rewrite-preview').replaceChildren();
+  unitDrafts[els.unitName.value]={...unitDrafts[els.unitName.value],layoutId:singleImageLayoutId,edits:state.edits,provenance:state.provenance,images:Object.fromEntries(state.images)};
+  const payload=draftPayload();
+  if(JSON.stringify(payload).length>31*1024*1024)return Promise.reject(Error('当前PPT图片内容已超过单次保存容量，请先导出保留本页图片，再分单体整理；尚未提交覆盖'));
+  return draftStore.save(payload).catch(e=>{const message=e.status===409?'版本冲突，请保留本页并核对另一窗口的保存版本':e.message.includes('60秒')?'项目保存超时，可重试并核对保存结果':e.message;imageNotice('PPT保存尚未确认：'+message+'；请保持本页打开。',true);throw Object.assign(Error(message),{status:e.status});});
 }
 function invalidateReview() {
   state.revision += 1;
@@ -426,8 +423,6 @@ function invalidateReview() {
   els.confirm.classList.remove('confirmed');
   els.confirm.textContent = '人工确认';
   state.undo = null;
-  document.querySelector('#rewrite-undo').disabled = true;
-  clearProposal();
 }
 els.canvas.addEventListener('input', (event) => {
   const node = event.target.closest('[data-edit-id]');
@@ -435,83 +430,12 @@ els.canvas.addEventListener('input', (event) => {
   state.edits[node.dataset.editId] = node.innerText;
   state.provenance[node.dataset.editId] = { statement_type: '作者观点（人工输入，待复核）', source_id: `${projectKey()}:${node.dataset.editId}`, updated_at: new Date().toISOString() };
   invalidateReview();
-  saveDraft();
+  saveDraft().catch(e=>showToast(e.message));
 });
 els.canvas.addEventListener('paste', (event) => {
   if (!event.target.closest('[contenteditable="true"]')) return;
   event.preventDefault();
   document.execCommand('insertText', false, event.clipboardData.getData('text/plain'));
-});
-
-function aiBlocks() {
-  return [...els.canvas.querySelectorAll('[data-ai="true"]')].map((node) => ({ id: node.dataset.editId, text: node.innerText }));
-}
-function updateRewriteControls() {
-  document.querySelector('#rewrite-btn').disabled = state.exporting || !state.measureParams || !aiBlocks().length || state.rewriting;
-}
-document.querySelector('#rewrite-btn').addEventListener('click', async () => {
-  const blocks = aiBlocks();
-  const style=document.querySelector('#rewrite-style').value;
-  const rewriteMode=style==='扩展信息'?'expand':'concise';
-  const unit=state.snapshot?.units?.find(u=>u.name===els.unitName.value);
-  const parameters={...state.measureParams,...unit?.parameters};
-  const revision = state.revision;
-  const pageIndex = state.current;
-  clearProposal();
-  const status = document.querySelector('#rewrite-status');
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 95000);
-  state.rewriting = true;
-  updateRewriteControls();
-  status.textContent = 'DeepSeek 正在改写本页说明…';
-  try {
-    const response = await fetch('/api/deepseek/chat', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: controller.signal,
-      body: JSON.stringify({
-        task: 'rewrite-ppt-report',
-        context: { blocks, rewriteMode, pageTitle: pages[pageIndex].title, pageText: els.canvas.innerText.slice(0, 10000), parameters: parameterEvidence(els.canvas, parameters), statement_type: '工作草案，未经负责人审签' },
-        messages: [{ role: 'user', content: `请${style}。${rewriteGuidance(rewriteMode)}仅改写给出的blocks；占位内容保留待确认，不补造设计事实。` }],
-      }),
-    });
-    const payload = await response.json();
-    if (!response.ok) throw new Error(payload.error || `请求失败（${response.status}）`);
-    if (revision !== state.revision || pageIndex !== state.current) throw new Error('页面或参数已变化，请重新改写');
-    const proposal = validateRewrite(payload.content, blocks, rewriteMode);
-    state.proposal = { ...proposal, revision, pageIndex };
-    document.querySelector('#rewrite-preview').innerHTML = proposal.blocks.map((block, index) => `<div class="rewrite-diff"><div><b>原文</b><p>${escapeHtml(blocks[index].text)}</p></div><div><b>AI 建议 · 待确认</b><p>${escapeHtml(block.text)}</p></div></div>`).join('');
-    status.textContent = proposal.warnings.length ? `待核对：${proposal.warnings.join('；')}` : '建议已生成，请核对含义后采纳。来源：本页原文及统一技术措施；陈述类型：AI推断。';
-    document.querySelector('#rewrite-apply').disabled = false;
-  } catch (error) {
-    status.textContent = error.name === 'AbortError' ? '改写超时，请稍后重试。原文已保留。' : `${error.message}。原文已保留。`;
-  } finally {
-    clearTimeout(timer);
-    state.rewriting = false;
-    updateRewriteControls();
-  }
-});
-document.querySelector('#rewrite-apply').addEventListener('click', () => {
-  const proposal = state.proposal;
-  if (!proposal || proposal.revision !== state.revision || proposal.pageIndex !== state.current) return;
-  const before = { edits: { ...state.edits }, provenance: { ...state.provenance } };
-  proposal.blocks.forEach((block) => {
-    state.edits[block.id] = block.text;
-    state.provenance[block.id] = { statement_type: 'AI推断（人工采纳，待复核）', source_id: `${projectKey()}:${block.id}`, parameter_version: state.snapshot.updated_at, updated_at: new Date().toISOString() };
-  });
-  invalidateReview();
-  state.undo = before;
-  document.querySelector('#rewrite-undo').disabled = false;
-  saveDraft();
-  renderSlide();
-  document.querySelector('#rewrite-status').textContent = '已采纳 AI 建议，仍需人工确认；可撤销本次采纳。';
-});
-document.querySelector('#rewrite-undo').addEventListener('click', () => {
-  if (!state.undo) return;
-  state.edits = state.undo.edits;
-  state.provenance = state.undo.provenance;
-  invalidateReview();
-  saveDraft();
-  renderSlide();
-  document.querySelector('#rewrite-status').textContent = '已恢复采纳前文字。';
 });
 
 document.addEventListener('keydown', (event) => {
@@ -524,12 +448,12 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'ArrowRight') goTo(state.current + 1);
 });
 
-window.WorkbenchPpt={canSign:()=>state.confirmed,busy:()=>draftLoading||imageLoading||state.exporting||state.rewriting,async flush(){await snapshotQueue;await saveDraft();await draftStore?.flush();}};
+window.WorkbenchPpt={canSign:()=>state.confirmed,busy:()=>draftLoading||imageLoading||state.exporting,async flush(){await snapshotQueue;await saveDraft();await draftStore?.flush();}};
 window.WorkbenchPpt.mcp={
- get ready(){return !!draftStore&&!!state.snapshot&&!draftLoading;},get revision(){return draftStore?.revision||0;},get dirty(){if(!draftStore)return false;const drafts={...unitDrafts,[els.unitName.value]:{edits:state.edits,provenance:state.provenance,images:Object.fromEntries(state.images)}};return draftStore.hasChanges({layoutVersion:3,edits:state.edits,provenance:state.provenance,unit:els.unitName.value,images:Object.fromEntries(state.images),unitDrafts:drafts,parameterVersion:state.snapshot?.parameter_version});},
- async selectUnit(unit){await snapshotQueue;if(!state.snapshot?.units?.some(u=>u.name===unit))throw Error('PPT单体不存在');if(els.unitName.value===unit)return;if(window.WorkbenchPpt.busy())throw Error('PPT正在处理');if(renderedUnit)unitDrafts[renderedUnit]={edits:state.edits,provenance:state.provenance,images:Object.fromEntries(state.images)};els.unitName.value=unit;const saved=unitDrafts[unit]||{};state.edits=saved.edits||{};state.provenance=saved.provenance||{};state.images=new Map(Object.entries(saved.images||{}));invalidateReview();renderSlide();renderImageManager();},
- read(){const slides=buildCafeteriaSlides(state.snapshot,els.unitName.value,state.edits);return {projectId:state.snapshot?.project_id,parameterVersion:state.snapshot?.parameter_version,outputVersion:state.snapshot?.output_version,unit:els.unitName.value,revision:draftStore?.revision||0,edits:{...state.edits},pages:slides.map(page=>({number:page.number,title:page.title,fields:page.shapes.flatMap(shape=>shape.kind==='text'?[{id:shape.editId,text:shape.text,editable:shape.editable,linked:!!shape.linked}]:shape.kind==='table'?shape.rows.flatMap(row=>row.filter(cell=>!cell.skip).map(cell=>({id:cell.editId,text:cell.text,editable:cell.editable,linked:!!cell.linked}))):[])})),images:imageRequirements.map(r=>({key:imageKey(r.pageIndex,r.name),name:r.name,page:r.pageIndex+1,present:state.images.has(imageKey(r.pageIndex,r.name))})),draft:true};},
- async edit({edits,expectedEdits}){if(state.snapshot?.context?.canEdit===false||window.WorkbenchPpt.busy())throw Error('PPT只读或正在处理');const editable=new Set(this.read().pages.flatMap(p=>p.fields.filter(f=>f.editable).map(f=>f.id)));for(const [key,value]of Object.entries(edits)){if(!editable.has(key)||typeof value!=='string')throw Error('PPT字段不可编辑：'+key);if((state.edits[key]||'')!==expectedEdits[key])throw Object.assign(Error('PPT人工文字已变化，请重新读取'),{code:'TEXT_CONFLICT',status:409});}const before={edits:{...state.edits},provenance:{...state.provenance}};for(const [key,value]of Object.entries(edits)){state.edits[key]=value;state.provenance[key]={statement_type:'AI推断（MCP编辑，待复核）',source_id:projectKey()+':'+key,updated_at:new Date().toISOString()};}invalidateReview();state.undo=before;document.querySelector('#rewrite-undo').disabled=false;await saveDraft();renderSlide();return this.read();},
+ get ready(){return !!draftStore&&!!state.snapshot&&!draftLoading;},get revision(){return draftStore?.revision||0;},get dirty(){return !!draftStore&&draftStore.hasChanges(draftPayload());},
+ async selectUnit(unit){await snapshotQueue;if(!state.snapshot?.units?.some(u=>u.name===unit))throw Error('PPT单体不存在');if(els.unitName.value===unit)return;if(window.WorkbenchPpt.busy())throw Error('PPT正在处理');if(renderedUnit)unitDrafts[renderedUnit]={...unitDrafts[renderedUnit],layoutId:singleImageLayoutId,edits:state.edits,provenance:state.provenance,images:Object.fromEntries(state.images)};els.unitName.value=unit;const saved=unitDrafts[unit]||{};state.edits=saved.edits||{};state.provenance=saved.provenance||{};state.images=new Map(Object.entries(saved.images||{}));invalidateReview();renderSlide();renderImageManager();},
+ read(){const slides=buildCafeteriaSlides(state.snapshot,els.unitName.value,state.edits);return {projectId:state.snapshot?.project_id,parameterVersion:state.snapshot?.parameter_version,outputVersion:state.snapshot?.output_version,unit:els.unitName.value,revision:draftStore?.revision||0,edits:{...state.edits},layoutMigration:unitDrafts[els.unitName.value]?.layoutMigration,pages:slides.map(page=>({number:page.number,title:page.title,fields:page.shapes.flatMap(shape=>shape.kind==='text'?[{id:shape.editId,text:shape.text,editable:shape.editable,linked:!!shape.linked}]:shape.kind==='table'?shape.rows.flatMap(row=>row.filter(cell=>!cell.skip).map(cell=>({id:cell.editId,text:cell.text,editable:cell.editable,linked:!!cell.linked}))):[])})),images:[...imageRequirements.map(r=>({key:imageKey(r.pageIndex,r.name),name:r.name,page:r.pageIndex+1,present:state.images.has(imageKey(r.pageIndex,r.name))})),...[...state.images.keys()].filter(key=>key.startsWith('__unplaced__')).map(key=>({key,name:key.slice(46),page:null,present:true,unplaced:true}))],draft:true};},
+ async edit({edits,expectedEdits}){if(state.snapshot?.context?.canEdit===false||window.WorkbenchPpt.busy())throw Error('PPT只读或正在处理');const editable=new Set(this.read().pages.flatMap(p=>p.fields.filter(f=>f.editable).map(f=>f.id)));for(const [key,value]of Object.entries(edits)){if(!editable.has(key)||typeof value!=='string')throw Error('PPT字段不可编辑：'+key);if((state.edits[key]||'')!==expectedEdits[key])throw Object.assign(Error('PPT人工文字已变化，请重新读取'),{code:'TEXT_CONFLICT',status:409});}const before={edits:{...state.edits},provenance:{...state.provenance}};for(const [key,value]of Object.entries(edits)){state.edits[key]=value;state.provenance[key]={statement_type:'AI推断（MCP编辑，待复核）',source_id:projectKey()+':'+key,updated_at:new Date().toISOString()};}invalidateReview();state.undo=before;await saveDraft();renderSlide();return this.read();},
  async image({key,data}){if(state.snapshot?.context?.canEdit===false||window.WorkbenchPpt.busy())throw Error('PPT只读或正在处理');if(!imageRequirements.some(r=>imageKey(r.pageIndex,r.name)===key))throw Error('PPT图位不存在');state.images.set(key,data);invalidateReview();await saveDraft();renderSlide();renderImageManager();},
  async export(expected={}){if(window.WorkbenchPpt.busy())throw Error('PPT正在处理');await snapshotQueue;const identity={projectId:state.snapshot?.project_id,parameterVersion:state.snapshot?.parameter_version,outputVersion:state.snapshot?.output_version,unit:els.unitName.value};for(const key of ['projectId','parameterVersion','outputVersion','unit'])if(expected[key]!==undefined&&expected[key]!==identity[key])throw Object.assign(Error('PPT 参数快照已变化，请重新生成'),{status:409,code:'PPT_VERSION_MISMATCH'});state.exporting=true;try{const blob=await cafeteriaBlob(buildCafeteriaSlides(state.snapshot,els.unitName.value,state.edits),state.images);return {...identity,blob,filename:(els.projectName.value||'结构设计').replace(/[\\/:*?"<>|]/g,'_')+'_扩初汇报_草稿.pptx',draft:true};}finally{state.exporting=false;if(state.pendingSnapshot){const snapshot=state.pendingSnapshot;state.pendingSnapshot=null;applyMeasureSnapshot(snapshot);}}},
 };

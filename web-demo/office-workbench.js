@@ -81,12 +81,14 @@ export function mountOfficeWorkbench(){
    ensureCurrent();
    outputs.push(await register(word,'docx','结构初步设计说明',identity));ensureCurrent();
    outputs.push(await register(ppt.blob,'pptx','结构设计汇报',identity));ensureCurrent();
-   note('正在生成 Excel…');
-   const parameters=Object.entries(params).filter(([,v])=>typeof v!=='object').map(([key,value])=>({name:[...document.querySelectorAll('[data-k]')].find(el=>el.dataset.k===key)?.closest('.fld')?.querySelector('label')?.textContent.trim()||key,value:typeof value==='number'?value:((document.querySelector('[data-k="'+key+'"]')?.type==='number'&&String(value??'').trim()!==''&&Number.isFinite(Number(value)))?Number(value):String(value??'')),source:'统一技术措施'}));
-   const tables=Object.entries(spec.tables||{}).map(([key,t])=>({name:({units:'单体信息',analysis:'计算参数'})[key]||t.title||key,rows:(t.rows||[]).map(row=>row.values)})).filter(t=>t.rows.length);
-   outputs.push((await api(identity.projectId+'/generate-xlsx',{method:'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'office-documents'},body:JSON.stringify({title:'结构参数与指标',unit:identity.unit,sourceParameterVersion:identity.version,batchId:identity.batchId,parameters,tables})})).document);
+   const steel=M.mcp.readSteel(identity.unit);
+   if(Object.keys(steel.sources||{}).length){
+    note('正在生成用钢量 Excel…');
+    const tables=[{name:'用钢量',rows:steel.csvRows}];
+    outputs.push((await api(identity.projectId+'/generate-xlsx',{method:'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'office-documents'},body:JSON.stringify({title:'用钢量',reportType:'steel',unit:identity.unit,sourceParameterVersion:identity.version,batchId:identity.batchId,tables})})).document);
+   }
    ensureCurrent();
-   note('已生成 Word、PPT、Excel');await list();return {batchId:identity.batchId,projectId:identity.projectId,unit:identity.unit,sourceParameterVersion:identity.version,documents:outputs};
+   note(outputs.length===3?'已生成 Word、PPT、用钢量 Excel':'已生成 Word、PPT；当前单体未导入用钢量资料');await list();return {batchId:identity.batchId,projectId:identity.projectId,unit:identity.unit,sourceParameterVersion:identity.version,documents:outputs};
   }catch(e){if(outputs.length)e.message='本批尚未完整完成，已保存 '+outputs.length+' 份文件；'+e.message;note(e.message);throw e;}
   finally{busy=false;if(exporting)W.setExporting(false);if(main)main.inert=previousMainInert;if(frozenFrame)frozenFrame.inert=previousFrameInert;for(const {button,disabled} of controls)button.disabled=disabled;}
  }

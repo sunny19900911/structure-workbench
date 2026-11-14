@@ -16,6 +16,7 @@ export const SERVICE_TOOLS=[
  tool('start','显式启动或复用同数据目录、同版本的本机服务；不打开网页。',obj(),false),
  tool('open','打开本机工作台；浏览器编排操作需要此页面保持打开。',obj({projectId:pid}),false),
  tool('project_list','列出本机未删除项目与main修订号。',obj()),
+ tool('project_folder','读取小黑箱关联项目的输入文件清单；排除工作台成果目录，不导入资料。仅在小黑箱服务可用。',obj({projectId:pid},['projectId'])),
  tool('project_read','读取已保存的项目分区，默认summary不返回图片和大段原文。写操作前另读project.context取得网页当前修订。',obj({projectId:pid,part:s('main/intake/ppt/modules/expansion-单体等；留空取概要',80),view:{enum:['summary','full']},offset:{type:'integer',minimum:0},limit:{type:'integer',minimum:100,maximum:100000}},['projectId'])),
  tool('file_inspect','校验Word/Excel/PPT/PDF真实格式和兼容状态；不是仅检查扩展名，也不等于全文均可提取。',obj({filePath},['filePath'])),
  tool('file_capabilities','检测当前电脑文档运行组件、Office与导入导出边界，不猜Office营销版本。',obj()),
@@ -72,9 +73,10 @@ export async function browserCall(client,operation,input){
   let mime;if(magic.equals(Buffer.from([137,80,78,71,13,10,26,10])))mime='image/png';else if(magic[0]===255&&magic[1]===216&&magic[2]===255)mime='image/jpeg';else throw Error('Word图片格式与文件内容不一致');
   args.args.data='data:'+mime+';base64,'+f.bytes.toString('base64');delete args.args.filePath;
  }
- const response=await client.request('/api/mcp-browser/execute',{method:'POST',header:'mcp-browser',body:{projectId:input.projectId,unit:input.unit,expectedRevisions:input.expectedRevisions,operation,args,timeoutMs:180000},timeout:190000});
+ const timeoutMs=operation==='document.import'&&args.files?.some(file=>/\.pdf$/i.test(file.name))?420000:180000;
+ const response=await client.request('/api/mcp-browser/execute',{method:'POST',header:'mcp-browser',body:{projectId:input.projectId,unit:input.unit,expectedRevisions:input.expectedRevisions,operation,args,timeoutMs},timeout:timeoutMs+10000});
  const envelope=response.result,result=envelope?.result,context=envelope?.context;
- if(result?.base64)return {artifact:await client.artifact(Buffer.from(result.base64,'base64'),result.filename||'汇报.pptx',result.mime),draft:true,context};
+ if(result?.base64)return {artifact:await client.artifact(Buffer.from(result.base64,'base64'),result.filename||'汇报.pptx',result.mime,{projectId:input.projectId}),draft:true,context};
  return {result,context};
 }
 export async function callServiceTool(client,name,input={}){
@@ -85,6 +87,7 @@ export async function callServiceTool(client,name,input={}){
   case 'workbench_start':await client.base();return client.status();
   case 'workbench_open':return client.openBrowser(input.projectId);
   case 'workbench_project_list':return client.request('/api/workbench-projects');
+  case 'workbench_project_folder':return client.request('/api/launcher/files?project='+input.projectId);
   case 'workbench_project_read':{
    if(input.part&&!/^[a-z][a-z0-9_-]{0,79}$/.test(input.part))throw Error('分区标识无效');
    const value=await client.request('/api/workbench-projects/'+input.projectId+(input.part?'/'+input.part:''));
@@ -105,7 +108,7 @@ export async function callServiceTool(client,name,input={}){
    return {_mcpImage:{type:'image',mimeType:'image/png',data:r.bytes.toString('base64')},page:input.page};
   }
   case 'workbench_pdf_merge':{const r=await client.request('/api/calculation-pdfs/export',{method:'POST',header:'calculation-pdfs',body:{ids:input.ids},binary:true});return {artifact:await client.artifact(r.bytes,'结构计算书.pdf',r.mime),sourceCount:input.ids.length};}
-  case 'workbench_project_backup':{const r=await client.request('/api/portable-projects/export?project='+input.projectId,{method:'POST',header:'portable-projects',binary:true,maxBytes:1024*1024*1024});return {artifact:await client.artifact(r.bytes,'项目-'+input.projectId+'.workbench.zip',r.mime),warnings:r.warnings?JSON.parse(decodeURIComponent(r.warnings)):[]};}
+  case 'workbench_project_backup':{const r=await client.request('/api/portable-projects/export?project='+input.projectId,{method:'POST',header:'portable-projects',binary:true,maxBytes:1024*1024*1024});return {artifact:await client.artifact(r.bytes,'项目-'+input.projectId+'.workbench.zip',r.mime,{projectId:input.projectId}),warnings:r.warnings?JSON.parse(decodeURIComponent(r.warnings)):[]};}
   case 'workbench_project_import':{const f=await sourceFile(input.filePath,{extensions:new Set(['.zip']),maxBytes:1024*1024*1024});return client.request('/api/portable-projects/import',{method:'POST',header:'portable-projects',body:f.bytes,timeout:300000});}
   case 'workbench_calculation_sources':return client.request('/api/calculation-book/status?project='+input.projectId);
   case 'workbench_calculation_workbook':return client.request('/api/calculation-book/workbook?'+new URLSearchParams({project:input.projectId,workbook:input.workbook,sheet:input.sheet}));
@@ -113,12 +116,12 @@ export async function callServiceTool(client,name,input={}){
   case 'workbench_calculation_export':{
    const assembled=await browserCall(client,'calculation.package',{...input,args:{confirmed:input.confirmed}});
    const r=await client.request('/api/calculation-book/export',{method:'POST',body:assembled.result,binary:true});
-   return {artifact:await client.artifact(r.bytes,'结构计算书.docx',r.mime),draft:true,context:assembled.context};
+   return {artifact:await client.artifact(r.bytes,'结构计算书.docx',r.mime,{projectId:input.projectId}),draft:true,context:assembled.context};
   }
   case 'workbench_export_document':{
    const assembled=await browserCall(client,'document.package',{...input,args:{kind:input.kind}}),spec=assembled.result;
    const r=await client.request('/api/expansion/document',{method:'POST',header:'expansion',body:{...spec,format:input.format},binary:true});
-   return {artifact:await client.artifact(r.bytes,({measures:'统一技术措施',expansion:'结构初步设计说明',regulations:'地方规范'})[input.kind]+'.'+input.format,r.mime),draft:spec.draft!==false,context:assembled.context};
+   return {artifact:await client.artifact(r.bytes,({measures:'统一技术措施',expansion:'结构初步设计说明',regulations:'地方规范'})[input.kind]+'.'+input.format,r.mime,{projectId:input.projectId}),draft:spec.draft!==false,context:assembled.context};
   }
   case 'workbench_office_list':return client.request('/api/office-documents/'+input.projectId+(input.unit?'?'+new URLSearchParams({unit:input.unit}):''));
   case 'workbench_office_versions':return client.request('/api/office-documents/'+input.projectId+'/'+input.documentId+'/history');
@@ -134,7 +137,7 @@ export async function callServiceTool(client,name,input={}){
    const {document}=await client.request(base+(input.revision?'?revision='+input.revision:''));
    if(document?.projectId!==input.projectId||document?.documentId!==input.documentId||!Number.isInteger(document.fileRevision)||document.fileRevision<1)throw Error('文档登记与请求不一致');
    const file=await client.request(base+'/content?revision='+document.fileRevision,{binary:true,maxBytes:64*1024*1024});
-   return {document,artifact:await client.artifact(file.bytes,document.filename||document.title+'.'+document.type,file.mime),draft:true,engineeringApproval:false};
+   return {document,artifact:await client.artifact(file.bytes,document.filename||document.title+'.'+document.type,file.mime,{projectId:input.projectId,batchId:document.batchId}),draft:true,engineeringApproval:false};
   }
   default:throw Error('未知工作台工具');
  }

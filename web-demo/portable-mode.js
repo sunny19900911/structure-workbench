@@ -50,7 +50,7 @@
   let openSettings = () => {};
   window.WorkbenchPortable = {
     inspectFile, regulationLink, local,
-    openSettings() { openSettings(); const details=document.querySelector('.portable-status-dialog .portable-ai-settings'); if(details)details.open=true; },
+    openSettings() { openSettings(); },
     pdfReadReport(file, report) { if (report) pdfReports.set(file, report); return pdfReports.get(file); },
     resources: {
       xlsx:local('vendor/xlsx-0.18.5/xlsx.full.min.js'),
@@ -75,7 +75,7 @@
     document.querySelectorAll('#stage1 summary .sub').forEach(el => { el.textContent = el.textContent.replace(/；后续「反校核」以本组为基准/, ''); });
     const dialog = document.createElement('dialog'); dialog.className = 'portable-status-dialog'; document.body.append(dialog);
     openSettings = async () => {
-      dialog.innerHTML = '<div class="portable-dialog-heading"><h2>设置</h2><button type="button" data-close>关闭</button></div><p>项目保存在这台电脑；基础功能无需联网。</p><p id="portable-app-version"></p><button type="button" id="portable-open-data">打开项目文件夹</button><div id="portable-capabilities" role="status">正在检查可用功能…</div><details class="portable-ai-settings"><summary>可选：启用 DeepSeek 改写</summary><p>启用后，主动调用 AI 时会将所选文字和必要资料发送给 DeepSeek。未配置也能使用离线基础功能。</p><label>API Key<input id="portable-ai-key" type="password" autocomplete="new-password" placeholder="输入你自己的 API Key"></label><button type="button" id="portable-ai-save">保存配置</button><button type="button" id="portable-ai-disable">停用 AI</button><p id="portable-ai-status" role="status"></p></details><div class="portable-file-check"><label class="portable-file-label">识别文件格式<input id="portable-check-file" type="file" accept=".doc,.docx,.docm,.dot,.dotx,.dotm,.xls,.xlsx,.xlsm,.xlsb,.xlt,.xltx,.xltm,.ppt,.pptx,.pptm,.pps,.ppsx,.ppsm,.pot,.potx,.potm,.pdf"></label><span>仅检查，不加入当前项目</span></div><p id="portable-file-message" role="status"></p><ul id="portable-file-results">' + history.map(formatRow).join('') + '</ul>';
+      dialog.innerHTML = '<div class="portable-dialog-heading"><h2>设置</h2><button type="button" data-close>关闭</button></div><p>项目保存在这台电脑；基础功能无需联网。</p><p id="portable-app-version"></p><button type="button" id="portable-open-data">打开项目文件夹</button><div id="portable-capabilities" role="status">正在检查可用功能…</div><p id="portable-settings-status" role="status"></p><div class="portable-file-check"><label class="portable-file-label">识别文件格式<input id="portable-check-file" type="file" accept=".doc,.docx,.docm,.dot,.dotx,.dotm,.xls,.xlsx,.xlsm,.xlsb,.xlt,.xltx,.xltm,.ppt,.pptx,.pptm,.pps,.ppsx,.ppsm,.pot,.potx,.potm,.pdf"></label><span>仅检查，不加入当前项目</span></div><p id="portable-file-message" role="status"></p><ul id="portable-file-results">' + history.map(formatRow).join('') + '</ul>';
       dialog.querySelector('[data-close]').onclick = () => dialog.close();
       dialog.querySelector('#portable-check-file').onchange = async event => {
         const file = event.target.files[0]; if (!file) return;
@@ -88,20 +88,9 @@
       const settingsHeaders = {'Content-Type':'application/json','X-Workbench-Request':'portable-settings'};
       dialog.querySelector('#portable-open-data').onclick = async () => {
         try { await api('open-data', {method:'POST', headers:settingsHeaders, body:'{}'}); }
-        catch(error) { dialog.querySelector('#portable-ai-status').textContent = error.message; }
+        catch(error) { dialog.querySelector('#portable-settings-status').textContent = error.message; }
       };
-      const saveKey = async disable => {
-        const status = dialog.querySelector('#portable-ai-status'), input = dialog.querySelector('#portable-ai-key');
-        const apiKey = disable ? '' : input.value.trim();
-        if (!disable && !apiKey) { status.textContent = '请输入你自己的 API Key，或点击停用 AI'; return; }
-        status.textContent = '正在保存…';
-        try { await api('preferences', {method:'POST', headers:settingsHeaders, body:JSON.stringify({apiKey})}); input.value=''; status.textContent=disable?'AI 已停用，离线基础功能照常使用':'已保存到本机；主动点击改写时才会联网'; window.dispatchEvent(new Event('workbuddy:ai-settings-changed')); }
-        catch(error) { status.textContent=error.message; }
-      };
-      dialog.querySelector('#portable-ai-save').onclick = () => saveKey(false);
-      dialog.querySelector('#portable-ai-disable').onclick = () => saveKey(true);
       dialog.showModal();
-      api('preferences').then(preferences => { if(dialog.open){const status=dialog.querySelector('#portable-ai-status');if(status)status.textContent=preferences.aiConfigured?'本机已配置 AI；密钥不在页面显示':'当前未配置 AI';} }).catch(()=>{});
       try {
         const result = await api('capabilities');
         const target = dialog.querySelector('#portable-capabilities'); if (target) renderCapabilities(target, result);

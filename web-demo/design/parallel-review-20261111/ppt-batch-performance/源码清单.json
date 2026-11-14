@@ -1,0 +1,26 @@
+{
+  "source_id": "PPT-BATCH-PERFORMANCE-20261111",
+  "frozen": true,
+  "files": [
+    {
+      "path": "office-ppt-assets.js",
+      "sha256": "49a01b3f1a165fe3b7be748f41d4ccb298c905c0df719453082b8e971b4df454"
+    },
+    {
+      "path": "project-store-client.js",
+      "sha256": "1ea8c0ebb6a8057f49ad95b16d620e51b5de39c51728bec4d2bf28ba6f138013"
+    },
+    {
+      "path": "design/parallel-tasks/06-ppt-report/prototype.js",
+      "sha256": "8933e8fc22969652b7d400bd87865c2a0750940e8d9ea7a7d73ba8abb415f80c"
+    },
+    {
+      "path": "design/parallel-tasks/06-ppt-report/prototype.html",
+      "sha256": "3949a97aa612b4c76ae436144259baeea257be44b51ddecb21edb0002db59a5a"
+    },
+    {
+      "path": "design/parallel-tasks/06-ppt-report/ppt-draft.js",
+      "sha256": "2b9163bfa11fad6b4aa7f9460e31a92b72878de94eccff52baa5be03a6a64c38"
+    }
+  ]
+}

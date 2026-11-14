@@ -2,7 +2,7 @@ import {join,resolve} from 'node:path';
 import {homedir} from 'node:os';
 import {existsSync,readFileSync} from 'node:fs';
 
-export const RELEASE='2026.11.09-geotech-preview.1';
+export const RELEASE='2026.11.11-ui-out.1';
 export function portablePaths(appRoot,ambient=process.env){
  const home=ambient.LOCALAPPDATA||join(homedir(),'AppData','Local');
  let dataFolder='StructureWorkbench';
@@ -18,6 +18,9 @@ export function portableEnvironment(paths){
   CALCBOOK_UPLOAD_DIR:paths.uploads,CALCBOOK_SOURCE_DIR:join(paths.data,'calculation-sources'),
   WORKBENCH_CACHE_ROOT:paths.cache,WORKBENCH_PYTHON:python,CALCBOOK_PYTHON:python,
   WORKBENCH_PDFINFO:join(poppler,'pdfinfo.exe'),WORKBENCH_PDFTOPPM:join(poppler,'pdftoppm.exe'),
+  ...(existsSync(join(paths.runtime,'ocr-models','ch_PP-OCRv6_small_rec_infer.onnx'))?{
+   WORKBENCH_OCR_PYTHON:python,WORKBENCH_OCR_MODELS:join(paths.runtime,'ocr-models')
+  }:{}),
   // The portable build must never discover a developer's external credentials or library.
   IMA_BRIDGE_MODULE:join(paths.data,'optional-ima-not-configured.mjs'),
   EXPANSION_STORE_DIR:join(paths.data,'legacy-expansion'),PYTHONUTF8:'1'
@@ -30,3 +33,4 @@ export function portableHTML(html,pathname){
  const scripts='<script>window.WORKBENCH_PORTABLE=true;window.WORKBENCH_PORTABLE_VERSION='+JSON.stringify(RELEASE)+';</script>';
  return html.replace(/<head\b[^>]*>/i,tag=>tag+scripts);
 }
+

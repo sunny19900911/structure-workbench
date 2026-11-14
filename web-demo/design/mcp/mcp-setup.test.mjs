@@ -23,7 +23,8 @@ test('配置采用随包运行时、独立参数和同一数据目录，中文�
  assert.deepEqual(server.env,{WORKBENCH_PORTABLE_DATA:f.dataRoot});
  const kimi=JSON.parse(config.kimi).mcpServers['structure-workbench'];
  assert.equal(kimi.command,server.command);assert.deepEqual(kimi.args,server.args);assert.deepEqual(kimi.env,server.env);
- assert.equal(kimi.startupTimeoutMs,30000);assert.equal(kimi.toolTimeoutMs,300000);
+ assert.equal(kimi.startupTimeoutMs,30000);assert.equal(kimi.toolTimeoutMs,450000);
+ assert.equal(server.timeout,450000);
  assert.equal(kimi.timeout,undefined);
  assert.match(config.codex,/\[mcp_servers.structure-workbench\]/);
  const commandLine=config.codex.split('\n').find(line=>line.startsWith('command = '));
@@ -49,6 +50,9 @@ test('重复生成新目录，不覆盖先前人工配置，不触碰客户端�
  assert.equal(JSON.parse(await readFile(second.files.workbuddy,'utf8')).mcpServers['structure-workbench'].command,second.command);
  assert.equal(JSON.parse(await readFile(second.files.kimi,'utf8')).mcpServers['structure-workbench'].env.WORKBENCH_PORTABLE_DATA,f.dataRoot);
  assert.match(await readFile(second.files.instructions,'utf8'),/没有读取或改动/);
+ const commands=await readFile(second.files.commands,'utf8');
+ assert.ok(commands.includes(second.command));assert.ok(commands.includes(JSON.stringify([second.entry])));
+ assert.match(commands,/双击 mcp.cmd/);assert.match(commands,/STDIO进程由客户端管理/);
 });
 
 test('缺少发行包文件时拒绝输出假配置',async()=>{

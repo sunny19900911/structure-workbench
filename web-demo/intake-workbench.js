@@ -15,7 +15,8 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 let state=freshIntake(),store,loading=true,busy=false,ticket=0,selectedUnit=PROJECT,knowledge=null,importSlot=null;
 let gradeDocument=null,gradeSaveTimer,gradeChangePending=false,gradeSaveSerial=0;
 const panel=document.querySelector('#intake-panel'),fileGrid=panel.querySelector('#intake-files');
-document.querySelector('#stage2').prepend(panel);
+// Keep the legacy surface hidden until workflow-ui mounts it in the project dialog.
+panel.hidden=true;
 panel.innerHTML=`<h2>建筑与地勘资料</h2>
 <div id="intake-files" class="upgrid"></div>
 <p hidden id="intake-access" class="intake-access" role="status"></p>
@@ -114,8 +115,7 @@ async function readFiles(slot,files,{replaceSource}={}){
         if(file.size>30*1024*1024)throw Error('单份资料超过30MB，请拆分');
         const bytes=await file.arrayBuffer();let blocks;
         if(/\.(doc|docx|docm|dot|dotx|dotm)$/i.test(file.name)){const response=await fetch('/api/intake/read-word',{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Workbench-Request':'intake','X-Word-Format':/\.(doc|dot)$/i.test(file.name)?'doc':'docx','X-File-Name':encodeURIComponent(file.name)},body:bytes,signal:AbortSignal.timeout(180000)});blocks=await response.json();if(!response.ok)throw Error(blocks.error||'Word读取失败');}
-        else if(/\.pdf$/i.test(file.name)&&!window.WorkbenchPortable){note('正在读取「'+file.name+'」的PDF正文与表格…','busy');const response=await fetch('/api/intake/read-pdf',{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Workbench-Request':'intake','X-File-Name':encodeURIComponent(file.name)},body:bytes,signal:AbortSignal.timeout(370000)});blocks=await response.json();if(!response.ok)throw Error(blocks.error||'PDF增强读取失败');}
-        else if(/\.pdf$/i.test(file.name)){note('正在解析「'+file.name+'」的PDF文字，较大报告需要一些时间…','busy');let text;if(window.WorkbenchPortable)text=await H.readPdfJs(file);else try{text=await H.readPdfJs(file);}catch{text=(await H.readPdf(file)).text;}if(window.WorkbenchPortable&&!text?.trim())throw Error('此PDF没有可读取的文字，可能是扫描件。请先用OCR转换为文字版再导入，未写入空白资料');blocks=H.textBlocks(text||'');if(window.WorkbenchPortable){blocks.format=await window.WorkbenchPortable.inspectFile(file,'pdf');blocks.pdfReadReport=window.WorkbenchPortable.pdfReadReport(file);blocks.warnings=[...(blocks.format.warnings||[]),...(blocks.pdfReadReport?.warnings||[])];}}
+        else if(/\.pdf$/i.test(file.name)){note('正在读取「'+file.name+'」的PDF正文与表格…','busy');const response=await fetch('/api/intake/read-pdf',{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Workbench-Request':'intake','X-File-Name':encodeURIComponent(file.name)},body:bytes,signal:AbortSignal.timeout(370000)});blocks=await response.json();if(!response.ok)throw Error(blocks.error||'PDF增强读取失败');}
         else if(/\.(txt|md)$/i.test(file.name))blocks=H.textBlocks(H.decode(bytes));
         else throw Error('支持DOC、DOCX、DOCM、DOT、DOTX、DOTM、文字PDF、TXT、MD；文件实际格式会在读取前校验');
         if(project!==W.id)throw Error('项目已切换，未写入资料');

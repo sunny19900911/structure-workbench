@@ -1,0 +1,20 @@
+const $=id=>document.getElementById(id);let current,polling=false;
+async function api(path,body){const response=await fetch('/api/launcher/'+path,{method:body===undefined?'GET':'POST',headers:body===undefined?{}:{'Content-Type':'application/json','X-Workbench-Request':'launcher'},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(path==='pick-folder'?185000:15000)});const result=await response.json();if(!response.ok)throw Error(result.error||'操作未完成');return result;}
+function message(text){$('message').hidden=!text;$('message').textContent=text;}
+async function action(button,run){button.disabled=true;try{await run();}catch(e){message(e.message);}finally{button.disabled=false;}}
+async function readStatus(){if(polling)return;polling=true;try{current=await api('status');$('service').textContent=current.updateAvailable?'有更新 · 后台仍用旧版':'本地服务运行中';$('dot').className='dot ready';const selected=current.selected,clients=current.browser.clients.filter(c=>!selected||c.projectId===selected.projectId),live=clients.filter(c=>c.state==='connected'||c.state==='busy');$('browser').textContent=current.browser.tasks.length?'工作台正在处理任务':live.length?'工作台页面已连接。':clients.length?'工作台页面暂未响应，请恢复页面。':'工作台页面未连接，请打开工作台。';$('project-name').textContent=selected?.name||'尚未选择项目';$('project-path').textContent=selected?.inputPath||'在设置中选择项目文件夹。';$('version').textContent='版本 '+current.version+' · 工具 '+current.manifest.count+' 项'+(current.updateAvailable?'；源码已变化，请保存并退出后台，再启动并在客户端重连。':'');$('clients').textContent=current.clients.length?current.clients.map(c=>c.name+' · '+(c.digest===current.manifest.digest?'已连接':'工具版本不同，请重连')+(c.busy?' · 执行中':'')).join('；'):'尚未检测到客户端连接';$('results').disabled=$('input').disabled=!selected;}catch{$('service').textContent='后台未连接';$('dot').className='dot off';$('browser').textContent='请重新运行“启动小黑箱”。';}finally{polling=false;}}
+async function refresh(){await readStatus();$('parameters').disabled=!current?.selected;}
+for(const id of ['open','results','input'])$(id).onclick=()=>action($(id),async()=>{await api('open',{target:id==='open'?'workbench':id});message('');});
+$('settings').onclick=()=>{$('folder').value=current?.selected?.inputPath||'';$('settings-error').textContent='';$('settings-dialog').showModal();};
+$('browse').onclick=()=>action($('browse'),async()=>{const result=await api('pick-folder',{});if(result.path)$('folder').value=result.path;});
+$('settings-form').onsubmit=async event=>{event.preventDefault();const button=event.submitter;button.disabled=true;try{await api('select',{path:$('folder').value.trim()});$('settings-dialog').close();await refresh();message('项目目录已关联。打开工作台后可导入资料。');}catch(e){$('settings-error').textContent=e.message;}finally{button.disabled=false;}};
+for(const id of ['workbuddy','kimi'])$(id).onclick=()=>action($(id),async()=>{const result=await api('connect',{client:id});$('connect-title').textContent='连接 '+(id==='kimi'?'Kimi':'WorkBuddy');$('connect-note').textContent=result.note;$('config').value=result.text;$('config-path').textContent=result.file;$('connect-dialog').showModal();});
+$('copy').onclick=()=>action($('copy'),async()=>{await navigator.clipboard.writeText($('config').value);$('copy').textContent='已复制';setTimeout(()=>$('copy').textContent='复制配置',1500);});
+document.querySelectorAll('[data-close]').forEach(button=>button.onclick=()=>button.closest('dialog').close());
+$('stop').onclick=()=>action($('stop'),async()=>{if(!current)throw Error('尚未连接后台');await api('stop',{instanceId:current.instanceId});message('后台已请求退出，项目数据保留。');await refresh();});
+$('parameters').onclick=()=>{
+ const projectId=current?.selected?.projectId;if(!projectId){message('请先在设置中选择项目文件夹');return;}
+ const url=new URL('/workbuddy-integrated-studio.html',location.origin);url.searchParams.set('project',projectId);url.searchParams.set('view','measures');
+ const page=window.open(url.href,'structure-workbench-'+projectId);if(page)page.focus();else message('请允许打开统一技术措施页面');
+};
+await refresh();setInterval(refresh,4000);window.addEventListener('focus',refresh);

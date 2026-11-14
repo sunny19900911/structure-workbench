@@ -1,0 +1,50 @@
+import assert from 'node:assert/strict';
+import {readFile, readdir, writeFile} from 'node:fs/promises';
+import {dirname, join} from 'node:path';
+import {pathToFileURL} from 'node:url';
+
+const qa = dirname(process.argv[2]);
+const target = JSON.parse(await readFile(join(qa, 'compiled-test-server.json'), 'utf8'));
+const {chromium} = await import(pathToFileURL('C:/Users/mj528/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'));
+const directory = 'E:/600-工作台数据库/001-项目生成与复核/各项目/江南大学江阴校区二期/01-输入/PPT图片';
+const files = (await readdir(directory)).filter(name => /\.(png|jpe?g)$/i.test(name)).map(name => join(directory, name));
+assert.equal(files.length, 17);
+const browser = await chromium.launch({executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true});
+const report = {};
+try {
+  const page = await browser.newPage();
+  await page.goto(target.url + '/workbuddy-integrated-studio.html?project=' + target.projectId);
+  await page.waitForFunction(() => window.WorkbenchProjects && !WorkbenchProjects.loading);
+  await page.waitForFunction(() => window.ExpansionWorkbench?.mcp);
+  await page.locator('#tab11').click();
+  await page.waitForFunction(() => document.getElementById('im-ppt-frame')?.contentWindow?.WorkbenchPpt?.mcp?.ready);
+  const preview = page.frames().find(item => item.url().includes('06-ppt-report/prototype'));
+  await preview.locator('#unit-name').selectOption('项目整体');
+  await preview.locator('[data-page="15"]').click();
+  await preview.locator('.caf-image img').waitFor();
+  await page.screenshot({path: join(qa, 'compiled-page16.png'), fullPage: true});
+  await page.evaluate(async () => { await ExpansionWorkbench.selectUnit('QA全新17图'); await ExpansionWorkbench.mcp.generate(); await WorkbenchProjects.flush(); });
+  await page.locator('#tab11').click();
+  await page.waitForFunction(() => document.getElementById('im-ppt-frame')?.contentWindow?.WorkbenchPpt?.mcp?.ready);
+  const frame = page.frames().find(item => item.url().includes('06-ppt-report/prototype'));
+  await frame.locator('#unit-name').selectOption('QA全新17图');
+  assert.equal(await frame.evaluate(() => WorkbenchPpt.mcp.read().images.filter(image => image.present).length), 0);
+  await frame.locator('#image-manager-btn').click();
+  await frame.locator('#batch-image-input').setInputFiles(files);
+  await frame.waitForFunction(() => !WorkbenchPpt.busy());
+  report.status = await frame.locator('#batch-image-status').innerText();
+  const state = await frame.evaluate(() => WorkbenchPpt.mcp.read());
+  report.placed = state.images.filter(image => image.present && !image.unplaced).length;
+  report.unplaced = state.images.filter(image => image.unplaced).length;
+  assert.equal(report.placed, 8); assert.equal(report.unplaced, 9);
+  await frame.locator('#image-manager-close').click();
+  await frame.locator('#unit-name').selectOption('QA匹配隔离单体');
+  assert.equal(await frame.evaluate(() => WorkbenchPpt.mcp.read().images.filter(image => image.present).length), 1);
+  await frame.evaluate(() => WorkbenchPpt.flush());
+  report.singleImageUnitPreserved = true;
+  report.pass = true;
+} finally {
+  await writeFile(join(qa, 'fresh-17-verification.json'), JSON.stringify(report, null, 2));
+  await browser.close();
+}
+console.log(JSON.stringify(report));

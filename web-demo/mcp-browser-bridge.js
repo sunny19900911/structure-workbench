@@ -3,10 +3,12 @@ import {BROWSER_OPERATIONS,OFFICE_COMMAND_ARGUMENTS,officeCommandType} from './m
 import {bridgeError,validateBridgeRequest,validateBridgeValue,validateRevisionSnapshot,checkedImage,validateSeismicUpdate} from './mcp-browser-core.js';
 import {projectRequest} from './project-store-client.js';
 import {measureTextBlocks,editMeasureText} from './mcp-measures.js';
+import {parameterView} from './blackbox-parameters.js';
 
 const W=window.WorkbenchProjects,I=window.WorkbenchIntake,E=window.ExpansionWorkbench,M=window.WorkbenchModules,L=window.WorkbenchLegacy;
-let session=null,running=false,stopped=false,polling=false,timer,pendingCompletion=null;
-const metadata=()=>({projectId:W.id,unit:E.unit,revision:W.mcp.revision,busy:!!pendingCompletion||running||W.mcp.busy||I.busy||E.busy});
+let session=null,running=false,stopped=false,polling=false,timer,pendingCompletion=null,released=false;
+const metadata=()=>({projectId:W.id,unit:E.unit,revision:W.mcp.revision,host:new URLSearchParams(location.search).get('blackbox')==='1'?'blackbox':'page',busy:!!pendingCompletion||running||W.mcp.busy||I.busy||E.busy});
+window.WorkbenchBrowserBridge={get clientId(){return session?.id;},async close(){if(running||pendingCompletion||W.mcp.busy||I.busy||E.busy)throw Error('项目正在处理任务');await W.flush();stopped=true;clearTimeout(timer);try{if(session)await request('disconnect',{clientId:session.id,token:session.token});session=null;released=true;}catch(e){stopped=false;tick();throw e;}}};
 async function request(path,body){const response=await fetch('/api/mcp-browser/'+path,{method:'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'mcp-browser'},body:JSON.stringify(body),signal:AbortSignal.timeout(15000)});const value=await response.json();if(!response.ok)throw bridgeError(value.error,value.code,response.status);return value;}
 async function revisions(){const parts=['main','intake',E.mcp.part,'modules','ppt','portable-assets','lifecycle'];const records=await Promise.all(parts.map(async part=>[part,(await projectRequest('/'+W.id+'/'+part)).record?.revision||0]));return Object.fromEntries(records);}
 function localRevisions(){return {main:W.mcp.revision,intake:I.mcp.revision,[E.mcp.part]:E.mcp.revision,modules:M.mcp.revision,...(M.mcp.ppt?.ready?{ppt:M.mcp.ppt.revision}:{})};}
@@ -37,14 +39,18 @@ async function invoke(task){const a=task.args||{},unit=task.unit||E.unit;switch(
  case 'project.lifecycle':if(a.action==='restore'&&!a.targetProjectId)throw bridgeError('恢复项目需要targetProjectId');return W.mcp.lifecycle(a.targetProjectId||W.id,a.action==='delete',a.expectedLifecycleRevision);
  case 'measures.update':{const keys=new Set(Object.keys(L.params()));if(Object.keys(a.values).some(k=>!keys.has(k)))throw bridgeError('包含未知统一措施字段，请先读取project.context');L.adoptParameters(a.values);L.publish();return {updated:Object.keys(a.values)};}
  case 'measures.read':return {parameters:L.params(),...L.templateContent(),textBlocks:measureTextBlocks(document)};
+ case 'parameters.read':return parameterView(L,I,unit,document);
  case 'measures.table':return L.mcp.editTable(a);
  case 'measures.text':return editMeasureText(document,L,W,a);
- case 'document.import':{const selected=files(a.files);if(a.slot==='yjk')await E.importFiles('yjk',selected);else await I.readFiles(a.slot,selected,{replaceSource:a.replaceSource});return {sources:I.sourceInventory.sources,model:E.modelContext()?.model};}
+ case 'document.import':{const selected=files(a.files);if(a.slot==='yjk')await E.importFiles('yjk',selected,{requireCompleteModel:true});else await I.readFiles(a.slot,selected,{replaceSource:a.replaceSource});return {sources:I.sourceInventory.sources,model:E.modelContext()?.model};}
  case 'intake.adopt':await I.mcp.adopt(a,unit);return {adopted:a.factId};
  case 'intake.source':if(unit!=='项目整体')throw bridgeError('建筑/地勘来源是项目公共资料，请明确unit为项目整体');await I.mcp.source(a);return {action:a.action,sourceId:a.sourceId};
  case 'seismic.update':if(unit==='项目整体')throw bridgeError('抗震等级需要明确单体');validateSeismicUpdate({previous:I.capture().seismicGrades?.[unit],values:a.values,heightBasis:a.heightBasis});I.saveSeismicGrade(unit,a.values);return {unit,parameters:I.parameters(unit)};
  case 'expansion.generate':return E.mcp.generate();
  case 'expansion.read':return E.mcp.read();
+ case 'expansion.outline':return E.mcp.outline();
+ case 'expansion.subsection_read':return E.mcp.subsectionRead(a);
+ case 'expansion.subsection_edit':return E.mcp.subsectionEdit(a);
  case 'expansion.edit':await E.mcp.edit(a);return {sectionId:a.sectionId};
  case 'expansion.table':await E.mcp.table(a);return {key:a.key,rowKey:a.rowKey,column:a.column};
  case 'expansion.unit_row':await E.mcp.unitRow(a);return {rowKey:a.rowKey,hidden:a.hidden};
@@ -117,8 +123,8 @@ async function tick(){
  finally{polling=false;if(!stopped)timer=setTimeout(tick,800);}
 }
 if(window.WORKBENCH_PORTABLE){
- const resume=()=>{stopped=false;clearTimeout(timer);if(running&&session)request('poll',{...session,clientId:session.id,...metadata(),busy:true}).catch(()=>{});else tick();};
- window.addEventListener('pagehide',()=>{stopped=true;clearTimeout(timer);});
+ const resume=()=>{if(released)return;stopped=false;clearTimeout(timer);if(running&&session)request('poll',{...session,clientId:session.id,...metadata(),busy:true}).catch(()=>{});else tick();};
+ window.addEventListener('pagehide',()=>{stopped=true;clearTimeout(timer);if(metadata().host==='blackbox'&&session&&!running&&!pendingCompletion&&!dirty())fetch('/api/mcp-browser/disconnect',{method:'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'mcp-browser'},body:JSON.stringify({clientId:session.id,token:session.token}),keepalive:true}).catch(()=>{});});
  window.addEventListener('pageshow',resume);
  window.addEventListener('online',resume);
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')resume();});

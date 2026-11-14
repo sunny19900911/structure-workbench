@@ -49,7 +49,7 @@ test('browser checks deadline after asynchronous revision read before any mutati
 test('hidden page keeps session; foreground/pageshow/online wake immediately; failed completion only retries receipt',async()=>{
  const handlers={},docHandlers={},scheduled=[];let calls=[],failComplete=true,executions=0;
  const scope={window:{WORKBENCH_PORTABLE:true,addEventListener:(event,fn)=>handlers[event]=fn},document:{visibilityState:'visible',addEventListener:(event,fn)=>docHandlers[event]=fn},W:{id:projectId},E:{mcp:{}},M:{mcp:{}},metadata:()=>({projectId}),setTimeout:fn=>{scheduled.push(fn);return scheduled.length;},clearTimeout:()=>{},setInterval:()=>1,clearInterval:()=>{},executeTask:async()=>{executions++;return {saved:true};},request:async(path)=>{calls.push(path);if(path==='register')return {id:'client',token:'token'};if(path==='poll')return {task:executions?null:{id:'task'}};if(path==='complete'&&failComplete)throw Error('offline');return {};}};
- vm.runInNewContext('let session=null,running=false,stopped=false,polling=false,timer,pendingCompletion=null;\n'+source.slice(source.indexOf('async function tick(){')),scope);
+ vm.runInNewContext('let session=null,running=false,stopped=false,polling=false,timer,pendingCompletion=null,released=false;\n'+source.slice(source.indexOf('async function tick(){')),scope);
  const drain=async()=>{for(let i=0;i<20;i++)await Promise.resolve();};await drain();
  assert.equal(executions,1);
  await scope.tick();assert.equal(calls.filter(x=>x==='complete').length,1);assert.equal(executions,1);
@@ -60,3 +60,4 @@ test('hidden page keeps session; foreground/pageshow/online wake immediately; fa
  handlers.pageshow();await drain();assert.equal(calls.length,hidden+1);
  handlers.online();await drain();assert.equal(calls.at(-1),'poll');assert.equal(calls.filter(x=>x==='register').length,1);
 });
+

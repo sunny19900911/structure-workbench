@@ -1,0 +1,26 @@
+{
+  "status": "frozen",
+  "source_id": "USER-CALCULATION-COVER-20261112",
+  "files": [
+    {
+      "path": "scripts/build-calculation-book.py",
+      "sha256": "676eb082fe075b851c4d55649b6e2ab53725112f170d439afec422aea2858d38"
+    },
+    {
+      "path": "assets/calculation-book/cover-reference.docx",
+      "sha256": "ea1d772ede52d87e6ba037c4934f52abc349fd21346fea084baac88db0232f2e"
+    },
+    {
+      "path": "calculation-book.js",
+      "sha256": "40b75a3e9d6d205cb9c950b4d4006ff1802bb773beb1b2998f9908e35ef65f14"
+    },
+    {
+      "path": "vite.config.js",
+      "sha256": "28816d410eeec1a11f09869faa618d263131a06d5f3d884c9995f67e32ca0c26"
+    }
+  ],
+  "nodeReloadRequired": "vite.config.js adds software_version to export payload; template download retains templates.cover=null fallback",
+  "frontendRefreshRequired": true,
+  "templateSha256": "ea1d772ede52d87e6ba037c4934f52abc349fd21346fea084baac88db0232f2e",
+  "qa": "qa/portable-release/calculation-cover-20261112/browser-report.json"
+}

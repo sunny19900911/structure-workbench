@@ -9,9 +9,10 @@ const MAX_BYTES=80*1024*1024;
 // can run. Disconnect/timeout never leaves a queued mutation for the next tab.
 export function createBrowserBridge({now=Date.now,clientTTL=120000}={}){
  const clients=new Map(),tasks=new Map();
- const status=()=>({clients:[...clients.values()].map(({id,projectId,unit,busy,revision,seen})=>({id,projectId,unit,busy,revision,state:busy?'busy':now()-seen<clientTTL?'connected':'unresponsive',lastSeen:seen})),tasks:[...tasks.values()].map(({id,request,phase,deadline})=>({id,projectId:request.projectId,operation:request.operation,phase,deadline})),operations:BROWSER_OPERATIONS});
- const register=metadata=>{const id=randomUUID(),token=randomBytes(24).toString('hex');clients.set(id,{id,token,seen:now(),projectId:metadata.projectId,unit:metadata.unit,revision:metadata.revision,busy:false});return {id,token};};
+ const status=()=>({clients:[...clients.values()].map(({id,projectId,unit,busy,revision,seen,host})=>({id,projectId,unit,busy,revision,host,state:busy?'busy':now()-seen<clientTTL?'connected':'unresponsive',lastSeen:seen})),tasks:[...tasks.values()].map(({id,request,phase,deadline})=>({id,projectId:request.projectId,operation:request.operation,phase,deadline})),operations:BROWSER_OPERATIONS});
+ const register=metadata=>{const id=randomUUID(),token=randomBytes(24).toString('hex');clients.set(id,{id,token,seen:now(),projectId:metadata.projectId,unit:metadata.unit,revision:metadata.revision,host:metadata.host==='blackbox'?'blackbox':'page',busy:false});return {id,token};};
  const authenticate=body=>{const c=clients.get(body.clientId);if(!c||c.token!==body.token)throw error('工作台页面连接已失效，请重新载入页面','CLIENT_EXPIRED',401);c.seen=now();return c;};
+ const disconnect=body=>{const c=authenticate(body);if([...tasks.values()].some(t=>t.clientId===c.id))throw error('页面仍有任务，暂不能关闭','BROWSER_BUSY',409);clients.delete(c.id);return {closed:true};};
  const settle=(task,err,result)=>{if(!tasks.has(task.id))return;if(err?.code==='OUTCOME_UNKNOWN')task.phase='outcome_unknown';else tasks.delete(task.id);clearTimeout(task.timer);task.cleanup?.();if(err)task.reject(err);else task.resolve(result);};
  const poll=body=>{const c=authenticate(body);Object.assign(c,{projectId:body.projectId,unit:body.unit,revision:body.revision,busy:!!body.busy||[...tasks.values()].some(t=>t.clientId===c.id&&['running','outcome_unknown'].includes(t.phase))});const task=[...tasks.values()].find(t=>t.clientId===c.id&&t.phase==='queued'&&now()<t.deadline);if(!task||c.busy)return {task:null};task.phase='claimed';return {task:{id:task.id,...task.request,deadline:task.deadline}};};
  const start=body=>{const c=authenticate(body),task=tasks.get(body.taskId);if(!task||task.clientId!==c.id||task.phase!=='claimed'||now()>=task.deadline)throw error('任务已过期或取消，未执行','TASK_EXPIRED',409);task.phase='running';c.busy=true;return {allowed:true};};
@@ -26,7 +27,7 @@ export function createBrowserBridge({now=Date.now,clientTTL=120000}={}){
   const client=live.filter(c=>!c.busy).sort((a,b)=>(b.unit===request.unit)-(a.unit===request.unit)||b.seen-a.seen)[0];
   if(!client)throw error(live.length?'工作台正在处理其他任务，请稍后重试':known.length?'页面暂未响应，请恢复页面或网络后重试':'请先在本机工作台打开此项目：/workbuddy-integrated-studio.html?project='+request.projectId,live.length?'BROWSER_BUSY':known.length?'BROWSER_UNRESPONSIVE':'BROWSER_REQUIRED',409);
   if([...tasks.values()].some(t=>t.clientId===client.id))throw error('该项目已有MCP任务在等待执行','BROWSER_BUSY',409);
-  timeoutMs=Math.max(100,Math.min(Number(timeoutMs)||180000,300000));
+  timeoutMs=Math.max(100,Math.min(Number(timeoutMs)||180000,request.operation==='document.import'?450000:300000));
   return new Promise((resolve,reject)=>{
    const task={id:randomUUID(),clientId:client.id,request,deadline:now()+timeoutMs,phase:'queued',resolve,reject};
    task.timer=setTimeout(()=>settle(task,error(task.phase==='running'?'页面任务已开始但尚未返回结果；请读取当前状态后再决定是否重试':'页面没有及时执行，任务已作废；不会稍后自动写入',task.phase==='running'?'OUTCOME_UNKNOWN':'TASK_EXPIRED',504)),timeoutMs);
@@ -49,9 +50,10 @@ export function createBrowserBridge({now=Date.now,clientTTL=120000}={}){
    if(path==='/poll')return reply(200,poll(body));
    if(path==='/start')return reply(200,start(body));
    if(path==='/complete')return reply(200,complete(body));
+   if(path==='/disconnect')return reply(200,disconnect(body));
    if(path==='/execute'){const controller=new AbortController();res.once('close',()=>{if(!res.writableEnded)controller.abort();});return reply(200,{ok:true,result:await execute(body,{timeoutMs:body.timeoutMs,signal:controller.signal})});}
    throw error('接口不存在','NOT_FOUND',404);
   }catch(e){reply(e.status||400,{error:e.message,code:e.code||'BRIDGE_ERROR'});}
  });}
- return {plugin,execute,status,register,poll,start,complete,close(){for(const task of tasks.values())settle(task,error('服务已停止','SERVER_CLOSED',503));clients.clear();}};
+ return {plugin,execute,status,register,poll,start,complete,disconnect,close(){for(const task of tasks.values())settle(task,error('服务已停止','SERVER_CLOSED',503));clients.clear();}};
 }

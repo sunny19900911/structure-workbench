@@ -49,7 +49,7 @@
   renderWall();applyRole();syncLock();
   document.querySelectorAll('input[type=file]').forEach(e=>e.value='');document.querySelectorAll('[id^="st-"],[id^="rc-"]').forEach(e=>{if(/^(TBODY|TEXTAREA)$/.test(e.tagName)){if(e.tagName==='TEXTAREA')e.value='';else e.replaceChildren();}});
   if(RCLAST){rcRenderIn(RCLAST.inRows||[]);rcRenderLim();rcBuildDiff();}else{document.getElementById('rc-sum').textContent='本项目尚无有效反校核结果。';}
-  if(STLAST){stRenderA();stRenderB();stRenderD();}stRenderSeg();stStatus();snapRender();goStage(0);
+  if(STLAST){stRenderA();stRenderB();stRenderD();}stRenderSeg();stStatus();snapRender();goStage(new URLSearchParams(location.search).get('view')==='measures'?1:0);
  }
  function templateContent(){
   const section=id=>{const heading=document.getElementById(id),nodes=[];for(let n=heading?.nextElementSibling;n&&!/^H[12]$/.test(n.tagName);n=n.nextElementSibling)nodes.push(n);return nodes;};
@@ -57,9 +57,10 @@
   const table=id=>section(id).flatMap(n=>[...n.querySelectorAll('tr')]).map(row=>[...row.querySelectorAll('th:not(.op),td:not(.op)')].map(c=>c.textContent.trim()));
   return {templateText:{permanent:section('s1ch3_1').filter(n=>n.tagName==='P'&&(!n.textContent.includes('河北地区')||/河北/.test(wbMeasureSnapshot().params.region||''))).map(n=>n.textContent.trim()).join('\n'),wall:text('s1ch3_2'),reinforcement:text('s1ch4_2'),steel:text('s1ch4_3'),masonry:table('s1ch4_4').slice(1).map(row=>row.filter(Boolean).join('：')).join('；')},templateTables:{concrete:table('s1ch4_1'),durability:table('s1durability'),floor:table('s1ch3_3'),roof:table('s1ch3_4'),equipment:table('s1ch3_5')}};
  }
- window.WorkbenchLegacy={templateContent,capture,apply,blank,sample,loadExample,params:()=>wbMeasureSnapshot().params,
+ window.WorkbenchLegacy={templateContent,capture,apply,blank,sample,loadExample,params:()=>({region:"",struct_sys:"",...wbMeasureSnapshot().params}),
    role:()=>ROLE,stage:()=>PSTAGE,cardState:id=>stOf(id),permission:id=>permOf(cOf(id)),
-   canEdit(id){return !!cOf(id)&&cardVisible(cOf(id))&&!['看','—'].includes(permOf(cOf(id)))&&stOf(id)!==3;},
+   // The portable PPT composer is hidden from navigation, but still persists its draft for MCP generation.
+   canEdit(id){const card=cOf(id);return !!card&&(cardVisible(card)||(window.WORKBENCH_PORTABLE&&id==='c11'&&card.stage.includes(PSTAGE)))&&!['看','—'].includes(permOf(card))&&stOf(id)!==3;},
    touchCard(id){if(stOf(id)!==1)CST[id]=1;renderWall();syncLock();cstSave();},
    registerCard(card){if(!cOf(card.id))CARDS.push(card);applyRole();syncLock();},
    async parseMaterial(slot,file){if(slot==='rebar'&&/\.(xlsx|xls|xlsm|xlsb|xlt|xltx|xltm)$/i.test(file.name))return stReadXlsx(file);const text=decodeText(new Uint8Array(await file.arrayBuffer()));return slot==='rebar'?stParseRebarText(text,file.name):slot==='concrete'?stParseUp(text):stParseBase(text);},
@@ -77,3 +78,5 @@
  document.querySelector('#spec-itbl')?.addEventListener('click',e=>{const b=e.target.closest('[data-wb-action]');if(b?.dataset.wbAction==='delete')delRow(b);window.WorkbenchProjects?.scheduleSave();});
  const oldGo=window.goStage;window.goStage=function(n){if(n===7||n===8)return;return oldGo(n)};
 })();
+
+

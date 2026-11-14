@@ -1,5 +1,15 @@
 # 结构设计 AI 工作库约定
 
+## 2026-11-10 小黑箱源码试用
+
+source_id: USER-BLACKBOX-20261110（用户要求在当前主工作区开发本机小窗口并统筹 Kimi/WorkBuddy 调试，原文事实）。本轮不新建工作树、不提交、不推送、不部署，不改地勘提取算法或恢复 Office 网页编辑器。
+
+- 源码入口 `web-demo/启动小黑箱.cmd`，管理界面及启动辅助在 `web-demo/deploy/blackbox/`，复用 `deploy/portable/start.mjs` 的单服务锁和原业务插件。默认独立本机库 `%LOCALAPPDATA%/StructureWorkbenchBlackbox`；QA仅用 `web-demo/qa/portable-release/blackbox`、5460，不能写正式603或占用5451/5452客户端测试。
+- `server/project-folders.mjs` 管理目录关联/扫描和MCP成果路径；沿用原项目库及修订校验，同目录稳定ID，成果写“工作台成果”新批次，扫描排除该目录、链接与凭据。原网页浏览器下载行为未统一改写。旧项目未绑定时保留旧路径；导入备份的新ID不自动继承原目录写入关联。
+- 关闭小窗口不退出后台，关闭业务页会失去组稿依赖；退出只关闭核验后的当前实例，有任务或活跃页面拒绝，不杀端口占用进程。release之外用关键源码指纹和实际工具摘要判断更新，不强制重启、不承诺热更新，客户端重连刷新工具。
+- Kimi/WorkBuddy真实完整资料三件按专项报告记账，SDK成功不替代真实客户端验收。共享桌面依次Kimi、WorkBuddy；核心文件变动提前通知，静态依赖补齐也等生成结束安全边界。PDF.js缺失已按锁定归档恢复到 `vendor/pdfjs-3.11.174`，来源/哈希见 `design/blackbox-20261110/pdfjs-manifest.json`，不把库加载成功说成地勘内容全部正确。
+- 验收/限制：`web-demo/design/blackbox-20261110/验收.md`。回归 `node --test design/blackbox-20261110/blackbox.test.mjs design/mcp/*.test.mjs design/portable/mcp-browser*.test.mjs`；浏览器与升级脚本只连接明确QA库。打包白名单已接入，旧离线包尚未重新打包，不标成可分发版完成。
+
 ## 2026-11-08 三工作树并行改进
 
 source_id: USER-PARALLEL-HARDENING-20261108（用户授权，原文事实）。当前源码先提交到 GitHub main，三个新工作树分别负责保存可靠性、MCP 稳定性、资料提取准确度。开始前必读 `web-demo/design/parallel-hardening-20261108/README.md` 的文件归属与验收要求；该约定优先于历史任务分工。各组仅在自己的工作树提交，不自行合并或推送 main；主对话统一验收、合并、推送和离线打包。现有正式数据与运行包不由子任务操作，测试只用各自 qa 隔离库。公共配置和技能索引由主对话汇总。
@@ -332,3 +342,9 @@ source_id: USER-20261015-CALCULATION-PDF（用户要求，原文事实）。计�
 - A3 Word不再依赖未迁移的外部母件目录，采用包内封面与当前目录；外部Excel仍须配置。保留人工确认，按钮显示错误而非静默禁用。生成副本清除历史签章及封面图片，母件不变。
 - 详见 `web-demo/design/deployment-fixes/20261015-calculation.md`；回归为 `calculation-pdfs.test.mjs`、`calculation-deployment.test.mjs`、文档Python运行 `calculation-builder.test.py`。隔离服务5198，不写正式603。
 - 打包指定 `--guide 计算书更新说明.md`，交付 `structure-workbench-work-calculation-20261015.zip`，不自动部署或提交。服务器实际Linux合并需更新后验收。
+
+## 2026-11-14 上下文与基线入口
+
+source_id: USER-CONTEXT-BASELINE-20261114（用户授权，原文事实）。接手先读 `web-demo/docs/project-context/00-项目总览.md`，再按任务阅读同目录产品需求、软件架构、进度与验收。新发现只更新对应文档，区别已实现、已验证、人工认可；旧约定与当前需求冲突时以该目录核实后的当前范围为准。
+
+桌面“结构工作台·总入口”供人工访问，真实资料保留原位置。当前优先本地网页与 WorkBuddy MCP 同包交付，Kimi 保留接口；新视频制作和配音暂停。录制工具与工作台分别封存，代码备份不等于新包已完成端到端验收。

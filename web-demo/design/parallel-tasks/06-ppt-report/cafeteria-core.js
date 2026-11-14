@@ -1,8 +1,9 @@
 import {cafeteriaTemplate} from '../../ppt-template/cafeteria-template.js';
+import {singleImagePages} from './single-image-layout.js';
 import {reportTable} from '../../../reference-report.js';
 import {resolveText} from '../../../expansion-core.js';
 
-export const templatePages=cafeteriaTemplate.pages;
+export const templatePages=singleImagePages;
 export const templateVersion=cafeteriaTemplate.version;
 const clean=v=>String(v??'').replace(/\[\[(?:table|image|measures):[^\]]+\]\]/g,'').replace(/【待核(?:引用)?】/g,'').trim();
 const val=(p,...keys)=>String(keys.map(k=>p?.[k]).find(v=>v!==undefined&&v!==null&&String(v).trim()!=='')??'');
@@ -46,14 +47,13 @@ export function buildCafeteriaSlides(snapshot={},unitName='',edits={}){
     '11:3':['',concreteGrade(/垫层/)||val(p,'concrete_cushion'),[grade(/筏板|承台|基础梁/)&&'底板、基础梁、承台：'+grade(/筏板|承台|基础梁/),grade(/地下室楼板/)&&'顶板：'+grade(/地下室楼板/)].filter(Boolean).join('\n'),grade(/地下室外墙/),concreteGrade(/框架柱/,/投影|主楼/),grade(/地下框架/),concreteGrade(/楼盖|框架梁|楼板/,/地上/),grade(/^框架柱$/)]
   };
   return templatePages.map(page=>({...page,shapes:page.shapes.map(original=>{
-    const item=structuredClone(original);item.editId=`${templateVersion}:${page.number}:${item.id}`;
+    const item=structuredClone(original);item.editId=`${page.editVersion||templateVersion}:${page.number}:${item.id}`;
     if(item.kind==='image'){item.box[0]=Math.max(0,item.box[0]);item.box[1]=Math.max(65,item.box[1]);item.box[2]=Math.min(item.box[2],1280-item.box[0]);item.box[3]=Math.min(item.box[3],680-item.box[1]);}
     if(item.kind==='text'){
       if(item.id==='9'&&page.number>=7)item.box=[0,0,1200,61.394];
       if(item.field==='project'){item.text=val(p,'project_name')||report?.projectName||'';item.linked=true;}
       if(item.field==='overview'){item.text=summary(report,units,p);item.source=source;item.ai=true;}
       if(item.field==='materials'){item.text=[report?.templateText?.reinforcement&&'钢筋：\n'+report.templateText.reinforcement,report?.templateText?.steel&&'钢材：\n'+report.templateText.steel].filter(Boolean).join('\n\n');item.linked=true;}
-      if(page.number>=12&&item.id==='9')item.text=page.number===18?'03  特殊转换':'02  '+caption;
       item.editable=Boolean(item.field&&!item.linked)||!item.field&&item.id!=='4';
       if(item.editable&&Object.hasOwn(edits,item.editId))item.text=edits[item.editId];
       if(item.field==='materials')item.box=[80,440,1112,245];

@@ -1,0 +1,16 @@
+{
+  "status": "frozen",
+  "source_id": "USER-CALCULATION-COVER-LOGO-20261113",
+  "files": [
+    {
+      "path": "scripts/build-calculation-book.py",
+      "sha256": "95909db758374cdd4faf62e9e926582313ce0e33c27b676c186e56c155b3f13a"
+    }
+  ],
+  "assetBaselineSha256": "42135752830c1b0d055526f5c0af5fc0adf5a2fa4f53669fffe8e3de3de4d610",
+  "nodeReloadRequired": false,
+  "frontendBuildRequired": false,
+  "change": "preserve original institute branding when current company is empty",
+  "qa": "qa/portable-release/calculation-cover-logo-20261113/fixed/计算书-机构名为空保留母件完整Logo.docx",
+  "report": "qa/portable-release/calculation-cover-logo-20261113/diagnosis.json"
+}

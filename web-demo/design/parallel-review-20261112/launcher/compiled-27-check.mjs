@@ -1,0 +1,71 @@
+import assert from 'node:assert/strict';
+import {readFile,writeFile,readdir,stat} from 'node:fs/promises';
+import {join,dirname,resolve,sep} from 'node:path';
+import {pathToFileURL} from 'node:url';
+
+const qa=dirname(process.argv[2]);
+const target=JSON.parse(await readFile(join(qa,'compiled-test-server.json'),'utf8'));
+assert.ok(resolve(target.dataRoot).startsWith(resolve(qa)+sep));
+const {chromium}=await import(pathToFileURL(join(process.env.USERPROFILE,'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs')).href);
+const oldTemplate=await import(pathToFileURL(join(process.cwd(),'outputs/portable/结构工作台-统一客户端测试-20261111-build-080853/app/dist/design/ppt-template/cafeteria-template.js')).href);
+const reference=oldTemplate.cafeteriaTemplate.pages.find(page=>page.number===19).shapes.find(shape=>shape.kind==='image');
+const input='E:/600-工作台数据库/001-项目生成与复核/各项目/昆明经开一中/01-输入/PPT图片';
+const candidates=await Promise.all((await readdir(input)).filter(name=>/\.(png|jpe?g)$/i.test(name)).map(async name=>({path:join(input,name),size:(await stat(join(input,name))).size})));
+candidates.sort((a,b)=>a.size-b.size);
+const image=candidates[0].path;
+const imageData='data:image/'+(/\.png$/i.test(image)?'png':'jpeg')+';base64,'+(await readFile(image)).toString('base64');
+const browser=await chromium.launch({channel:'msedge',headless:true});
+const report={target,referenceBox:reference.box,sourceImage:image,checks:[],errors:[]};
+try{
+ const page=await browser.newPage({viewport:{width:1500,height:1000}});
+ page.on('pageerror',error=>report.errors.push(error.message));
+ await page.goto(target.url+'/workbuddy-integrated-studio.html?project='+target.projectId,{waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>window.WorkbenchProjects&&!WorkbenchProjects.loading&&window.WorkbenchModules?.mcp);
+ await page.locator('#tab11').click();
+ await page.waitForFunction(()=>document.getElementById('im-ppt-frame')?.contentWindow?.WorkbenchPpt?.mcp?.ready);
+ let frame=page.frames().find(item=>item.url().includes('06-ppt-report/prototype'));
+ const restored=await frame.evaluate(()=>WorkbenchPpt.mcp.read());
+ assert.equal(restored.pages.length,27);
+ for(let number=12;number<=27;number++)assert.equal(restored.images.filter(item=>item.page===number).length,1,'page '+number);
+ report.restoredPages=restored.pages.map(page=>({number:page.number,title:page.title}));
+ report.checks.push('同一编译输出显示27页，12–27页各有一个图位');
+ const project=await page.evaluate(()=>WorkbenchProjects.mcp.create('27页母版编译验证'));
+ report.exportProjectId=project.projectId;
+ await page.locator('#tab11').click();
+ await page.waitForFunction(id=>{const api=document.getElementById('im-ppt-frame')?.contentWindow?.WorkbenchPpt?.mcp;return api?.ready&&api.read().projectId===id;},project.projectId);
+ frame=page.frames().find(item=>item.url().includes('06-ppt-report/prototype'));
+ await frame.evaluate(async data=>{
+  const api=WorkbenchPpt.mcp;
+  const read=api.read();
+  for(const image of read.images.filter(item=>item.page>=12&&item.page<=27))await api.image({key:image.key,data});
+  const field=api.read().pages[1].fields.find(item=>item.editable);
+  if(field)await api.edit({edits:{[field.id]:'27页编译验证人工文字'},expectedEdits:{[field.id]:api.read().edits[field.id]||''}});
+  await WorkbenchPpt.flush();
+ },imageData);
+ report.pictureLayout=await frame.evaluate(()=>WorkbenchPpt.mcp.read().images.filter(item=>item.page>=12&&item.page<=27));
+ assert.equal(report.pictureLayout.length,16);assert.ok(report.pictureLayout.every(item=>item.present));
+ const result=await frame.evaluate(async()=>{
+  const exported=await WorkbenchPpt.mcp.export();
+  const bytes=new Uint8Array(await exported.blob.arrayBuffer());
+  let text='';for(let index=0;index<bytes.length;index+=32768)text+=String.fromCharCode(...bytes.subarray(index,index+32768));
+  return {filename:exported.filename,base64:btoa(text)};
+ });
+ report.pptx=join(qa,'compiled-27-slides.pptx');
+ await writeFile(report.pptx,Buffer.from(result.base64,'base64'),{flag:'wx'});
+ report.checks.push('编译版实际导出PPTX文件');
+ await page.reload({waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>window.WorkbenchProjects&&!WorkbenchProjects.loading&&window.WorkbenchModules?.mcp);
+ await page.locator('#tab11').click();
+ await page.waitForFunction(()=>document.getElementById('im-ppt-frame')?.contentWindow?.WorkbenchPpt?.mcp?.ready);
+ frame=page.frames().find(item=>item.url().includes('06-ppt-report/prototype'));
+ const reread=await frame.evaluate(()=>WorkbenchPpt.mcp.read());
+ assert.equal(reread.pages.length,27);
+ assert.ok(reread.pages.some(page=>page.fields.some(field=>field.text==='27页编译验证人工文字')));
+ assert.equal(reread.images.filter(item=>item.page>=12&&item.page<=27&&item.present).length,16);
+ report.checks.push('刷新保留16图及人工文字');
+ await frame.locator('#next-btn').count().then(async count=>{if(count)for(let index=0;index<11;index++)await frame.locator('#next-btn').click();});
+ await page.screenshot({path:join(qa,'compiled-27-layout.png'),fullPage:true});
+ assert.deepEqual(report.errors,[]);
+ console.log(JSON.stringify({pages:27,pptx:report.pptx,checks:report.checks}));
+}catch(error){report.error=error.stack;throw error;}
+finally{await browser.close();await writeFile(join(qa,'compiled-27-layout.json'),JSON.stringify(report,null,2));}

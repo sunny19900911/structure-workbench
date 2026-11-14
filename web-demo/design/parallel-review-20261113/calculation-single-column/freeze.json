@@ -1,0 +1,20 @@
+{
+  "status": "frozen",
+  "source_id": "USER-CALCULATION-COVER-SINGLE-COLUMN-20261113",
+  "files": [
+    {
+      "path": "scripts/build-calculation-book.py",
+      "sha256": "e3aa968d6812790e87cea8ac36904c658841118e0e95fd13c5cf38898aeb11cd"
+    },
+    {
+      "path": "assets/calculation-book/cover-reference.docx",
+      "sha256": "0f84bd29a1562f925878b94abd968589a7f64832a22fcbac1f68ef90c4a294ac"
+    }
+  ],
+  "nodeReloadRequired": false,
+  "frontendBuildRequired": false,
+  "allSectionsSingleColumn": true,
+  "paper": "A3 landscape retained",
+  "qa": "qa/portable-release/calculation-single-column-20261113/计算书-封面居中及全部单栏-最新.docx",
+  "render": "qa/portable-release/calculation-single-column-20261113/render-cover-corrected/word-render.pdf"
+}

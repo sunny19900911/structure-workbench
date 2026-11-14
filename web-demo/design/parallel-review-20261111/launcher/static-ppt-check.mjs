@@ -1,0 +1,56 @@
+import assert from 'node:assert/strict';
+import {readFile,readdir,writeFile} from 'node:fs/promises';
+import {join,dirname,resolve,sep} from 'node:path';
+import {pathToFileURL} from 'node:url';
+
+const qa=dirname(process.argv[2]);
+const target=JSON.parse(await readFile(join(qa,'compiled-test-server.json'),'utf8'));
+assert.ok(resolve(target.dataRoot).startsWith(resolve(qa)+sep));
+const health=await(await fetch(target.url+'/api/portable/health')).json();
+assert.equal(health.dataRoot,target.dataRoot);
+const {chromium}=await import(pathToFileURL(join(process.env.USERPROFILE,'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs')).href);
+const input='E:/600-工作台数据库/001-项目生成与复核/各项目/昆明经开一中/01-输入/PPT图片';
+const files=(await readdir(input)).filter(name=>/\.(png|jpe?g)$/i.test(name)).sort().map(name=>join(input,name));
+assert.equal(files.length,33);
+const browser=await chromium.launch({channel:'msedge',headless:true});
+const report={target,inputCount:files.length,errors:[],saves:[],checks:[]};
+try{
+ const page=await browser.newPage();
+ page.on('pageerror',error=>report.errors.push(error.message));
+ page.on('response',response=>{if(response.url().includes('/'+target.projectId+'/ppt')&&response.request().method()==='POST')report.saves.push(response.status());});
+ await page.goto(target.url+'/workbuddy-integrated-studio.html?project='+target.projectId,{waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>window.WorkbenchProjects&&!WorkbenchProjects.loading&&window.WorkbenchModules?.mcp);
+ await page.locator('#tab11').click();
+ await page.waitForFunction(()=>document.getElementById('im-ppt-frame')?.contentWindow?.WorkbenchPpt?.mcp?.ready);
+ let frame=page.frames().find(item=>item.url().includes('06-ppt-report/prototype'));
+ await frame.locator('#image-manager-btn').click();
+ report.beforeRows=await frame.locator('.image-upload-row').count();
+ let started=Date.now();await frame.locator('#batch-image-input').setInputFiles(files);
+ await frame.waitForFunction(()=>!WorkbenchPpt.busy(),null,{timeout:60000});
+ report.firstMs=Date.now()-started;
+ await page.evaluate(()=>WorkbenchProjects.flush());
+ report.afterRows=await frame.locator('.image-upload-row').count();
+ report.firstProgress=await frame.locator('#batch-image-status').innerText();
+ assert.ok(report.afterRows>=33);assert.ok(report.saves.includes(200));
+ const beforeRepeat=report.saves.length;
+ started=Date.now();await frame.locator('#batch-image-input').setInputFiles(files);
+ await frame.waitForFunction(()=>!WorkbenchPpt.busy(),null,{timeout:30000});
+ report.repeatMs=Date.now()-started;
+ await page.evaluate(()=>WorkbenchProjects.flush());
+ report.repeatRows=await frame.locator('.image-upload-row').count();
+ report.repeatProgress=await frame.locator('#batch-image-status').innerText();
+ assert.equal(report.repeatRows,report.afterRows);assert.equal(report.saves.length,beforeRepeat);
+ report.checks.push('编译输出33图上传并保存','重复同批未增加图片和保存请求');
+ await page.reload({waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>window.WorkbenchProjects&&!WorkbenchProjects.loading&&window.WorkbenchModules?.mcp);
+ await page.locator('#tab11').click();
+ await page.waitForFunction(()=>document.getElementById('im-ppt-frame')?.contentWindow?.WorkbenchPpt?.mcp?.ready);
+ frame=page.frames().find(item=>item.url().includes('06-ppt-report/prototype'));
+ await frame.locator('#image-manager-btn').click();
+ report.restoredRows=await frame.locator('.image-upload-row').count();
+ assert.equal(report.restoredRows,report.afterRows);assert.deepEqual(report.errors,[]);
+ report.checks.push('编译输出刷新恢复图片数量');
+ await page.screenshot({path:join(qa,'compiled-33-images.png'),fullPage:true});
+ console.log(JSON.stringify({firstMs:report.firstMs,repeatMs:report.repeatMs,rows:report.afterRows,checks:report.checks}));
+}catch(error){report.error=error.stack;throw error;}
+finally{await browser.close();await writeFile(join(qa,'compiled-33-images.json'),JSON.stringify(report,null,2));}

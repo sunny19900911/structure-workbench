@@ -24,7 +24,9 @@ class DeploymentTests(unittest.TestCase):
             document=Document(result['path'])
             self.assertIn('人工调整条目','\n'.join(p.text for p in document.paragraphs))
             self.assertEqual(len(document.sections),2)
-            self.assertFalse(document._element.xpath(".//*[local-name()='imagedata'] | .//*[local-name()='drawing']"))
+            reference=Document(ROOT/'assets/calculation-book/cover-reference.docx')
+            # The new native master has an institute logo, not a personal signature.
+            self.assertEqual(len(document._element.xpath(".//*[local-name()='imagedata'] | .//*[local-name()='drawing']")),len(reference._element.xpath(".//*[local-name()='imagedata'] | .//*[local-name()='drawing']")))
             self.assertIn('计算书回归测试',''.join(document._element.itertext()))
 
 if __name__=='__main__':unittest.main()

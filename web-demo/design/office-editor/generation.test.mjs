@@ -23,7 +23,7 @@ function fixture(options={}){
  const context={busy:false,opening:!!options.opening,commandPending:!!options.commandPending,W,E,frame,structuredClone,Blob,Date,setTimeout,
   crypto:{randomUUID:()=> '12345678-1234-1234-1234-123456789abc'},
   document:{querySelector:()=>main,querySelectorAll:()=>[]},dialog:{querySelectorAll:()=>controls},note:value=>notes.push(value),list:async()=>outputs,
-  window:{WorkbenchModules:{mcp:{openPpt:async selected=>calls.push(['ppt-open',selected]),ppt}},WorkbenchLegacy:{params:()=>({project_name:'参数一致性验收',intensity:8})},
+  window:{WorkbenchModules:{mcp:{openPpt:async selected=>calls.push(['ppt-open',selected]),ppt,readSteel:()=>({sources:options.noSteel?{}:{rebar:[{name:'钢筋原始文件.xls'}]},csvRows:[['单体','钢筋总量(t)'],[unit,12.5]]})}},WorkbenchLegacy:{params:()=>({project_name:'参数一致性验收',intensity:8})},
    WordDocumentView:{createBlob:async()=>{calls.push(['word-export']);await options.word?.(W,snapshot);return new Blob(['DOCX fixture']);}}},
   register:async(blob,type,title,identity)=>{calls.push(['register',type]);if(options.failRegister===type)throw Error('模拟登记失败');const record={type,title,projectId:identity.projectId,unit:identity.unit,batchId:identity.batchId,sourceParameterVersion:identity.version};outputs.push(record);return record;},
   api:async(path,request)=>{const spec=JSON.parse(request.body);calls.push(['xlsx-generate',spec]);const record={type:'xlsx',projectId,unit,batchId:spec.batchId,sourceParameterVersion:spec.sourceParameterVersion};outputs.push(record);return {document:record};}
@@ -109,4 +109,10 @@ test('PPT export等待实际快照队列并返回所用版本；不匹配在构�
  const result=await pending;assert.equal(result.parameterVersion,7);assert.equal(result.outputVersion,'new');assert.equal(result.projectId,projectId);assert.equal(result.unit,unit);
  const old=pptAdapter();await assert.rejects(old.api.export({projectId,unit,parameterVersion:7}),e=>e.code==='PPT_VERSION_MISMATCH');assert.deepEqual(old.calls,[]);
  const legacy=await old.api.export();assert.equal(legacy.parameterVersion,6);assert.equal(legacy.draft,true);
+});
+
+test('默认Excel只生成用钢量，未导入材料时仅输出Word和PPT',async()=>{
+ const f=fixture();await f.generate();const spec=f.calls.find(c=>c[0]==='xlsx-generate')[1];
+ assert.equal(spec.title,'用钢量');assert.equal(spec.reportType,'steel');assert.equal(spec.tables.length,1);assert.equal(spec.tables[0].name,'用钢量');assert.equal(spec.parameters,undefined);assert.equal(spec.units,undefined);
+ const empty=fixture({noSteel:true});const result=await empty.generate();assert.equal(result.documents.length,2);assert.ok(!empty.calls.some(c=>c[0]==='xlsx-generate'));
 });

@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.08.2",
+  "version": "2026.11.10-complete.3",
   "tools": [
     {
       "name": "workbench_status",
@@ -62,6 +62,30 @@
         "type": "object",
         "properties": {},
         "required": [],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "workbench_project_folder",
+      "description": "读取小黑箱关联项目的输入文件清单；排除工作台成果目录，不导入资料。仅在小黑箱服务可用。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{32}$",
+            "description": "明确的项目ID，从项目列表读取，不根据名称猜测"
+          }
+        },
+        "required": [
+          "projectId"
+        ],
         "additionalProperties": false
       },
       "annotations": {
@@ -615,6 +639,50 @@
         "required": [
           "projectId",
           "documentId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "workbench_parameters_read",
+      "description": "读取当前项目统一措施核心采用参数、当前单体已有采用事实、来源及同一荷载/材料表；不把抗震查表输入视为采用参数。 先读取 workbench_project_context；这里的unit是单体名称。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{32}$",
+            "description": "明确的项目ID，从项目列表读取，不根据名称猜测"
+          },
+          "unit": {
+            "type": "string",
+            "description": "明确单体名，涉及单体时必填",
+            "maxLength": 120
+          },
+          "expectedRevisions": {
+            "type": "object",
+            "description": "project.context 返回的各分区修订号；写入必须原样携带，冲突时重新读取",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "args": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "projectId",
+          "args"
         ],
         "additionalProperties": false
       },
@@ -1193,7 +1261,7 @@
     },
     {
       "name": "workbench_document_import",
-      "description": "将建筑、地勘或同一单体模型文件交给原有解析和联动流程。原件不修改。 先读取 workbench_project_context；这里的unit是单体名称。",
+      "description": "将建筑、地勘或同一单体模型文件交给原有解析和联动流程。yjk必须一次提供同一单体同一计算版本的WMASS、WZQ、WDISP三份OUT，整批替换旧模型，禁止拆成三次调用。原件不修改。 先读取 workbench_project_context；这里的unit是单体名称。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1542,6 +1610,182 @@
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "workbench_expansion_outline",
+      "description": "读取所有扩初章节的小节编号；局部改写先读取本目录，编号重复时不猜测目标。 先读取 workbench_project_context；这里的unit是单体名称。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{32}$",
+            "description": "明确的项目ID，从项目列表读取，不根据名称猜测"
+          },
+          "unit": {
+            "type": "string",
+            "description": "明确单体名，涉及单体时必填",
+            "maxLength": 120
+          },
+          "expectedRevisions": {
+            "type": "object",
+            "description": "project.context 返回的各分区修订号；写入必须原样携带，冲突时重新读取",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "args": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "projectId",
+          "args",
+          "unit"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "workbench_expansion_subsection_read",
+      "description": "读取指定小节原文，保留参数与图表标记。无编号小节的章节使用body，章首正文使用intro。 先读取 workbench_project_context；这里的unit是单体名称。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{32}$",
+            "description": "明确的项目ID，从项目列表读取，不根据名称猜测"
+          },
+          "unit": {
+            "type": "string",
+            "description": "明确单体名，涉及单体时必填",
+            "maxLength": 120
+          },
+          "expectedRevisions": {
+            "type": "object",
+            "description": "project.context 返回的各分区修订号；写入必须原样携带，冲突时重新读取",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "args": {
+            "type": "object",
+            "properties": {
+              "sectionId": {
+                "type": "string",
+                "description": "outline返回的章节ID",
+                "maxLength": 80
+              },
+              "subsectionId": {
+                "type": "string",
+                "description": "outline返回的小节ID",
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "sectionId",
+              "subsectionId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "projectId",
+          "args",
+          "unit"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "workbench_expansion_subsection_edit",
+      "description": "仅改写指定小节正文，其他小节保持原样；保留图表、参数标记及下级标题。返回previousText供撤销：重新读取后以当前text为expectedText、previousText为新text调用本接口。 先读取 workbench_project_context；这里的unit是单体名称。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{32}$",
+            "description": "明确的项目ID，从项目列表读取，不根据名称猜测"
+          },
+          "unit": {
+            "type": "string",
+            "description": "明确单体名，涉及单体时必填",
+            "maxLength": 120
+          },
+          "expectedRevisions": {
+            "type": "object",
+            "description": "project.context 返回的各分区修订号；写入必须原样携带，冲突时重新读取",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "args": {
+            "type": "object",
+            "properties": {
+              "sectionId": {
+                "type": "string",
+                "description": "章节ID",
+                "maxLength": 80
+              },
+              "subsectionId": {
+                "type": "string",
+                "description": "小节ID",
+                "maxLength": 100
+              },
+              "expectedText": {
+                "type": "string",
+                "description": "subsection_read返回的完整text",
+                "maxLength": 200000
+              },
+              "text": {
+                "type": "string",
+                "description": "新小节正文，保留联动标记",
+                "maxLength": 200000
+              }
+            },
+            "required": [
+              "sectionId",
+              "subsectionId",
+              "expectedText",
+              "text"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "projectId",
+          "expectedRevisions",
+          "args",
+          "unit"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
         "openWorldHint": false
       }
     },
@@ -2916,7 +3160,7 @@
     },
     {
       "name": "workbench_office_command",
-      "description": "通过页面同一编辑器修改并保存原生文档：Word文字、格式、段落、表格、图片、撤销重做；Excel单元格；PPT文字或位置。Word格式和插入操作必须提供唯一targetText，需原内容/坐标及文件expectedRevision。不会回写工程参数，不代表验算或审签。 先读取 workbench_project_context；这里的unit是单体名称。",
+      "description": "通过页面同一编辑器修改并保存原生文档：Word文字、格式、段落、表格、图片、撤销重做；Excel表格、公式及工作表；PPT幻灯片、文本、图片和布局。Word格式和插入操作必须提供唯一targetText，需原内容/坐标及文件expectedRevision。不会回写工程参数，不代表验算或审签。 先读取 workbench_project_context；这里的unit是单体名称。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -2965,7 +3209,99 @@
                   "table.deleteRow",
                   "image.insert",
                   "history.undo",
-                  "history.redo"
+                  "history.redo",
+                  "format.strike",
+                  "paragraph.right",
+                  "list.bullet",
+                  "list.number",
+                  "list.indent",
+                  "list.outdent",
+                  "table.addRowBefore",
+                  "table.addColumn",
+                  "table.addColumnBefore",
+                  "table.deleteColumn",
+                  "paragraph.spacing",
+                  "paragraph.style",
+                  "format.color",
+                  "format.highlight",
+                  "text.insert",
+                  "insert.pageBreak",
+                  "insert.lineBreak",
+                  "insert.rule",
+                  "link.remove",
+                  "review.accept",
+                  "review.reject",
+                  "format.clear",
+                  "format.grow",
+                  "format.shrink",
+                  "format.superscript",
+                  "format.subscript",
+                  "table.split",
+                  "table.header",
+                  "table.delete",
+                  "toc.insert",
+                  "toc.update",
+                  "review.acceptAll",
+                  "review.rejectAll",
+                  "page.setup",
+                  "page.margins",
+                  "page.columns",
+                  "page.headerDistance",
+                  "link.set",
+                  "note.insert",
+                  "comment.add",
+                  "review.replace",
+                  "table.background",
+                  "text.replaceAll",
+                  "cells.set",
+                  "range.set",
+                  "range.clear",
+                  "range.format",
+                  "range.copy",
+                  "range.replace",
+                  "range.style",
+                  "range.clearStyle",
+                  "range.merge",
+                  "range.unmerge",
+                  "range.clearConditional",
+                  "range.copyStyle",
+                  "range.tableStyle",
+                  "range.conditional",
+                  "range.sort",
+                  "sheet.filter",
+                  "sheet.clearFilter",
+                  "sheet.freeze",
+                  "sheet.protect",
+                  "row.height",
+                  "column.width",
+                  "row.insert",
+                  "row.delete",
+                  "column.insert",
+                  "column.delete",
+                  "sheet.add",
+                  "sheet.rename",
+                  "sheet.delete",
+                  "workbook.recalculate",
+                  "sheet.select",
+                  "selection.set",
+                  "selection.copy",
+                  "selection.aggregate",
+                  "selection.formula",
+                  "selection.formatPainter",
+                  "sheet.find",
+                  "view.options",
+                  "sheet.print",
+                  "ppt.image.import",
+                  "ppt.image.place",
+                  "slide.add",
+                  "slide.duplicate",
+                  "slide.delete",
+                  "slide.move",
+                  "shape.addText",
+                  "shape.geometry",
+                  "shape.format",
+                  "shape.delete",
+                  "ppt.image.insert"
                 ]
               },
               "expectedRevision": {
@@ -3033,23 +3369,20 @@
                       "properties": {
                         "sheet": {
                           "type": "string",
-                          "description": "原工作表名称",
-                          "maxLength": 200
+                          "minLength": 1,
+                          "maxLength": 31
                         },
                         "address": {
                           "type": "string",
-                          "description": "单元格地址，例如B2",
-                          "maxLength": 30
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$"
                         },
                         "expectedText": {
                           "type": "string",
-                          "description": "读取时单元格原内容",
-                          "maxLength": 20000
+                          "maxLength": 32767
                         },
                         "text": {
                           "type": "string",
-                          "description": "单元格新内容",
-                          "maxLength": 20000
+                          "maxLength": 32767
                         }
                       },
                       "required": [
@@ -3079,22 +3412,19 @@
                         "slide": {
                           "type": "integer",
                           "minimum": 1,
-                          "maximum": 1000,
-                          "description": "从office.read读取的幻灯片页码，从1开始"
+                          "maximum": 200
                         },
                         "shapeId": {
                           "type": "string",
-                          "description": "office.read返回的形状ID",
+                          "minLength": 1,
                           "maxLength": 100
                         },
                         "expectedText": {
                           "type": "string",
-                          "description": "形状原文字",
                           "maxLength": 20000
                         },
                         "text": {
                           "type": "string",
-                          "description": "形状新文字",
                           "maxLength": 20000
                         }
                       },
@@ -3568,6 +3898,3251 @@
                       "type": "object",
                       "properties": {},
                       "required": [],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "format.strike"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "paragraph.right"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "list.bullet"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "list.number"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "list.indent"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "list.outdent"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "table.addRowBefore"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "table.addColumn"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "table.addColumnBefore"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "table.deleteColumn"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "paragraph.spacing"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        },
+                        "before": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 72,
+                          "description": "段前，磅"
+                        },
+                        "after": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 72,
+                          "description": "段后，磅"
+                        },
+                        "line": {
+                          "type": "number",
+                          "minimum": 1,
+                          "maximum": 3,
+                          "description": "行距倍数"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false,
+                      "anyOf": [
+                        {
+                          "required": [
+                            "before"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "after"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "line"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "paragraph.style"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        },
+                        "style": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100,
+                          "description": "office.read 返回的 styles 中的样式 ID"
+                        }
+                      },
+                      "required": [
+                        "targetText",
+                        "style"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "format.color"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        },
+                        "color": {
+                          "type": "string",
+                          "pattern": "^#[0-9a-fA-F]{6}$"
+                        }
+                      },
+                      "required": [
+                        "targetText",
+                        "color"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "format.highlight"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或表格单元格中的唯一原文"
+                        },
+                        "color": {
+                          "type": "string",
+                          "pattern": "^#[0-9a-fA-F]{6}$"
+                        }
+                      },
+                      "required": [
+                        "targetText",
+                        "color"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "text.insert"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        },
+                        "text": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000
+                        }
+                      },
+                      "required": [
+                        "targetText",
+                        "text"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "insert.pageBreak"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "insert.lineBreak"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "insert.rule"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "link.remove"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "review.accept"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "review.reject"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "format.clear"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "format.grow"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "format.shrink"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "format.superscript"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "format.subscript"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "table.split"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "table.header"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "table.delete"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        }
+                      },
+                      "required": [
+                        "targetText"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "toc.insert"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {},
+                      "required": [],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "toc.update"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {},
+                      "required": [],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "review.acceptAll"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {},
+                      "required": [],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "review.rejectAll"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {},
+                      "required": [],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "page.setup"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sectionId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "paper": {
+                          "enum": [
+                            "A3",
+                            "A4",
+                            "Letter"
+                          ]
+                        },
+                        "orientation": {
+                          "enum": [
+                            "portrait",
+                            "landscape"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "sectionId",
+                        "paper",
+                        "orientation"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "page.margins"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sectionId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "top": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "bottom": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "left": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "right": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        }
+                      },
+                      "required": [
+                        "sectionId",
+                        "top",
+                        "bottom",
+                        "left",
+                        "right"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "page.columns"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sectionId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 3
+                        },
+                        "gap": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 30
+                        }
+                      },
+                      "required": [
+                        "sectionId",
+                        "count",
+                        "gap"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "page.headerDistance"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sectionId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "header": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 50
+                        },
+                        "footer": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 50
+                        }
+                      },
+                      "required": [
+                        "sectionId",
+                        "header",
+                        "footer"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "link.set"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        },
+                        "url": {
+                          "type": "string",
+                          "maxLength": 2048,
+                          "pattern": "^(https?://|mailto:)"
+                        }
+                      },
+                      "required": [
+                        "targetText",
+                        "url"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "note.insert"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        },
+                        "type": {
+                          "const": "footnote"
+                        },
+                        "content": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 5000
+                        }
+                      },
+                      "required": [
+                        "targetText",
+                        "type",
+                        "content"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "comment.add"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        },
+                        "content": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 5000
+                        }
+                      },
+                      "required": [
+                        "targetText",
+                        "content"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "review.replace"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        },
+                        "text": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000
+                        }
+                      },
+                      "required": [
+                        "targetText",
+                        "text"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "table.background"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "targetText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000,
+                          "description": "当前段落或单元格中的唯一原文"
+                        },
+                        "color": {
+                          "type": "string",
+                          "pattern": "^#[0-9a-fA-F]{6}$"
+                        }
+                      },
+                      "required": [
+                        "targetText",
+                        "color"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "text.replaceAll"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "search": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20000
+                        },
+                        "text": {
+                          "type": "string",
+                          "maxLength": 20000
+                        }
+                      },
+                      "required": [
+                        "search",
+                        "text"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "cells.set"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "cells": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 10000,
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "address": {
+                                "type": "string",
+                                "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$"
+                              },
+                              "expectedText": {
+                                "type": "string",
+                                "maxLength": 32767
+                              },
+                              "text": {
+                                "type": "string",
+                                "maxLength": 32767
+                              }
+                            },
+                            "required": [
+                              "address",
+                              "expectedText",
+                              "text"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "cells"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.set"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "address": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$"
+                        },
+                        "values": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 10000,
+                          "items": {
+                            "type": "array",
+                            "minItems": 1,
+                            "maxItems": 10000,
+                            "items": {
+                              "type": "string",
+                              "maxLength": 32767
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "address",
+                        "values"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.clear"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.format"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        },
+                        "format": {
+                          "enum": [
+                            "general",
+                            "integer",
+                            "decimal",
+                            "thousands",
+                            "percent",
+                            "scientific",
+                            "date",
+                            "text"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range",
+                        "format"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.copy"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        },
+                        "targetSheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "address": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$"
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range",
+                        "address"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.replace"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        },
+                        "find": {
+                          "type": "string",
+                          "maxLength": 32767,
+                          "minLength": 1
+                        },
+                        "replacement": {
+                          "type": "string",
+                          "maxLength": 32767
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range",
+                        "find",
+                        "replacement"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.style"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        },
+                        "style": {
+                          "type": "object",
+                          "properties": {
+                            "font": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80,
+                              "pattern": "^[^\\u0000-\\u001f]+$"
+                            },
+                            "fontSize": {
+                              "type": "number",
+                              "minimum": 6,
+                              "maximum": 96
+                            },
+                            "bold": {
+                              "type": "boolean"
+                            },
+                            "italic": {
+                              "type": "boolean"
+                            },
+                            "underline": {
+                              "type": "boolean"
+                            },
+                            "strike": {
+                              "type": "boolean"
+                            },
+                            "fontColor": {
+                              "type": "string",
+                              "pattern": "^#[0-9a-fA-F]{6}$"
+                            },
+                            "fillColor": {
+                              "type": "string",
+                              "pattern": "^#[0-9a-fA-F]{6}$"
+                            },
+                            "horizontal": {
+                              "enum": [
+                                "left",
+                                "center",
+                                "right",
+                                "general"
+                              ]
+                            },
+                            "vertical": {
+                              "enum": [
+                                "top",
+                                "center",
+                                "bottom"
+                              ]
+                            },
+                            "wrapText": {
+                              "type": "boolean"
+                            },
+                            "rotation": {
+                              "type": "integer",
+                              "minimum": -90,
+                              "maximum": 90
+                            },
+                            "border": {
+                              "enum": [
+                                "all",
+                                "outside",
+                                "none"
+                              ]
+                            }
+                          },
+                          "required": [],
+                          "additionalProperties": false,
+                          "minProperties": 1
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range",
+                        "style"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.clearStyle"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.merge"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.unmerge"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.clearConditional"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.copyStyle"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "source": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$"
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "source",
+                        "range"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.tableStyle"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        },
+                        "theme": {
+                          "enum": [
+                            "blue",
+                            "green",
+                            "gray"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range",
+                        "theme"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.conditional"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        },
+                        "operator": {
+                          "enum": [
+                            "greaterThan",
+                            "lessThan",
+                            "equal",
+                            "between"
+                          ]
+                        },
+                        "value": {
+                          "type": "number"
+                        },
+                        "value2": {
+                          "type": "number"
+                        },
+                        "color": {
+                          "type": "string",
+                          "pattern": "^#[0-9a-fA-F]{6}$"
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range",
+                        "operator",
+                        "value",
+                        "color"
+                      ],
+                      "additionalProperties": false,
+                      "allOf": [
+                        {
+                          "if": {
+                            "properties": {
+                              "operator": {
+                                "const": "between"
+                              }
+                            }
+                          },
+                          "then": {
+                            "required": [
+                              "value2"
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "range.sort"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        },
+                        "column": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 16384
+                        },
+                        "direction": {
+                          "enum": [
+                            "asc",
+                            "desc"
+                          ]
+                        },
+                        "header": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range",
+                        "column"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "sheet.filter"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        },
+                        "column": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 16384
+                        },
+                        "operator": {
+                          "enum": [
+                            "contains",
+                            "equal",
+                            "greaterThan",
+                            "lessThan"
+                          ]
+                        },
+                        "value": {
+                          "type": "string",
+                          "maxLength": 1000
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range",
+                        "column",
+                        "operator",
+                        "value"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "sheet.clearFilter"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        }
+                      },
+                      "required": [
+                        "sheet"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "sheet.freeze"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "rows": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1048575
+                        },
+                        "columns": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 16383
+                        }
+                      },
+                      "required": [
+                        "sheet"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "sheet.protect"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "enabled"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "row.height"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "index": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1048576
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 10000
+                        },
+                        "height": {
+                          "type": "number",
+                          "minimum": 1,
+                          "maximum": 409
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "index",
+                        "height"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "column.width"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "index": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 16384
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 16384
+                        },
+                        "width": {
+                          "type": "number",
+                          "minimum": 1,
+                          "maximum": 255
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "index",
+                        "width"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "row.insert"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "index": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1048576
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "index"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "row.delete"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "index": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1048576
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "index"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "column.insert"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "index": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 16384
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "index"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "column.delete"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "index": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 16384
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "index"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "sheet.add"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "sheet.rename"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "name"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "sheet.delete"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        }
+                      },
+                      "required": [
+                        "sheet"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "workbook.recalculate"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {},
+                      "required": [],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "sheet.select"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        }
+                      },
+                      "required": [
+                        "sheet"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "selection.set"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "range": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}(:[A-Z]{1,3}[1-9][0-9]{0,6})?$"
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "range"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "selection.copy"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {},
+                      "required": [],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "selection.aggregate"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "function": {
+                          "enum": [
+                            "SUM",
+                            "AVERAGE",
+                            "MIN",
+                            "MAX",
+                            "COUNT"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "function"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "selection.formula"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "formula": {
+                          "type": "string",
+                          "maxLength": 32767,
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "formula"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "selection.formatPainter"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {},
+                      "required": [],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "sheet.find"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        },
+                        "text": {
+                          "type": "string",
+                          "maxLength": 32767,
+                          "minLength": 1
+                        },
+                        "after": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{1,3}[1-9][0-9]{0,6}$"
+                        }
+                      },
+                      "required": [
+                        "sheet",
+                        "text"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "view.options"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "showFormulas": {
+                          "type": "boolean"
+                        },
+                        "gridlines": {
+                          "type": "boolean"
+                        },
+                        "showZeros": {
+                          "type": "boolean"
+                        },
+                        "highlight": {
+                          "type": "boolean"
+                        },
+                        "dark": {
+                          "type": "boolean"
+                        },
+                        "zoom": {
+                          "enum": [
+                            50,
+                            75,
+                            90,
+                            100,
+                            110,
+                            125,
+                            150,
+                            200
+                          ]
+                        }
+                      },
+                      "required": [],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "sheet.print"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "sheet": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 31
+                        }
+                      },
+                      "required": [
+                        "sheet"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "ppt.image.import"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 240
+                        },
+                        "reason": {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "data": {
+                          "type": "string",
+                          "maxLength": 1800000,
+                          "pattern": "^data:image/(png|jpeg);base64,"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "data"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "ppt.image.place"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "slide": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        },
+                        "shapeId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "imageId": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{32}$"
+                        }
+                      },
+                      "required": [
+                        "slide",
+                        "imageId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "slide.add"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "slide": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        }
+                      },
+                      "required": [
+                        "slide"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "slide.duplicate"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "slide": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        }
+                      },
+                      "required": [
+                        "slide"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "slide.delete"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "slide": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        }
+                      },
+                      "required": [
+                        "slide"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "slide.move"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "slide": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        },
+                        "to": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        }
+                      },
+                      "required": [
+                        "slide",
+                        "to"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "shape.addText"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "slide": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        },
+                        "text": {
+                          "type": "string",
+                          "maxLength": 20000
+                        },
+                        "x": {
+                          "type": "number",
+                          "minimum": -100000000,
+                          "maximum": 100000000
+                        },
+                        "y": {
+                          "type": "number",
+                          "minimum": -100000000,
+                          "maximum": 100000000
+                        },
+                        "width": {
+                          "type": "number",
+                          "minimum": 1,
+                          "maximum": 100000000
+                        },
+                        "height": {
+                          "type": "number",
+                          "minimum": 1,
+                          "maximum": 100000000
+                        }
+                      },
+                      "required": [
+                        "slide",
+                        "text"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "shape.geometry"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "slide": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        },
+                        "shapeId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "x": {
+                          "type": "number",
+                          "minimum": -100000000,
+                          "maximum": 100000000
+                        },
+                        "y": {
+                          "type": "number",
+                          "minimum": -100000000,
+                          "maximum": 100000000
+                        },
+                        "width": {
+                          "type": "number",
+                          "minimum": 1,
+                          "maximum": 100000000
+                        },
+                        "height": {
+                          "type": "number",
+                          "minimum": 1,
+                          "maximum": 100000000
+                        },
+                        "expectedGeometry": {
+                          "type": "object",
+                          "properties": {
+                            "x": {
+                              "type": "number",
+                              "minimum": -100000000,
+                              "maximum": 100000000
+                            },
+                            "y": {
+                              "type": "number",
+                              "minimum": -100000000,
+                              "maximum": 100000000
+                            },
+                            "width": {
+                              "type": "number",
+                              "minimum": 1,
+                              "maximum": 100000000
+                            },
+                            "height": {
+                              "type": "number",
+                              "minimum": 1,
+                              "maximum": 100000000
+                            }
+                          },
+                          "required": [
+                            "x",
+                            "y",
+                            "width",
+                            "height"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "slide",
+                        "shapeId",
+                        "expectedGeometry"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "shape.format"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "slide": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        },
+                        "shapeId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "fontSize": {
+                          "type": "number",
+                          "minimum": 6,
+                          "maximum": 96
+                        },
+                        "fontFace": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "bold": {
+                          "type": "boolean"
+                        },
+                        "italic": {
+                          "type": "boolean"
+                        },
+                        "underline": {
+                          "type": "boolean"
+                        },
+                        "color": {
+                          "type": "string",
+                          "pattern": "^#[0-9a-fA-F]{6}$"
+                        },
+                        "align": {
+                          "enum": [
+                            "l",
+                            "ctr",
+                            "r",
+                            "just"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "slide",
+                        "shapeId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "shape.delete"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "slide": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        },
+                        "shapeId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        }
+                      },
+                      "required": [
+                        "slide",
+                        "shapeId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "name": {
+                      "const": "ppt.image.insert"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "args": {
+                      "type": "object",
+                      "properties": {
+                        "slide": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        },
+                        "x": {
+                          "type": "number",
+                          "minimum": -100000000,
+                          "maximum": 100000000
+                        },
+                        "y": {
+                          "type": "number",
+                          "minimum": -100000000,
+                          "maximum": 100000000
+                        },
+                        "width": {
+                          "type": "number",
+                          "minimum": 1,
+                          "maximum": 100000000
+                        },
+                        "height": {
+                          "type": "number",
+                          "minimum": 1,
+                          "maximum": 100000000
+                        },
+                        "data": {
+                          "type": "string",
+                          "maxLength": 1800000,
+                          "pattern": "^data:image/(png|jpeg);base64,"
+                        }
+                      },
+                      "required": [
+                        "slide",
+                        "data"
+                      ],
                       "additionalProperties": false
                     }
                   }

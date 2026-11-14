@@ -1,0 +1,22 @@
+{
+  "source_id": "QA-NATIVE-BASELINE-CHECK-20261111",
+  "status": "failed",
+  "exit_code": 1,
+  "inputs": [
+    {
+      "path": "C:\\Users\\mj528\\Documents\\004 工作\\web-demo\\design\\reference-expansion\\verify-native.py",
+      "sha256": "6f826bea78f7a0e956c20210007e46f5a807eac49b0138c72384ecb3803cba2f"
+    },
+    {
+      "path": "C:\\Users\\mj528\\Documents\\004 工作\\web-demo\\qa\\deployment-fixes-20261014\\export-spec.json",
+      "sha256": "c628719cbf5f611578e42ff43bb8e6a06fb46cc0fc63aaee9716e901add304d0"
+    },
+    {
+      "path": "C:\\Users\\mj528\\Documents\\004 工作\\web-demo\\qa\\deployment-fixes-20261014\\表格修复验收.docx",
+      "sha256": "57593e26020da429f5912d1e6f37f733e9c0099a4efcd3f35ed2522fccf66d5a"
+    }
+  ],
+  "stdout": "",
+  "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\mj528\\Documents\\004 工作\\web-demo\\design\\reference-expansion\\verify-native.py\", line 21, in <module>\n    assert shape(row.find('w:trPr',ns))==shape(prototype.find('w:trPr',ns))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+  "interpretation": "历史QA导出的第15表（模板19）23行含tblHeader；当前校验器要求移除。不代表当前生成器的输出结果。"
+}

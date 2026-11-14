@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import {buildCafeteriaSlides,templatePages} from './cafeteria-core.js';
 const table=(pages,n,id)=>pages[n-1].shapes.find(s=>s.kind==='table'&&s.id===id);
 test('native template clears historic project values and retains blank manual sections',()=>{
-  const pages=buildCafeteriaSlides();assert.equal(pages.length,25);
+  const pages=buildCafeteriaSlides();assert.equal(pages.length,27);
   const all=JSON.stringify(pages);assert.doesNotMatch(all,/云南旅游|1#食堂|700×700/);
   assert.equal(pages[9].shapes.find(s=>s.field==='notes').text,'');
-  assert.equal(pages[19].shapes.find(s=>s.field==='components').text,'框架柱：\n框架梁：\n次梁：\n板厚：\n超限判断：');
-  assert.equal(pages[17].title,'特殊转换');assert.equal(pages.flatMap(p=>p.slots).length,31);
+  assert.equal(pages[18].slots[0],'盈建科模型');
+  assert.equal(pages[26].title,'小屋面层结构平面布置图');assert.equal(pages.flatMap(p=>p.slots).length,21);
 });
 test('parameter tables update while manual narrative is retained',()=>{
   const snapshot={params:{design_life:'50',intensity:'8',pga:'0.20g',alpha_max:'多遇 0.16；罕遇 0.9'}};

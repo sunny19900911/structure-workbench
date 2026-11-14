@@ -64,12 +64,6 @@
       </div>
 
       <p id="link-status" class="link-status" role="status">尚未连接统一技术措施。公共参数待读取。</p>
-      <section class="ai-editor" aria-label="DeepSeek 智能改写">
-        <div class="ai-toolbar"><strong>DeepSeek 智能改写</strong><select id="rewrite-style" aria-label="改写方式"><option>精简为汇报要点</option><option>扩展信息</option><option>改为口头汇报表达</option></select><button id="rewrite-btn" type="button">改写本页说明</button><button id="rewrite-apply" type="button" disabled>采纳建议</button><button id="rewrite-undo" type="button" disabled>撤销采纳</button></div>
-        <p>点击改写将本页文字与所引用参数发送给已配置的 DeepSeek；建议经你采纳后才替换。表格与联动参数保持原值。</p>
-        <div id="rewrite-status" role="status">选择有说明文字的页面开始；可先在页面中补充设计判断。</div>
-        <div id="rewrite-preview"></div>
-      </section>
     </section>
   </main>
 
@@ -83,6 +77,8 @@
       <button id="batch-image-upload" type="button">批量上传图片</button>
       <button id="image-manager-close" type="button">关闭</button>
     </div>
+    <p id="batch-image-status" role="status" aria-live="polite" style="margin:8px 20px;white-space:pre-wrap"></p>
+    <button id="batch-image-retry" type="button" hidden style="margin:0 20px 12px">重试保存</button>
     <div class="image-list-head" aria-hidden="true">
       <span>题目</span><span>图名</span><span>上传</span>
     </div>

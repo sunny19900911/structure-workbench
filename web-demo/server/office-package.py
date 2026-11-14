@@ -324,6 +324,10 @@ def generate_workbook(spec):
         if not isinstance(unit,dict): raise OfficeError('单体记录无效','INVALID_INPUT')
         units_sheet.append([unit.get('name',''),unit.get('area',''),unit.get('height',''),unit.get('floors',''),unit.get('function','')])
     if not isinstance(tables,list) or len(tables)>20: raise OfficeError('附表数量超出范围','INVALID_INPUT')
+    steel_only=spec.get('reportType')=='steel'
+    if steel_only:
+        if not tables: raise OfficeError('用钢量资料为空','INVALID_INPUT')
+        wb.remove(ws);wb.remove(units_sheet)
     for table in tables:
         if not isinstance(table,dict) or not isinstance(table.get('rows'),list) or len(table['rows'])>2000:
             raise OfficeError('附表内容无效','INVALID_INPUT')
@@ -350,7 +354,8 @@ def generate_workbook(spec):
                     cell.fill=PatternFill('solid',fgColor='E3F0EB'); cell.font=Font(name='微软雅黑',size=11,bold=True,color='183F35')
         for key,width in {'A':28,'B':24,'C':18,'D':42,'E':28}.items(): sheet.column_dimensions[key].width=width
         sheet.row_dimensions[header].height=28
-    ws['A1'].font=Font(name='微软雅黑',size=16,bold=True,color='183F35'); ws.row_dimensions[1].height=34
+    if not steel_only:
+        ws['A1'].font=Font(name='微软雅黑',size=16,bold=True,color='183F35'); ws.row_dimensions[1].height=34
     out=io.BytesIO(); wb.save(out); return out.getvalue()
 
 def main():

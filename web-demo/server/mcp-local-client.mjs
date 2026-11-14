@@ -6,6 +6,7 @@ import {fileURLToPath} from 'node:url';
 import {createHash,randomUUID} from 'node:crypto';
 import {readService,verifyService} from '../deploy/portable/portable-service-lock.mjs';
 import {portablePaths,RELEASE} from '../deploy/portable/runtime.mjs';
+import {writeProjectArtifact} from './project-folders.mjs';
 
 export const appRoot=fileURLToPath(new URL('../',import.meta.url));
 export function localURL(value){
@@ -56,19 +57,18 @@ export function createLocalClient({env=process.env,fetchImpl=fetch,root=appRoot}
   const chunks=[];let size=0;for await(const chunk of response.body){size+=chunk.length;if(size>maxBytes)throw Error('输出超过大小限制');chunks.push(Buffer.from(chunk));}
   return {bytes:Buffer.concat(chunks),mime:response.headers.get('content-type')||'application/octet-stream',warnings:response.headers.get('x-workbench-warnings')||''};
  }
- async function artifact(bytes,filename,mime){
+ async function artifact(bytes,filename,mime,identity={}){
   if(!Buffer.isBuffer(bytes))bytes=Buffer.from(bytes);
-  const safe=basename(String(filename||'成果')).replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,140);
-  const directory=join(paths.data,'exports','MCP',new Date().toISOString().slice(0,10));await mkdir(directory,{recursive:true});
-  const file=join(directory,randomUUID().slice(0,8)+'-'+safe);await writeFile(file,bytes,{flag:'wx'});
-  return {path:file,filename:safe,mime,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')};
+  return writeProjectArtifact(paths,bytes,filename,mime,identity);
  }
  async function openBrowser(projectId=''){
   const url=await base(),page=url+'/workbuddy-integrated-studio.html'+(projectId?'?project='+encodeURIComponent(projectId):'');
   if(process.platform==='win32')await new Promise((done,reject)=>{const p=spawn('explorer.exe',[page],{windowsHide:true,stdio:'ignore'});p.once('error',reject);p.once('spawn',()=>{p.unref();done();});});
   return {url:page,opened:process.platform==='win32',note:'网页需要保持打开，扩初与 PPT 使用同一页面的编排逻辑。'};
  }
- return {base,status,request,artifact,openBrowser,paths};
+ // Optional manager telemetry is read-only with respect to project data and never starts a service.
+ async function reportConnection(metadata){try{await request('/api/launcher/client',{method:'POST',header:'launcher',body:metadata,timeout:2000});}catch{}}
+ return {base,status,request,artifact,openBrowser,paths,reportConnection};
 }
 
 const DOCUMENTS=new Set(['.doc','.docx','.docm','.dot','.dotx','.dotm','.xls','.xlsx','.xlsm','.xlsb','.xlt','.xltx','.xltm','.ppt','.pptx','.pptm','.pot','.potx','.potm','.pps','.ppsx','.ppsm','.pdf','.out','.txt','.csv','.png','.jpg','.jpeg','.webp','.zip']);

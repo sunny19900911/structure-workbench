@@ -331,8 +331,8 @@ td.stg{font-size:11.5px;color:#7b8794}
   </div>
   <div class="sp"></div>
 
-  <button class="act" onclick="wbOpenPptReport()">汇报 PPT</button>
-  <button class="act primary" id="word-export-btn" onclick="exportDocx()">导出 Word</button>
+  <button class="act" hidden onclick="wbOpenPptReport()">汇报 PPT</button>
+  <button class="act primary" id="word-export-btn" hidden onclick="exportDocx()">导出 Word</button>
 </div>
 
 <div class="wrap">
@@ -493,7 +493,7 @@ td.stg{font-size:11.5px;color:#7b8794}
 
 <!-- ═══════════ 阶段① 统一技术措施 ═══════════ -->
 <section id="stage1">
-  <div class="panel-card intake" id="intake-panel">
+  <div class="panel-card intake" id="intake-panel" hidden>
     <h2>资料导入 · 建筑与地勘 <span class="sub">提取项目和单体信息，核对后用于统一技术措施</span></h2>
     <div id="intake-files" class="upgrid">
       <label class="upbox" id="box-bldg">
@@ -1241,21 +1241,7 @@ td.stg{font-size:11.5px;color:#7b8794}
       </div>
     </div>
 
-    <div class="calcbook-tools-grid">
-      <section class="calcbook-tool-card" aria-labelledby="calcbook-excel-title">
-        <div class="calcbook-block-head">
-          <h3 id="calcbook-excel-title">Excel 表格编辑与 Word 联动</h3>
-          <span class="calcbook-count" id="calcbook-excel-state">正在读取…</span>
-        </div>
-        <div class="calcbook-tool-controls">
-          <label>工作簿<select id="calcbook-workbook"></select></label>
-          <label>工作表<select id="calcbook-sheet"></select></label>
-          <button class="calcbook-reset" id="calcbook-excel-link" type="button">联动到计算书</button>
-        </div>
-        <p class="calcbook-help" id="calcbook-excel-help">输入格可编辑，公式格只读；原始 Excel 不会被覆盖。</p>
-        <div class="calcbook-table-wrap"><table class="calcbook-excel-table" id="calcbook-excel-table"></table></div>
-      </section>
-
+    <div class="calcbook-tools-grid" style="grid-template-columns:1fr">
       <section class="calcbook-tool-card" aria-labelledby="calcbook-out-title">
         <div class="calcbook-block-head">
           <h3 id="calcbook-out-title">3 个 OUT 文件转 A3</h3>
@@ -1317,7 +1303,7 @@ function toast(s){const t=document.getElementById('toast');t.textContent=s;t.cla
    —— 每个模块声明为一张卡片（元数据 + 状态），页签与卡片墙都由声明渲染
    ══════════════════════════════════════════════════ */
 const ROLES=[['d','设计人员']];
-const WORKSPACE_NAV=[[1,'统一措施'],[3,'整理地方规范'],[2,'扩充说明'],[11,'汇报的 PPT'],[5,'用钢量'],[9,'计算书'],[10,'重难点'],[4,'反校核']].filter(([n])=>n!==11&&(!window.WORKBENCH_PORTABLE||![4,10].includes(n)));
+const WORKSPACE_NAV=[[1,'统一措施'],[3,'整理地方规范'],[2,'扩充说明'],[11,'汇报的 PPT'],[5,'用钢量'],[9,'计算书'],[10,'重难点'],[4,'反校核']].filter(([n])=>!window.WORKBENCH_PORTABLE||![4,10].includes(n));
 function arrangeWorkspaceNav(){
   const nav=document.querySelector('.topbar .tabs');
   for(const [n,label] of WORKSPACE_NAV){const b=document.getElementById('tab'+n);if(b){b.textContent=label;nav.append(b);}}
@@ -1352,7 +1338,7 @@ const CARDS=[
        +'目录即台账：文件放对文件夹就等于记完账；只登记目录名与文件名，不读内容（内容是 CAD）。'}
   ,{id:'c9', n:9, tab:'计算书', name:'计算书', sec:'stage9',
    stage:['扩初','施工图'], roles:{d:'填',m:'审',a:'看'},
-   desc:'独立组卷入口：目录可增删，实时查看A3横向双栏快照；人工确认后直接导出Word。'}
+   desc:'目录可增删，查看计算书内容，人工确认后导出 Word。'}
 ];
 const STN=['未开始','进行中','待审','已签发'];
 const STCLS=['n0','n1','n2','n3'];
@@ -2911,9 +2897,9 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.k;if(k)onParamChange(k);});
 
-/* ══ ② 扩初说明正文编辑 + 6.2 DeepSeek改写试点 ═══════════════
+/* ══ ② 扩初说明正文编辑 ═══════════════
    普通正文允许人工编辑；统一措施参数(.pv)与资料导入值(.dx)保持锁定。
-   DeepSeek只生成建议稿，采用按钮是唯一写回入口。 */
+   正文修改沿用当前项目保存。 */
 const KB_EDIT_STORAGE='wb_kb_narrative_v1';
 const KB_EDIT_ORIGINALS={};
 let KB_EDIT_SAVED={};
@@ -2991,8 +2977,6 @@ function kbSyncEditability(){
     p.setAttribute('contenteditable',String(can));
     p.setAttribute('aria-label',can?'扩初说明正文，可编辑':'扩初说明正文，只读');
   });
-  const b=document.getElementById('kb62-ai-btn');
-  if(b)b.disabled=!can;
 }
 function kbInsertPlainText(text){
   const sel=window.getSelection();if(!sel||!sel.rangeCount)return;
@@ -3082,98 +3066,6 @@ function runExpansionMethod(force){
   kbRefreshEditableGuards();
   return result;
 }
-function kbHeadingBodyText(id){
-  const h=document.getElementById(id);if(!h)return'';
-  const level=h.tagName,nodes=[];let n=h.nextElementSibling;
-  while(n){
-    if(n.tagName===level||n.tagName==='H1')break;
-    if(!n.classList.contains('kb-ai-tools')&&!n.classList.contains('kb-ai-review'))nodes.push(n.innerText||n.textContent||'');
-    n=n.nextElementSibling;
-  }
-  return nodes.join('\n').replace(/\n{3,}/g,'\n\n').trim();
-}
-function kb62DraftParagraphs(){
-  return Array.from(document.querySelectorAll('[data-ai-edit="kb62"]')).map(function(p){return p.innerText.trim();});
-}
-function kb62SetBusy(busy){
-  const b=document.getElementById('kb62-ai-btn');if(!b)return;
-  b.disabled=busy||!kbCanEdit();
-  b.textContent=busy?'DeepSeek正在核对项目信息…':'✦ 引入 DeepSeek 改写';
-}
-function kbParseRewriteResponse(content){
-  const raw=String(content||'').replace(/^\s*\x60{3}(?:json)?/i,'').replace(/\x60{3}\s*$/,'').trim();
-  try{return JSON.parse(raw);}catch(e){}
-  const m=raw.match(/\{[\s\S]*\}/);if(m){try{return JSON.parse(m[0]);}catch(e){}}
-  throw new Error('DeepSeek返回格式不完整，请重试');
-}
-async function kb62Rewrite(){
-  if(!kbCanEdit()){toast('当前角色或签发状态下不能编辑扩初说明');return;}
-  const paragraphs=kb62DraftParagraphs();
-  if(paragraphs.length!==2||paragraphs.some(function(t){return!t;})){toast('6.2两段正文不能为空');return;}
-  kb62SetBusy(true);
-  const review=document.getElementById('kb62-ai-review'),checks=document.getElementById('kb62-ai-checks');
-  try{
-    const response=await fetch('/api/deepseek/chat',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        task:'rewrite-structure-selection',
-        messages:[{role:'user',content:'请改写“6.2 结构选型”的两段人工文字。保持两段结构，只优化逻辑、专业表达和可读性。'}],
-        context:{
-          section:'结构初步设计说明 6.2 结构选型',
-          projectParameters:kbCurrentProjectContext(),
-          unifiedMeasuresConstraint:'以上项目参数来自①统一技术措施或其派生值，不得擅自改变。',
-          generationMethod:(function(){
-            const m=expansionAnalyze();
-            return m?{
-              methodId:m.methodId,
-              methodVersion:m.methodVersion,
-              rules:m.promptRules,
-              boundaryCandidate:m.boundaryCandidate,
-              irregularityCandidates:m.irregularityCandidates,
-              slabZones:m.slabZones,
-              currentModelOnly:m.currentModelOnly
-            }:null;
-          })(),
-          currentParagraphs:paragraphs,
-          structureSelectionTable:kbHeadingBodyText('s2ch6_2'),
-          relatedProjectText:{
-            structureOverview:kbHeadingBodyText('s2ch1_3'),
-            jointArrangement:kbHeadingBodyText('s2ch6_1'),
-            basementStructure:kbHeadingBodyText('s2ch6_3')
-          }
-        }
-      })
-    });
-    const payload=await response.json().catch(function(){return{};});
-    if(!response.ok)throw new Error(payload.error||('请求失败（HTTP '+response.status+'）'));
-    const result=kbParseRewriteResponse(payload.content);
-    if(!Array.isArray(result.paragraphs)||result.paragraphs.length!==2)throw new Error('建议稿没有保持两段结构，请重试');
-    document.getElementById('kb62-ai-before').value=paragraphs.join('\n\n');
-    document.getElementById('kb62-ai-after').value=result.paragraphs.join('\n\n');
-    document.getElementById('kb62-ai-model').textContent=payload.model||'DeepSeek';
-    const ok=Array.isArray(result.consistency_checks)?result.consistency_checks:[];
-    const warn=Array.isArray(result.warnings)?result.warnings:[];
-    checks.innerHTML='<b>一致性核对</b>'+(ok.length?'<ul>'+ok.map(function(x){return'<li>'+esc(x)+'</li>';}).join('')+'</ul>':'：未返回单独说明')
-      +(warn.length?'<div class="warn"><b>待人工复核</b><ul>'+warn.map(function(x){return'<li>'+esc(x)+'</li>';}).join('')+'</ul></div>':'');
-    review.hidden=false;review.scrollIntoView({behavior:'smooth',block:'center'});
-  }catch(error){
-    toast('DeepSeek改写未完成：'+(error.message||'未知错误'));
-  }finally{kb62SetBusy(false);}
-}
-function kb62Accept(){
-  if(!kbCanEdit()){toast('当前状态不能采用建议稿');return;}
-  const text=document.getElementById('kb62-ai-after').value.trim();
-  const parts=text.split(/\n\s*\n/).map(function(x){return x.replace(/\s*\n\s*/g,'').trim();}).filter(Boolean);
-  if(parts.length!==2){toast('建议稿必须保持两段，请用一个空行分隔两段');return;}
-  const paras=document.querySelectorAll('[data-ai-edit="kb62"]');
-  paras.forEach(function(p,i){p.textContent=parts[i];kbStoreParagraph(p);});
-  kbRefreshEditableGuards();kbSaveEditStore();kb62CloseReview();
-  toast('已采用DeepSeek建议稿；正文仍可继续人工修改');
-}
-function kb62CloseReview(){
-  const p=document.getElementById('kb62-ai-review');if(p)p.hidden=true;
-}
-
 /* ══ 参数联动自检 ══════════════════════════════════════════════
    针对「面板改了、正文表格没跟着变」这类脱节问题提供一键自检：
    ① 一致性核对：正文中每个参数链接的渲染值是否等于面板当前值；
@@ -6118,7 +6010,7 @@ if(location.protocol==='file:'){
 <script type="module">
 import('./expansion-workbench.js').then(()=>import('./word-document-view.js')).then(()=>import('./office-workbench.js')).then(module=>module.mountOfficeWorkbench()).catch(()=>{
   const status=document.getElementById('intake-access');
-  if(status)status.textContent='资料模块加载失败，请刷新页面；若仍未恢复，请通过启动Demo.cmd重新打开工作台。';
+  const alert=document.createElement('p');alert.setAttribute('role','alert');alert.className='warn';alert.textContent='资料模块加载失败，请刷新页面；若仍未恢复，请通过启动Demo.cmd重新打开工作台。';document.querySelector('.main').prepend(alert);
 });
 </script>
 <script type="module" src="./integrated-modules.js"></script>

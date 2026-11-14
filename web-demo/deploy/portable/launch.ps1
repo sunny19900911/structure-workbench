@@ -1,3 +1,4 @@
+param([switch]$Manager)
 $ErrorActionPreference = 'Stop'
 $installDir = [IO.Path]::GetFullPath($PSScriptRoot)
 $nodePath = Join-Path $installDir 'runtime\node\node.exe'
@@ -15,8 +16,20 @@ try {
  $logId = [Guid]::NewGuid().ToString('N')
  $stdout = Join-Path $dataDir ("启动-$logId.log")
  $stderr = Join-Path $dataDir ("启动错误-$logId.log")
- $process = Start-Process -FilePath $nodePath -ArgumentList "`"$entryPath`" --open" -WorkingDirectory $installDir -WindowStyle Hidden -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
- if ($process.WaitForExit(3000) -and $process.ExitCode -ne 0) { throw "启动失败，请查看：`n$stderr" }
+ $mode = if ($Manager) { '--manager' } else { '--open' }
+ $process = Start-Process -FilePath $nodePath -ArgumentList "`"$entryPath`" $mode" -WorkingDirectory $installDir -WindowStyle Hidden -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
+ $deadline = [DateTime]::UtcNow.AddSeconds(60)
+ $ready = $false
+ while ([DateTime]::UtcNow -lt $deadline) {
+  $process.Refresh()
+  if ($process.HasExited) {
+   if ($process.ExitCode -ne 0) { throw "启动失败，请查看：`n$stderr" }
+   $ready = $true; break
+  }
+  if ((Test-Path -LiteralPath $stdout) -and [IO.File]::ReadAllText($stdout).Contains('本地工作台已启动')) { $ready = $true; break }
+  Start-Sleep -Milliseconds 300
+ }
+ if (!$ready) { throw "启动尚未就绪，请查看：`n$stdout`n$stderr" }
 
 } catch {
  [System.Windows.Forms.MessageBox]::Show($_.Exception.Message,'结构工作台启动提示',[System.Windows.Forms.MessageBoxButtons]::OK,[System.Windows.Forms.MessageBoxIcon]::Information) | Out-Null

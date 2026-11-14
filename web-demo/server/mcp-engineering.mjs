@@ -25,6 +25,7 @@ const workflow=`# 初步结构设计工作流
 6. 抗震等级使用专用查表工具，补齐用途、房屋高度、结构形式、设防类别、烈度与必要的场地/加速度条件。专项条件返回专项确定；没有模型输入和设计依据时，不臆定基础承载力、抗浮结论、性能目标或不规则项。
 7. 模型 OUT 仅解析当前单体当前批次。明确结果的方向、工况、单位与来源；结果提取、限值比较、工程判断分开。改变措施不表示盈建科已重新计算。
 8. 自动更新只作用于自动稿，人工正文、表格覆盖与已签发快照保留；有人工稿差异时先输出差异，不以新草稿整篇覆盖。保存冲突重新读版本，不循环强制覆盖。
+小节修改使用 expansion.outline → expansion.subsection_read → expansion.subsection_edit，提交小节原文 expectedText；正文边界由工作台定位。表格仍使用 expansion.table，不改相邻小节或参数来源。撤销时重新读取并提交上次返回的 previousText。
 9. 读取设计检查结果后生成所需 Word、PPT、PDF 或项目备份。缺资料仍可形成有空项的工作草稿；只有实际完成工具返回的动作才能报告成功。导出不等于专业审签。
 
 依据：AGENTS.md 的资料直接编入、模板恢复、来源配色、抗震等级及同事离线版约定；workflow-core.js；project-store-client.js；expansion-workbench.js。陈述类型：AI推断（对既有项目约定的流程整理）；source_id: MCP-WORKFLOW-20261108。
@@ -108,7 +109,7 @@ const documents=[
  ['office','院内工程办公成果流程',`# 工程办公成果
 source_id: USER-OFFICE-WORKFLOW-20261108；陈述类型：原文事实（用户需求）与AI推断（接口编排）。
 目标：自然语言调用院内流程，生成同项目、同单体、同参数版本的 Word、PPT、Excel，工程师下载原生文件后在本机 Office/WPS 中编辑。网页内 Word/PPT/Excel 编辑入口已移除。
-先列项目、读取 project.context，再读取 workflow、sources、parameters。补齐已有资料后用 expansion.generate 更新自动稿；人工稿保留。调用 office.generate 一次建立三份原生文件，同 batchId 和 sourceParameterVersion。生成完成与专业审签分别记录。
+先列项目、读取 project.context，再读取 workflow、sources、parameters。补齐已有资料后用 expansion.generate 更新自动稿；人工稿保留。调用 office.generate 输出 Word、PPT；仅已导入用钢量资料时另生成用钢量 Excel，不输出参数汇总工作簿。同批成果使用同 batchId 和 sourceParameterVersion。生成完成与专业审签分别记录。
 office.list 列文件，office.download 下载。office.open/read/command 为兼容保留的后台命令，仍可能依赖隐藏浏览器组件；不要求用户打开网页编辑界面。Word 按唯一文本定位改写或排版，Excel按工作表和单元格定位，PPT按页和shapeId定位。修改只影响成果文件，工程参数变更仍走统一措施。
 变更工程参数后生成新成果集，不覆盖已编辑的文件。文档保留来源参数版本和全部文件历史。office.download 返回本机原生文件；项目备份携带全部文档版本。
 内容简洁，直接写工程事实和措施。缺失资料留空，历史数值不作当前事实，不添加候选确认、填理由或无关说明。
@@ -212,3 +213,4 @@ export function inspectEngineeringProject({projectId,records={},unit='项目整�
  const knownUnits=[...new Set([...Object.keys(intake.seismicGrades||{}),...intake.facts.map(f=>f.unit),...Object.values(parts).filter(p=>p.identity).map(p=>p.identity.unit),...list(s.document?.units).map(u=>u.name)].filter(Boolean))];
  return {version:ENGINEERING_VERSION,projectId,unit,expansionPart:expansionPart||null,revisions,statement:'AI推断（对保存状态及现有规则的只读检查）',source_id:'MCP-DESIGN-INSPECTION-20261108',draftAllowed:!!parts.main&&!parts.lifecycle?.deleted,engineeringApproval:false,written:false,locks:{measures:main.cards?.c1===3,expansion:!!s.signed,deleted:!!parts.lifecycle?.deleted},parameters:Object.fromEntries(Object.keys(parameterLabels).filter(k=>present(effective[k])).map(k=>[k,effective[k]])),knownUnits,sources:inventory,sections:sectionStatus,regulations,seismicHeightSource:resolvedGrade.heightSource,seismicGrade:grade,model:s.model?{batch:s.model.batch,sourceIds:list(s.model.sourceIds),confirmed:!!s.model.confirmed,metricKeys:Object.keys(metrics)}:null,findings};
 }
+

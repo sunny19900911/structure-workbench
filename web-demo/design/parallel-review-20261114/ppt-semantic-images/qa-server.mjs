@@ -1,0 +1,25 @@
+import {createServer} from 'vite';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {homedir} from 'node:os';
+import {mkdir,readFile} from 'node:fs/promises';
+import {portableHTML,RELEASE} from '../../../deploy/portable/runtime.mjs';
+import {deepSeekLocalApi,calculationBookLocalApi} from '../../../vite.config.js';
+import {projectStoreApi} from '../../../server/project-store.mjs';
+import {expansionApi} from '../../../server/expansion-api.mjs';
+import {intakeApi} from '../../../server/intake-api.mjs';
+import {documentFormatApi} from '../../../server/document-format-api.mjs';
+import {portableProjectApi} from '../../../server/portable-projects.mjs';
+import {officeDocumentApi} from '../../../server/office-document-api.mjs';
+import {officePptHistoryApi} from '../../../server/office-ppt-document-api.mjs';
+import {createBrowserBridge} from '../../../server/mcp-browser-bridge.mjs';
+const root=fileURLToPath(new URL('../../../',import.meta.url));
+const data=join(root,'qa/parallel-review-20261114/ppt-semantic-images'),runtime=join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies');
+const env={WORKBENCH_PORTABLE:'1',WORKBENCH_DATABASE_ROOT:data,WORKBENCH_PROJECT_STORE:join(data,'projects'),WORKBENCH_CACHE_ROOT:join(data,'cache'),WORKBENCH_PYTHON:join(runtime,'python/python.exe'),CALCBOOK_PYTHON:join(runtime,'python/python.exe'),WORKBENCH_PDFINFO:join(runtime,'native/poppler/Library/bin/pdfinfo.exe'),WORKBENCH_PDFTOPPM:join(runtime,'native/poppler/Library/bin/pdftoppm.exe'),CALCBOOK_SOURCE_DIR:join(data,'sources'),CALCBOOK_UPLOAD_DIR:join(data,'uploads'),IMA_BRIDGE_MODULE:join(data,'not-configured.mjs'),EXPANSION_STORE_DIR:join(data,'legacy'),PYTHONUTF8:'1'};
+await mkdir(env.WORKBENCH_PROJECT_STORE,{recursive:true});Object.assign(process.env,env);
+const local={name:'ui-isolated-qa',transformIndexHtml:portableHTML,configureServer(server){server.middlewares.use((req,res,next)=>{
+ if(!['/api/portable/health','/api/portable/preferences'].includes(req.url))return next();
+ res.setHeader('Content-Type','application/json');res.end(JSON.stringify({app:'structure-workbench-portable',version:RELEASE,pid:process.pid,dataRoot:data,local:true,aiConfigured:false}));
+});}};
+const server=await createServer({root,configFile:false,envDir:false,server:{host:'127.0.0.1',port:5491,strictPort:true,hmr:false,watch:{ignored:['**/qa/**','**/outputs/**']}},plugins:[local,createBrowserBridge().plugin,officeDocumentApi(env),officePptHistoryApi(env),documentFormatApi(env),portableProjectApi(env),deepSeekLocalApi(env),calculationBookLocalApi(env),expansionApi(env),projectStoreApi(env),intakeApi(env)]});
+await server.listen();console.log('UI QA http://127.0.0.1:5491/workbuddy-integrated-studio.html · '+data);

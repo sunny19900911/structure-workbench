@@ -1,0 +1,12 @@
+{
+  "source": "E:\\!!!!!!!!TO HOME\\QS-324 计算书封面（行政审定不用签字）.DOC",
+  "sourceSha256": "fac7d691fcd6d7bd5447b4dcf46b710199d1e5893011d1296ca3e26ee98ff401",
+  "referenceSha256": "3583504f3fc975b96890dd1b5c251fc996b09c67848fc029434afa7d13d53c72",
+  "asset": "assets/calculation-book/cover-reference.docx",
+  "assetSha256": "42135752830c1b0d055526f5c0af5fc0adf5a2fa4f53669fffe8e3de3de4d610",
+  "changedPackageParts": [
+    "word/document.xml",
+    "docProps/core.xml"
+  ],
+  "preservedPackageParts": 13
+}

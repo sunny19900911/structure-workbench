@@ -8,12 +8,18 @@ parser=argparse.ArgumentParser()
 parser.add_argument('--python-runtime',required=True)
 parser.add_argument('--poppler-runtime',required=True)
 parser.add_argument('--node',default=shutil.which('node'))
+parser.add_argument('--ocr-site',help='Existing verified OCR Python site-packages (same Python ABI)')
+parser.add_argument('--ocr-models',help='Existing local OCR ONNX models')
 parser.add_argument('--name',default='结构工作台离线MCP版-20261108')
+parser.add_argument('--folder-name',help='Short folder name inside the ZIP for Windows path limits')
 parser.add_argument('--stage-only',action='store_true')
 parser.add_argument('--data-folder',help='Optional independent per-user data folder for a local preview')
 args=parser.parse_args()
+if bool(args.ocr_site)!=bool(args.ocr_models):parser.error('--ocr-site and --ocr-models must be provided together')
 if args.data_folder and not re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]{0,60}',args.data_folder):raise ValueError('Invalid data folder')
 if Path(args.name).name!=args.name or any(c in args.name for c in '\\/:'):raise ValueError('Invalid package name')
+folder_name=args.folder_name or args.name
+if Path(folder_name).name!=folder_name or any(c in folder_name for c in '\\/:'):raise ValueError('Invalid archive folder name')
 OUT.mkdir(parents=True,exist_ok=True)
 CACHE=OUT/'download-cache';CACHE.mkdir(exist_ok=True)
 stage=OUT/(args.name+'-build-'+time.strftime('%H%M%S'))
@@ -44,15 +50,15 @@ with zipfile.ZipFile(ROOT/'outputs/baota/portable-app-base.zip') as archive:
         relative=Path(item.filename).relative_to('structure-workbench')
         if relative.name=='.env.example' or relative.parts[:2]==('deploy','baota') and relative.suffix not in ('.mjs','.py'):continue
         dest=app/relative;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(archive.read(item))
-for folder in ['server','deploy/portable']:
+for folder in ['server','deploy/portable','deploy/blackbox']:
     for original in (ROOT/folder).rglob('*'):
-        if not original.is_file() or original.suffix not in ('.mjs','.js','.py','.ps1','.md') or '.test.' in original.name:continue
+        if not original.is_file() or original.suffix not in ('.mjs','.js','.py','.ps1','.md','.html','.css') or '.test.' in original.name:continue
         dest=app/original.relative_to(ROOT);dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(original,dest)
 for name in ['portable-projects-ui.js']:
     shutil.copy2(ROOT/name,app/'dist'/name)
 for path in app.rglob('*.ps1'):
     text=path.read_text(encoding='utf-8-sig');path.write_text(text,encoding='utf-8-sig')
-for name in ['launch.ps1','启动工作台.cmd','启动工作台.vbs','生成MCP配置.cmd','使用说明.txt']:
+for name in ['launch.ps1','mcp.cmd','启动工作台.cmd','启动小黑箱.cmd','启动工作台.vbs','生成MCP配置.cmd','使用说明.txt']:
     original=ROOT/'deploy/portable'/name
     data=original.read_text(encoding='utf-8')
     # Windows PowerShell 5 and WSH need an explicit encoding for Chinese text.
@@ -94,23 +100,44 @@ with zipfile.ZipFile(target/('python'+version+'.zip'),'w',zipfile.ZIP_DEFLATED) 
     for p in (py/'Lib').rglob('*'):
         rel=p.relative_to(py/'Lib')
         if p.is_file() and p.suffix!='.pyc' and not any(x in ('site-packages','__pycache__','test','tests','idlelib','tkinter','turtledemo','ensurepip') for x in rel.parts):archive.write(p,rel.as_posix())
-(target/('python'+version+'._pth')).write_text('python'+version+'.zip\nDLLs\nLib/site-packages\n.\nimport site\n',encoding='utf-8')
+(target/('python'+version+'._pth')).write_text('python'+version+'.zip\nDLLs\npkgs\n.\nimport site\n',encoding='utf-8')
+def runtime_dependency(relative):
+    return not ('..' in relative.parts or any(p in ('__pycache__','tests','test') for p in relative.parts) or str(relative).endswith('.pyc') or relative.parts[:3]==('mineru','resources','pdf_preview'))
 site=py/'Lib/site-packages';records=[]
-for name in ['python-docx','lxml','Pillow','openpyxl','et_xmlfile','typing_extensions','pypdf']:
+for name in ['python-docx','lxml','Pillow','openpyxl','et_xmlfile','typing_extensions','pypdf','pdfplumber','pdfminer.six','pypdfium2','pdf2image','cryptography','cffi','pycparser','charset-normalizer']:
     dist=next((d for d in md.distributions(path=[str(site)]) if d.metadata['Name'].lower().replace('-','_')==name.lower().replace('-','_')),None)
     if not dist:raise RuntimeError('Python dependency missing: '+name)
     records.append({'name':name,'version':dist.version})
     for relative in dist.files or []:
-        if '..' in relative.parts or '__pycache__' in relative.parts or str(relative).endswith('.pyc'):continue
+        if not runtime_dependency(relative):continue
         source=site/relative
-        if source.is_file():dest=target/'Lib/site-packages'/relative;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(source,dest)
+        if source.is_file():dest=target/'pkgs'/relative;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(source,dest)
+if args.ocr_site:
+    ocrsite=Path(args.ocr_site).resolve()
+    ocr_names=['PyYAML','annotated-types','colorama','docvortex','filelock','loguru','mineru','numpy','onnxruntime-directml','opencv-contrib-python','pyclipper','pydantic','pydantic_core','setuptools','shapely','tqdm','typing-inspection','win32_setctime','onnx','protobuf','sympy','mpmath','flatbuffers','packaging']
+    for name in ocr_names:
+        dist=next((d for d in md.distributions(path=[str(ocrsite)]) if d.metadata['Name'].lower().replace('-','_')==name.lower().replace('-','_')),None)
+        if not dist:raise RuntimeError('OCR dependency missing: '+name)
+        records.append({'name':name,'version':dist.version,'purpose':'local OCR'})
+        for relative in dist.files or []:
+            if not runtime_dependency(relative):continue
+            source=ocrsite/relative
+            if source.is_file():dest=target/'pkgs'/relative;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(source,dest)
+    models=stage/'runtime/ocr-models';models.mkdir()
+    for name in ['ch_PP-OCRv6_tiny_det_infer.onnx','ch_PP-OCRv6_small_rec_infer.onnx']:
+        shutil.copy2(Path(args.ocr_models)/name,models/name)
+    smoke="import os;os.environ['MINERU_MODEL_ONNX_DEVICE']='cpu';import cv2,numpy;from mineru.model.ocr.pp_ocr_v6_onnx import PPOCRv6ONNX;from pathlib import Path;p=Path(__import__('sys').executable).parent.parent/'ocr-models';m=PPOCRv6ONNX(str(p/'ch_PP-OCRv6_tiny_det_infer.onnx'),str(p/'ch_PP-OCRv6_small_rec_infer.onnx'),device='cpu',intra_op_num_threads=4);m.ocr(numpy.full((160,640,3),255,dtype=numpy.uint8),det=True,rec=True);print('portable OCR OK')"
+    subprocess.run([str(target/'python.exe'),'-I','-c',smoke],check=True)
 (target/'dependencies.json').write_text(json.dumps(records,ensure_ascii=False,indent=2),encoding='utf-8')
-subprocess.run([str(target/'python.exe'),'-I','-c','import docx,lxml,PIL,openpyxl,pypdf;print("portable python OK")'],check=True)
+subprocess.run([str(target/'python.exe'),'-I','-c','import docx,lxml,PIL,openpyxl,pypdf,pdfplumber,pypdfium2,pdf2image;print("portable python OK")'],check=True)
 nodeTarget=stage/'runtime/node';nodeTarget.mkdir();shutil.copy2(args.node,nodeTarget/'node.exe')
 nodeVersion=subprocess.check_output([args.node,'--version'],text=True).strip()
 shutil.copy2(download(f'https://nodejs.org/dist/{nodeVersion}/SHASUMS256.txt','node-'+nodeVersion+'-SHASUMS256.txt'),nodeTarget/'upstream-SHASUMS256.txt')
 shutil.copy2(download(f'https://raw.githubusercontent.com/nodejs/node/{nodeVersion}/LICENSE','node-'+nodeVersion+'-LICENSE'),nodeTarget/'LICENSE')
-pop=Path(args.poppler_runtime).resolve();shutil.copytree(pop,stage/'runtime/poppler',ignore=shutil.ignore_patterns('include','cmake','pkgconfig','*.lib','*.pdb'))
+pop=Path(args.poppler_runtime).resolve()
+if not (pop/'bin/pdfinfo.exe').is_file() and (pop/'Library/bin/pdfinfo.exe').is_file():pop=pop/'Library'
+if not all((pop/'bin'/name).is_file() for name in ['pdfinfo.exe','pdftoppm.exe']):raise RuntimeError('Poppler runtime is incomplete')
+shutil.copytree(pop,stage/'runtime/poppler',ignore=shutil.ignore_patterns('include','cmake','pkgconfig','*.lib','*.pdb'))
 
 shutil.copy2(ROOT/'design/mcp/连接与使用.md',stage/'MCP连接与使用.md')
 shutil.copy2(ROOT/'design/mcp/接口清单.json',stage/'MCP接口清单.json')
@@ -121,7 +148,7 @@ if (ROOT/'node_modules/superdoc/LICENSE').is_file():
     notice=stage/'第三方组件';notice.mkdir(exist_ok=True)
     shutil.copy2(ROOT/'node_modules/superdoc/LICENSE',notice/'SuperDoc-1.47.2-LICENSE.txt')
     (notice/'SuperDoc来源.txt').write_text('SuperDoc 1.47.2\nAGPL-3.0\nhttps://registry.npmjs.org/superdoc/-/superdoc-1.47.2.tgz\nhttps://github.com/superdoc/docx-editor\n本包为本机开发试用；正式对外分发前应完成对应源码与项目许可证整理。\n',encoding='utf-8')
-manifest={'product':'结构工程办公工作台（本机试用）','version':release,'platform':'Windows x64','node':nodeVersion,'python':version,'buildDate':time.strftime('%Y-%m-%d'),'dataLocation':'%LOCALAPPDATA%/'+(args.data_folder or 'StructureWorkbench'),'sources':sources}
+manifest={'product':'结构工程办公工作台（本机试用）','version':release,'platform':'Windows x64','node':nodeVersion,'python':version,'ocrBundled':bool(args.ocr_site),'buildDate':time.strftime('%Y-%m-%d'),'dataLocation':'%LOCALAPPDATA%/'+(args.data_folder or 'StructureWorkbench'),'sources':sources}
 (stage/'发行版本.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
 files={}
 for p in stage.rglob('*'):
@@ -134,6 +161,6 @@ if not args.stage_only:
     output=OUT/(args.name+'.zip')
     with zipfile.ZipFile(output,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as archive:
         for p in stage.rglob('*'):
-            if p.is_file():archive.write(p,args.name+'/'+p.relative_to(stage).as_posix())
+            if p.is_file():archive.write(p,folder_name+'/'+p.relative_to(stage).as_posix())
     print(json.dumps({'archive':str(output),'MB':round(output.stat().st_size/1024**2,1),'files':len(files),'stage':str(stage)},ensure_ascii=False))
 else:print(json.dumps({'stage':str(stage),'files':len(files)},ensure_ascii=False))

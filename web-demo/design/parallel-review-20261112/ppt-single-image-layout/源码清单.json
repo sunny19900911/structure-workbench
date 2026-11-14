@@ -1,0 +1,22 @@
+[
+  {
+    "path": "design/parallel-tasks/06-ppt-report/single-image-layout.js",
+    "sha256": "6e549dae0ce3ae955f4a18c26d5d3673f5b5df06e78f5647c73e4459cc3fd0e9"
+  },
+  {
+    "path": "design/parallel-tasks/06-ppt-report/cafeteria-core.js",
+    "sha256": "1fce5207ee51f5fc604b521f4e75d98a9b843a39517fc89e7e8f026b43059d2c"
+  },
+  {
+    "path": "design/parallel-tasks/06-ppt-report/cafeteria-export.js",
+    "sha256": "2eab0eaca96d6abd843c130f35fb21c0818efea53b4ef16e6ec5e9b125346f69"
+  },
+  {
+    "path": "design/parallel-tasks/06-ppt-report/ppt-draft.js",
+    "sha256": "31358b7469b098a31b5bcfd770a14b6f23736c14440967da6a190bccbbb1e796"
+  },
+  {
+    "path": "design/parallel-tasks/06-ppt-report/prototype.js",
+    "sha256": "e2ed593430e351e81e000c205606c60a4caff1869644faacc1ecc9595b86ac6d"
+  }
+]

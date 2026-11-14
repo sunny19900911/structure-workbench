@@ -1,0 +1,121 @@
+import assert from 'node:assert/strict';
+import {readFile, readdir, writeFile} from 'node:fs/promises';
+import {dirname, join, resolve, sep} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {createHash} from 'node:crypto';
+
+const qa = dirname(process.argv[2]);
+const target = JSON.parse(await readFile(join(qa, 'compiled-test-server.json'), 'utf8'));
+assert.ok(resolve(target.dataRoot).startsWith(resolve(qa) + sep));
+const input = 'E:/600-工作台数据库/001-项目生成与复核/各项目/江南大学江阴校区二期/01-输入/PPT图片';
+const files = (await readdir(input)).filter(name => /\.(png|jpe?g)$/i.test(name)).sort().map(name => join(input, name));
+assert.equal(files.length, 17);
+const digest = value => createHash('sha256').update(value).digest('hex');
+const imageDigest = value => digest(Buffer.from(value.split(',')[1], 'base64'));
+const imageHashes = images => Object.values(images).map(imageDigest).sort();
+const endpoint = target.url + '/api/workbench-projects/' + target.projectId + '/ppt';
+const saved = async () => (await (await fetch(endpoint)).json()).record;
+const original = await saved();
+const primaryUnit = original.data.unit;
+const originalImages = original.data.unitDrafts[primaryUnit].images;
+assert.equal(Object.keys(originalImages).length, 17);
+const {chromium} = await import(pathToFileURL('C:/Users/mj528/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'));
+const browser = await chromium.launch({executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true});
+const report = {target, errors: [], checks: [], originalRevision: original.revision};
+let context, page, frame;
+async function open() {
+  await context?.close();
+  context = await browser.newContext({viewport: {width: 1500, height: 1000}, acceptDownloads: true});
+  page = await context.newPage();
+  page.on('pageerror', error => report.errors.push(error.message));
+  await page.goto(target.url + '/workbuddy-integrated-studio.html?project=' + target.projectId);
+  await page.waitForFunction(() => window.WorkbenchProjects && !WorkbenchProjects.loading);
+  await page.locator('#tab11').click();
+  await page.waitForFunction(() => document.getElementById('im-ppt-frame')?.contentWindow?.WorkbenchPpt?.mcp?.ready);
+  frame = page.frames().find(item => item.url().includes('06-ppt-report/prototype'));
+}
+const read = () => frame.evaluate(() => WorkbenchPpt.mcp.read());
+try {
+  await open();
+  let state = await read();
+  report.initial = state;
+  assert.equal(state.pages.length, 27);
+  assert.equal(state.images.filter(item => item.present).length, 17);
+  const floors = ['一', '二', '三', '四', '屋顶'];
+  const expected = [];
+  for (const floor of floors) {
+    const filename = '建筑' + floor + '层平面图.png';
+    const slot = state.images.find(item => item.name === (floor === '屋顶' ? '屋面层建筑平面布置图' : floor + '层建筑平面布置图'));
+    assert.ok(slot?.present, filename + ' restored to architectural slot');
+    expected.push({filename, key: slot.key, page: slot.page, sha256: digest(await readFile(join(input, filename)))});
+  }
+  assert.equal(state.images.filter(item => item.present && !item.unplaced).length, 8);
+  assert.equal(state.images.filter(item => item.unplaced).length, 9);
+  report.revisionAfterRead = (await saved()).revision;
+  report.checks.push('真实17图旧unplaced重开，5张建筑楼层图自动恢复，9张歧义或无专属图位图片保留待放置');
+  await frame.evaluate(() => WorkbenchPpt.flush());
+  let stored = (await saved()).data.unitDrafts[primaryUnit].images;
+  assert.deepEqual(imageHashes(stored), imageHashes(originalImages));
+  for (const [key, value] of Object.entries(originalImages).filter(([key]) => !key.startsWith('__unplaced__'))) assert.equal(stored[key], value);
+  for (const item of expected) assert.equal(imageDigest(stored[item.key]), item.sha256);
+  report.expected = expected;
+  report.expectedPictures = state.images.filter(item => item.present && !item.unplaced).map(item => ({key: item.key, page: item.page, name: item.name, sha256: imageDigest(stored[item.key])}));
+  const beforeRepeat = imageHashes(stored);
+  await frame.locator('#image-manager-btn').click();
+  await frame.locator('#batch-image-input').setInputFiles(files);
+  await frame.waitForFunction(() => !WorkbenchPpt.busy());
+  report.repeatStatus = await frame.locator('#batch-image-status').innerText();
+  await frame.locator('#image-manager-close').click();
+  await frame.evaluate(() => WorkbenchPpt.flush());
+  stored = (await saved()).data.unitDrafts[primaryUnit].images;
+  assert.deepEqual(imageHashes(stored), beforeRepeat);
+  report.checks.push('真实17图重复批量上传保留全部图像，既有模型及结构图位内容保持');
+  await open();
+  state = await read();
+  assert.equal(state.images.filter(item => item.present && !item.unplaced).length, 8);
+  for (const item of expected) assert.ok(state.images.find(slot => slot.key === item.key)?.present);
+  let delivered;
+  page.on('download', download => { delivered = download; });
+  await frame.locator('#generate-btn').click();
+  await frame.waitForFunction(() => !WorkbenchPpt.busy(), null, {timeout: 180000});
+  await page.locator('#cafeteria-download-ready').waitFor();
+  if (!delivered) {
+    const waiting = page.waitForEvent('download');
+    await page.locator('#cafeteria-download-ready').click();
+    delivered = await waiting;
+  }
+  report.pptx = join(qa, 'jiangnan-semantic-ui.pptx');
+  await delivered.saveAs(report.pptx);
+  report.checks.push('全新浏览器重开恢复，正常生成入口下载27页PPTX');
+  await page.evaluate(async () => { await ExpansionWorkbench.selectUnit('QA匹配隔离单体'); await ExpansionWorkbench.mcp.generate(); await WorkbenchProjects.flush(); });
+  await page.locator('#tab1').click();
+  await page.locator('#tab11').click();
+  await frame.waitForFunction(() => [...document.querySelector('#unit-name').options].some(option => option.value === 'QA匹配隔离单体'));
+  await frame.locator('#unit-name').selectOption('QA匹配隔离单体');
+  assert.equal((await read()).images.filter(item => item.present).length, 0);
+  await frame.locator('#image-manager-btn').click();
+  await frame.locator('#batch-image-input').setInputFiles(join(input, '建筑三层平面图.png'));
+  await frame.waitForFunction(() => !WorkbenchPpt.busy());
+  await frame.locator('#image-manager-close').click();
+  let unitState = await read();
+  assert.equal(unitState.images.filter(item => item.present).length, 1);
+  assert.ok(unitState.images.find(item => item.name === '三层建筑平面布置图')?.present);
+  await frame.locator('#unit-name').selectOption(primaryUnit);
+  await frame.evaluate(() => WorkbenchPpt.flush());
+  assert.equal((await read()).images.filter(item => item.present).length, 17);
+  await open();
+  await frame.locator('#unit-name').selectOption('QA匹配隔离单体');
+  assert.equal((await read()).images.filter(item => item.present).length, 1);
+  report.checks.push('新增单体自动放置及保存重开独立，原单体17图保持');
+  await page.screenshot({path: join(qa, 'compiled-semantic.png'), fullPage: true});
+  assert.deepEqual(report.errors, []);
+  report.pass = true;
+} catch (error) {
+  report.error = error.stack;
+  await page?.screenshot({path: join(qa, 'semantic-failed.png'), fullPage: true}).catch(() => {});
+  throw error;
+} finally {
+  await writeFile(join(qa, 'compiled-semantic.json'), JSON.stringify(report, null, 2));
+  await browser.close();
+}
+console.log(JSON.stringify({pass: report.pass, checks: report.checks, pptx: report.pptx}));

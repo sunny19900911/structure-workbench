@@ -17,9 +17,9 @@ export async function buildMcpConfiguration({packageRoot,dataRoot,ambient=proces
  }
  const paths=portablePaths(appRoot,{...ambient,...(dataRoot?{WORKBENCH_PORTABLE_DATA:dataRoot}:{})});
  const env={WORKBENCH_PORTABLE_DATA:paths.data};
- const connection={type:'stdio',command,args:[entry],env,timeout:300000};
+ const connection={type:'stdio',command,args:[entry],env,timeout:450000};
  const workbuddy=JSON.stringify({mcpServers:{[SERVER_NAME]:connection}},null,2)+'\n';
- const kimi=JSON.stringify({mcpServers:{[SERVER_NAME]:{command,args:[entry],env,startupTimeoutMs:30000,toolTimeoutMs:300000}}},null,2)+'\n';
+ const kimi=JSON.stringify({mcpServers:{[SERVER_NAME]:{command,args:[entry],env,startupTimeoutMs:30000,toolTimeoutMs:450000}}},null,2)+'\n';
  const codex=[
   '# 仅将这一段加入 Codex 的 MCP 配置；不要替换已有服务器配置。',
   `[mcp_servers.${SERVER_NAME}]`,
@@ -41,11 +41,31 @@ export async function generateMcpConfiguration(options={}){
  await mkdir(parent,{recursive:true});
  // A new folder preserves earlier snippets and any manual changes to them.
  const output=await mkdtemp(join(parent,'连接配置-'));
- const files={workbuddy:join(output,'WorkBuddy-MCP.json'),kimi:join(output,'Kimi-MCP.json'),codex:join(output,'Codex-MCP.toml'),instructions:join(output,'先看这里.txt')};
+ const files={workbuddy:join(output,'WorkBuddy-MCP.json'),kimi:join(output,'Kimi-MCP.json'),codex:join(output,'Codex-MCP.toml'),instructions:join(output,'先看这里.txt'),commands:join(output,'连接命令.txt')};
+ const commands=[
+  'WorkBuddy / Kimi 本机 STDIO 连接',
+  '',
+  '命令（command）',config.command,
+  '',
+  '参数（args，JSON数组）',JSON.stringify([config.entry]),
+  '',
+  '环境变量（env，JSON对象）',JSON.stringify({WORKBENCH_PORTABLE_DATA:config.dataRoot}),
+  '',
+  'WorkBuddy 工具超时 timeout = 450000 毫秒',
+  'Kimi 工具超时 toolTimeoutMs = 450000 毫秒，startupTimeoutMs = 30000 毫秒',
+  '超时配置是否被客户端采用，需要重连后实际验证。',
+  '',
+  '首次使用：双击 mcp.cmd 打开网页，再双击“生成MCP配置.cmd”，添加对应客户端JSON或按以上分栏填写，保存后重连。',
+  '以后使用：双击 mcp.cmd，保持项目网页打开，在已配置的客户端调用工具。',
+  'mcp.cmd 用于双击启动网页。客户端的 command 使用以上 node.exe 路径。',
+  'STDIO进程由客户端管理，标准输出用于MCP协议。',
+  '移动软件目录后重新生成配置并更新原客户端条目。',
+  ''
+ ].join('\r\n');
  const instructions=[
   '结构工作台：本机 MCP 连接',
   '',
-  '1. 建议先双击离线包里的“启动工作台”，保持网页打开。',
+  '1. 双击离线包里的 mcp.cmd 打开工作台，保持网页打开。',
   '2. WorkBuddy：进入设置里的 MCP（部分版本在“连接器／自定义连接器”），添加本机 stdio 服务。',
   '   将 WorkBuddy-MCP.json 的 structure-workbench 条目合入配置；已有其他条目时不要整份覆盖。',
   '   若界面分栏填写：command 是命令，args 是参数，env 是环境变量。',
@@ -70,7 +90,7 @@ export async function generateMcpConfiguration(options={}){
   'Codex 官方 MCP 说明：https://developers.openai.com/codex/mcp',
   ''
  ].join('\r\n');
- await Promise.all([writeFile(files.workbuddy,config.workbuddy,'utf8'),writeFile(files.kimi,config.kimi,'utf8'),writeFile(files.codex,config.codex,'utf8'),writeFile(files.instructions,'\ufeff'+instructions,'utf8')]);
+ await Promise.all([writeFile(files.workbuddy,config.workbuddy,'utf8'),writeFile(files.kimi,config.kimi,'utf8'),writeFile(files.codex,config.codex,'utf8'),writeFile(files.instructions,'\ufeff'+instructions,'utf8'),writeFile(files.commands,'\ufeff'+commands,'utf8')]);
  return {...config,output,files};
 }
 

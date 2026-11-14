@@ -4,8 +4,59 @@ const CALCBOOK_SECTION_NUMERALS = ['一', '二', '三', '四'];
 const calcbookState = {
   sections: [], defaults: [], ready: false, exporting: false,
   workbooks: [], workbookKey: '', sheetName: '', sheetData: null,
-  edits: {}, linkedExcel: null, outFiles: [], assetsRevision: 0,
+  edits: {}, linkedExcel: null, outFiles: [], outFilesUnit: '', outOverrides: {}, projectId: '', assetsRevision: 0,
 };
+let calcbookProjectTicket = 0, calcbookOutTicket = 0, calcbookInitTicket = 0, calcbookSourceCache = null;
+const CALCBOOK_OUT_NAMES = ['WMASS.OUT', 'WDISP.OUT', 'WZQ.OUT'];
+const calcbookOutKind = name => String(name || '').match(/(wmass|wdisp|wzq)\.out$/i)?.[0].toUpperCase() || '';
+const calcbookSet = (id, key, value) => { const element = document.getElementById(id); if (element) element[key] = value; };
+const calcbookHasExcelUI = () => ['calcbook-workbook','calcbook-sheet','calcbook-excel-state','calcbook-excel-table'].every(id => document.getElementById(id));
+const calcbookOutScope = () => JSON.stringify([window.WorkbenchProjects?.id, window.ExpansionWorkbench?.unit, calcbookProjectTicket]);
+
+// Only real stored text/bytes are exportable. Metrics and historical batches are never a substitute.
+function calcbookNormalizeOutFiles(input) {
+  const files = [], problems = [];
+  for (const name of CALCBOOK_OUT_NAMES) {
+    const matches = (Array.isArray(input) ? input : []).filter(file => calcbookOutKind(file.name) === name);
+    if (matches.length !== 1) { if (matches.length > 1) problems.push(name + ' 有重复来源'); continue; }
+    const file = matches[0]; let bytes;
+    if (typeof file.text === 'string' && file.text.trim()) bytes = new TextEncoder().encode(file.text);
+    else if (typeof file.content_base64 === 'string' && /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(file.content_base64)) {
+      try { bytes = Uint8Array.from(atob(file.content_base64), char => char.charCodeAt(0)); } catch {}
+    }
+    if (!bytes?.length) { problems.push(name + ' 缺少原文'); continue; }
+    files.push({name, originalName: file.originalName || file.name, size: bytes.length, content_base64: calcbookBase64(bytes), ...(file.source_id ? {source_id: file.source_id} : {})});
+  }
+  return {files, problems, missing: CALCBOOK_OUT_NAMES.filter(name => !files.some(file => file.name === name))};
+}
+
+function calcbookSourceOut(snapshot, unit) {
+  if (!snapshot || snapshot.identity?.unit !== unit) return calcbookNormalizeOutFiles([]);
+  // Current records use model/sourceIds/sources; old embedded batches may retain sourceFiles.
+  const model = Object.hasOwn(snapshot, 'model') ? snapshot.model : snapshot.modelBatch;
+  if (!model) return calcbookNormalizeOutFiles([]);
+  let files;
+  if (Array.isArray(model.sourceIds)) {
+    files = (snapshot.sources || []).filter(source => source.slot === 'yjk' && model.sourceIds.includes(source.source_id));
+  } else if (Array.isArray(model.sourceFiles)) files = model.sourceFiles;
+  else if (Array.isArray(snapshot.sourceFiles)) files = snapshot.sourceFiles;
+  else files = (snapshot.sources || []).filter(source => source.slot === 'yjk' && Array.isArray(model.files) && model.files.some(name => String(name).toLowerCase() === String(source.name).toLowerCase()));
+  return calcbookNormalizeOutFiles(files.filter(file => !file.unit || file.unit === unit));
+}
+
+function calcbookResolvedOut() {
+  const W = window.WorkbenchProjects, E = window.ExpansionWorkbench, unit = E?.unit;
+  if (!W?.id || W.loading || calcbookState.projectId !== W.id || !unit) return {...calcbookNormalizeOutFiles([]), origin: '载入中'};
+  const context = E.modelContext?.();
+  if (context?.identity?.unit !== unit) return {...calcbookNormalizeOutFiles([]), origin: '单体载入中'};
+  if (Object.hasOwn(calcbookState.outOverrides, unit)) return {...calcbookNormalizeOutFiles(calcbookState.outOverrides[unit]?.files), origin: '本页选择'};
+  if (calcbookState.outFilesUnit === unit) return {...calcbookNormalizeOutFiles(calcbookState.outFiles), origin: '本页已保存'};
+  const model = context.model;
+  const signature = JSON.stringify([W.id, unit, model?.batch, model?.sourceIds, model?.files, Boolean(model)]);
+  if (calcbookSourceCache?.signature !== signature) calcbookSourceCache = {signature, result: calcbookSourceOut(E.capture?.(), unit)};
+  const result = calcbookSourceCache.result;
+  return {...result, origin: '扩初已导入', legacyUnscoped: Boolean(calcbookState.outFiles.length && !calcbookState.outFilesUnit)};
+}
 
 function calcbookFallbackSections() {
   return calcbookCloneSections(window.CalculationBookCatalog?.sections || []);
@@ -57,13 +108,14 @@ function calcbookProject() {
   const unit = window.WorkbenchProjects?.loading ? '' : window.ExpansionWorkbench?.unit || '';
   const parameters = unit ? window.WorkbenchIntake?.parameters?.(unit) || {} : {};
   return {
-    project_name: calcbookParam('project_name', '待填写项目名称'),
-    project_code: calcbookParam('project_code', '待填写'),
+    project_name: calcbookParam('project_name'),
+    project_code: calcbookParam('project_code'),
     stage,
     discipline: disciplineRaw.split('/')[0].trim() || '结构',
-    company: calcbookParam('designer', '待填写设计单位'),
+    company: calcbookParam('designer'),
     unit: unit === '项目整体' ? '' : unit,
     software: String(parameters.software || calcbookParam('software')).trim(),
+    software_version: String(parameters.software_version || calcbookParam('software_version')).trim(),
   };
 }
 
@@ -209,7 +261,7 @@ function calcbookRenderSheet() {
   const state = document.getElementById('calcbook-excel-state');
   const help = document.getElementById('calcbook-excel-help');
   const data = calcbookState.sheetData;
-  if (!table || !state || !data) return;
+  if (!table || !state || !help || !data) return;
   const editMap = calcbookState.edits[calcbookEditKey()] || {};
   const header = Array.from({ length: data.column_count }, (_, index) => `<th>${calcbookColumnName(data.min_col - 1 + index)}</th>`).join('');
   table.innerHTML = `<thead><tr><th class="row-head"></th>${header}</tr></thead><tbody>${data.rows.map((row) => `
@@ -227,7 +279,7 @@ function calcbookRenderSheet() {
       calcbookState.edits[key][cell.dataset.cell] = cell.textContent.trim();
       calcbookSave();
       calcbookState.linkedExcel = null;
-      document.getElementById('calcbook-excel-link').textContent = '联动到计算书';
+      calcbookSet('calcbook-excel-link', 'textContent', '联动到计算书');
       calcbookResetConfirmation();
     });
   });
@@ -250,7 +302,7 @@ async function calcbookLoadSheet() {
   const ticket=++calcbookLoadTicket,project=window.WorkbenchProjects?.id;
   calcbookState.sheetData = null;
   document.getElementById('calcbook-excel-table')?.replaceChildren();
-  if (!calcbookState.workbookKey || !calcbookState.sheetName) return;
+  if (!calcbookHasExcelUI() || !calcbookState.workbookKey || !calcbookState.sheetName) return;
   const state = document.getElementById('calcbook-excel-state');
   state.textContent = '正在读取…';
   try {
@@ -272,6 +324,7 @@ async function calcbookLoadSheet() {
 }
 
 function calcbookSelectWorkbook() {
+  if (!calcbookHasExcelUI()) return;
   calcbookState.workbookKey = document.getElementById('calcbook-workbook')?.value || '';
   const workbook = calcbookState.workbooks.find((item) => item.key === calcbookState.workbookKey);
   const sheetSelect = document.getElementById('calcbook-sheet');
@@ -286,7 +339,7 @@ function calcbookLinkExcel() {
   if (!calcbookState.sheetData) return;
   const edits=calcbookState.edits[calcbookEditKey()]||{};
   if(calcbookState.workbookKey==='jump-column'&&window.WorkbenchProjects?.mode!=='sample'&&['B2','B3','B4','B5','B7','B9'].some(k=>!Number.isFinite(Number(edits[k]))||Number(edits[k])<=0)){
-    document.getElementById('calcbook-excel-state').textContent='请先填写本项目 B2、B3、B4、B5、B7、B9 的有效正数';return;
+    calcbookSet('calcbook-excel-state', 'textContent', '请先填写本项目 B2、B3、B4、B5、B7、B9 的有效正数');return;
   }
   calcbookState.linkedExcel = {
     workbook: calcbookState.workbookKey,
@@ -297,7 +350,7 @@ function calcbookLinkExcel() {
   const title = `${workbook?.label || 'Excel'} · ${calcbookState.sheetName}`;
   const otherItems = calcbookState.sections[3].items;
   if (!otherItems.includes(title)) otherItems.push(title);
-  document.getElementById('calcbook-excel-link').textContent = '已联动';
+  calcbookSet('calcbook-excel-link', 'textContent', '已联动');
   calcbookChanged();
 }
 
@@ -312,29 +365,34 @@ function calcbookBase64(buffer) {
 }
 
 async function calcbookReadOutFiles(files) {
-  const project=window.WorkbenchProjects?.id;
-  const allowed = new Set(['wmass.out', 'wdisp.out', 'wzq.out']);
-  const selected = [...files].filter((file) => allowed.has(file.name.toLowerCase())).slice(0, 3);
+  const scope = calcbookOutScope(), unit = window.ExpansionWorkbench?.unit, ticket = ++calcbookOutTicket;
+  if (window.WorkbenchProjects?.loading || !unit || calcbookState.projectId !== window.WorkbenchProjects?.id) throw Error('项目或单体尚未就绪');
+  const selected = [...files];
+  if (!selected.length) return;
+  if (selected.length > 3 || selected.some(file => !calcbookOutKind(file.name)) || new Set(selected.map(file => calcbookOutKind(file.name))).size !== selected.length) throw Error('请选择同一单体、不重复的 WMASS、WDISP、WZQ.OUT');
   const loadedFiles = await Promise.all(selected.map(async (file) => ({
     name: file.name,
     size: file.size,
     content_base64: calcbookBase64(await file.arrayBuffer()),
   })));
-  if(project!==window.WorkbenchProjects?.id)return;
-  calcbookState.outFiles=loadedFiles;calcbookSave();calcbookRenderOutFiles();
+  if (scope !== calcbookOutScope() || ticket !== calcbookOutTicket || window.WorkbenchProjects?.loading) throw Error('项目或单体已切换，未保存这次选择');
+  Object.defineProperty(calcbookState.outOverrides, unit, {value: {files: loadedFiles}, enumerable: true, writable: true, configurable: true});
+  calcbookSave();calcbookRenderOutFiles();
   calcbookResetConfirmation();
 }
 function calcbookRenderOutFiles(){
   const list = document.getElementById('calcbook-out-list');
   const state = document.getElementById('calcbook-out-state');
-  const present = new Set(calcbookState.outFiles.map((file) => file.name.toLowerCase()));
-  const names = ['wmass.out', 'wdisp.out', 'wzq.out'];
-  list.innerHTML = names.map((name) => {
-    const file = calcbookState.outFiles.find((item) => item.name.toLowerCase() === name);
-    return `<li><b>${name.toUpperCase()}</b><span>${file ? `${Math.ceil(file.size / 1024)} KB · 已就绪` : '未选择'}</span></li>`;
+  if (!list || !state) return;
+  const result = calcbookResolvedOut();
+  const chooseLabel = document.querySelector('label[for="calcbook-out-files"]');
+  if (chooseLabel) chooseLabel.textContent = result.files.length === 3 ? '更换 OUT 文件' : '选择 OUT 文件';
+  list.innerHTML = CALCBOOK_OUT_NAMES.map((name) => {
+    const file = result.files.find((item) => item.name === name);
+    return `<li><b>${name}</b><span>${file ? `${calcbookEsc(file.originalName)} · ${Math.ceil(file.size / 1024)} KB · 已就绪` : '缺少原文'}</span></li>`;
   }).join('');
-  state.textContent = `${calcbookState.outFiles.length}/3 已选择`;
-  state.style.color = present.size === 3 ? '#17603c' : '';
+  state.textContent = `${result.files.length}/3 已就绪 · ${result.origin}` + (result.problems.length ? ' · ' + result.problems.join('；') : '') + (result.legacyUnscoped && !result.files.length ? ' · 旧计算书文件未标明单体，原数据保留' : '');
+  state.style.color = result.files.length === 3 ? '#17603c' : '';
   calcbookResetConfirmation();
 }
 
@@ -347,6 +405,7 @@ async function calcbookExport() {
     status.className = 'calcbook-status error';
     return;
   }
+  const scope = calcbookOutScope();
   calcbookState.exporting = true;
   calcbookSyncExportButton();
   status.textContent = '正在按 A3 版式生成 Word…';
@@ -357,6 +416,7 @@ async function calcbookExport() {
       await calcbookInit();
       if (!calcbookState.ready) throw Error(document.getElementById('calcbook-ready').textContent);
     }
+    if (scope !== calcbookOutScope() || window.WorkbenchProjects?.loading || window.ExpansionWorkbench?.busy) throw Error('项目或单体正在切换/导入，请完成后再导出');
     const project = calcbookProject();
     const response = await fetch('/api/calculation-book/export', {
       method: 'POST',
@@ -366,7 +426,7 @@ async function calcbookExport() {
         ...project, confirmed: true, sections: calcbookState.sections,
         ...(window.WORKBENCH_PORTABLE ? {project_id: window.WorkbenchProjects?.id || ''} : {}),
         excel_blocks: calcbookState.linkedExcel ? [calcbookState.linkedExcel] : [],
-        out_files: calcbookState.outFiles,
+        out_files: calcbookResolvedOut().files,
       }),
     });
     if (!response.ok) {
@@ -374,6 +434,7 @@ async function calcbookExport() {
       throw new Error(payload.error || `导出失败（HTTP ${response.status}）`);
     }
     const blob = await response.blob();
+    if (scope !== calcbookOutScope()) throw Error('项目或单体已切换，未下载旧上下文成果');
     const fallback = `${project.project_name}_结构计算书_A3.docx`.replace(/[\\/:*?"<>|]/g, '_');
     const fileName = calcbookFileName(response, fallback);
     const url = URL.createObjectURL(blob);
@@ -398,11 +459,12 @@ async function calcbookExport() {
 async function calcbookInit({deferSheet = false} = {}) {
   const badge = document.getElementById('calcbook-ready');
   const project = window.WorkbenchProjects?.id;
+  const ticket = ++calcbookInitTicket;
   try {
     const response = await fetch(calcbookApiUrl('/api/calculation-book/status'), { cache: 'no-store', signal: AbortSignal.timeout(30000) });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || '计算书资料连接失败');
-    if (project !== window.WorkbenchProjects?.id) return;
+    if (project !== window.WorkbenchProjects?.id || ticket !== calcbookInitTicket) return;
     calcbookState.defaults = payload.sections?.some(section => section.items?.length) ? calcbookNormalizeSections(payload.sections) : calcbookFallbackSections();
     if (!calcbookState.sections.length) calcbookState.sections = calcbookCloneSections(calcbookState.defaults);
     calcbookState.ready = Boolean(payload.ready);
@@ -413,27 +475,27 @@ async function calcbookInit({deferSheet = false} = {}) {
       if (window.WORKBENCH_PORTABLE) { if (project) url.searchParams.set('project', project); else url.searchParams.delete('project'); link.href = url.pathname + url.search; }
       if (key === 'catalog') link.hidden = !payload.templates?.catalog;
     });
-    badge.textContent = calcbookState.ready
-      ? `Word 生成已就绪 · ${calcbookState.workbooks.length} 份 Excel 已连接`
-      : '计算书输入不完整';
-    badge.classList.toggle('ok', calcbookState.ready);
+    calcbookSet('calcbook-ready', 'textContent', calcbookState.ready
+      ? (calcbookHasExcelUI() ? `Word 生成已就绪 · ${calcbookState.workbooks.length} 份 Excel 已连接` : 'Word 生成已就绪')
+      : '计算书输入不完整');
+    badge?.classList.toggle('ok', calcbookState.ready);
     const workbookSelect = document.getElementById('calcbook-workbook');
-    workbookSelect.innerHTML = calcbookState.workbooks.map((item) => `<option value="${calcbookEsc(item.key)}">${calcbookEsc(item.label)}</option>`).join('');
-    calcbookState.workbookKey = calcbookState.workbooks[0]?.key || '';
-    if (!deferSheet) calcbookSelectWorkbook();
-    if (!calcbookState.workbooks.length) {
-      document.getElementById('calcbook-excel-state').textContent = '未配置 Excel 母件';
-      document.getElementById('calcbook-excel-help').textContent = window.WORKBENCH_PORTABLE ? '本项目尚未导入 Excel 母件，可点击“选择本机 Excel”。不影响 PDF 合并、Word 封面、目录和 OUT 导出。' : 'Excel 母件尚未放到服务器；不影响 PDF 合并或 Word 封面、目录和 OUT 导出。';
+    if (workbookSelect) workbookSelect.innerHTML = calcbookState.workbooks.map((item) => `<option value="${calcbookEsc(item.key)}">${calcbookEsc(item.label)}</option>`).join('');
+    if (!calcbookState.workbookKey) calcbookState.workbookKey = calcbookState.workbooks[0]?.key || '';
+    if (!deferSheet && calcbookHasExcelUI()) await calcbookSelectWorkbook();
+    if (!calcbookState.workbooks.length && calcbookHasExcelUI()) {
+      calcbookSet('calcbook-excel-state', 'textContent', '未配置 Excel 母件');
+      calcbookSet('calcbook-excel-help', 'textContent', window.WORKBENCH_PORTABLE ? '本项目尚未导入 Excel 母件，可点击“选择本机 Excel”。不影响 PDF 合并、Word 封面、目录和 OUT 导出。' : 'Excel 母件尚未放到服务器；不影响 PDF 合并或 Word 封面、目录和 OUT 导出。');
     }
-    if (payload.sourceWarnings?.length) document.getElementById('calcbook-excel-help').textContent = '项目包中的 Excel 母件缺项：' + payload.sourceWarnings.join('；') + '。涉及该母件的生成会停止，不会套用其他项目。';
+    if (payload.sourceWarnings?.length) calcbookSet('calcbook-excel-help', 'textContent', '项目包中的 Excel 母件缺项：' + payload.sourceWarnings.join('；') + '。涉及该母件的生成会停止，不会套用其他项目。');
   } catch (error) {
-    if (project !== window.WorkbenchProjects?.id) return;
+    if (project !== window.WorkbenchProjects?.id || ticket !== calcbookInitTicket) return;
     calcbookState.defaults = calcbookFallbackSections();
     if (!calcbookState.sections.length) calcbookState.sections = calcbookFallbackSections();
     calcbookState.ready = false;
-    badge.textContent = location.protocol === 'file:'
+    calcbookSet('calcbook-ready', 'textContent', location.protocol === 'file:'
       ? '当前为文件直开；请运行“启动Demo.cmd”使用完整功能'
-      : (error?.message || '计算书服务未连接');
+      : (error?.message || '计算书服务未连接'));
   }
   calcbookRenderCatalog();
 }
@@ -452,7 +514,10 @@ document.getElementById('calcbook-sheet')?.addEventListener('change', (event) =>
   calcbookLoadSheet();
 });
 document.getElementById('calcbook-excel-link')?.addEventListener('click', calcbookLinkExcel);
-document.getElementById('calcbook-out-files')?.addEventListener('change', (event) => calcbookReadOutFiles(event.target.files));
+document.getElementById('calcbook-out-files')?.addEventListener('change', (event) => {
+  const scope = calcbookOutScope();
+  calcbookReadOutFiles(event.target.files).catch(error => { if (scope === calcbookOutScope()) calcbookSet('calcbook-out-state', 'textContent', error.message); });
+});
 document.getElementById('pstage-sel')?.addEventListener('change', calcbookResetConfirmation);
 document.querySelectorAll('[data-k="project_name"],[data-k="project_code"],[data-k="discipline"],[data-k="designer"]').forEach((field) => {
   field.addEventListener('input', calcbookResetConfirmation);
@@ -481,8 +546,9 @@ if (window.WORKBENCH_PORTABLE) {
           for (const [editKey, values] of Object.entries(calcbookState.edits)) if (editKey.startsWith(key + '::')) { calcbookState.edits[archivePrefix + editKey] = values; delete calcbookState.edits[editKey]; }
           if (calcbookState.linkedExcel?.workbook === key) calcbookState.linkedExcel = null;
           await calcbookInit({deferSheet: true});
-          calcbookState.workbookKey = key; document.getElementById('calcbook-workbook').value = key; await calcbookSelectWorkbook();
-          document.getElementById('calcbook-excel-link').textContent = calcbookState.linkedExcel ? '已联动' : '联动到计算书';
+          if (project !== window.WorkbenchProjects.id) throw Error('项目已切换');
+          calcbookState.workbookKey = key; calcbookSet('calcbook-workbook','value',key); await calcbookSelectWorkbook();
+          calcbookSet('calcbook-excel-link','textContent',calcbookState.linkedExcel ? '已联动' : '联动到计算书');
           calcbookChanged(); await window.WorkbenchProjects.flush();
           document.getElementById('wp-status').textContent = '母件已保存到当前项目，原文件未改动。' + (result.warnings?.length ? result.warnings.join('；') : '请核对后联动到计算书。');
         } catch (error) { state.textContent = error.message || 'Excel 母件导入失败'; throw error; }
@@ -493,25 +559,30 @@ if (window.WORKBENCH_PORTABLE) {
 
 window.CalculationBook={
  ready:calcbookInit(),busy:()=>calcbookState.exporting,
- capture(){return JSON.parse(JSON.stringify({catalogVersion:2,sections:calcbookState.sections,pdfSources:window.CalculationPDFs?.capture(),edits:calcbookState.edits,linkedExcel:calcbookState.linkedExcel,outFiles:calcbookState.outFiles,workbookKey:calcbookState.workbookKey,sheetName:calcbookState.sheetName}));},
+ capture(){return JSON.parse(JSON.stringify({catalogVersion:2,sections:calcbookState.sections,pdfSources:window.CalculationPDFs?.capture(),edits:calcbookState.edits,linkedExcel:calcbookState.linkedExcel,outFiles:calcbookState.outFiles,outFilesUnit:calcbookState.outFilesUnit,outOverrides:calcbookState.outOverrides,workbookKey:calcbookState.workbookKey,sheetName:calcbookState.sheetName}));},
  async loadProject(saved,mode){
-  ++calcbookLoadTicket;const data=saved||{};
+  ++calcbookLoadTicket;++calcbookOutTicket;const ticket=++calcbookProjectTicket,project=window.WorkbenchProjects?.id,data=saved||{};
+  calcbookState.projectId=project;calcbookSourceCache=null;
+  calcbookState.outFiles=[];calcbookState.outFilesUnit='';calcbookState.outOverrides={};
   if(window.WORKBENCH_PORTABLE)await calcbookInit({deferSheet:true});
+  if(ticket!==calcbookProjectTicket||project!==window.WorkbenchProjects?.id)return;
   calcbookState.sections=calcbookProjectSections(data);
   window.CalculationPDFs?.load(data.pdfSources);
-  calcbookState.edits=data.edits||{};calcbookState.linkedExcel=data.linkedExcel||null;calcbookState.outFiles=data.outFiles||[];
+  calcbookState.edits=data.edits||{};calcbookState.linkedExcel=data.linkedExcel||null;calcbookState.outFiles=Array.isArray(data.outFiles)?data.outFiles:[];
+  calcbookState.outFilesUnit=typeof data.outFilesUnit==='string'?data.outFilesUnit:'';
+  calcbookState.outOverrides=data.outOverrides&&typeof data.outOverrides==='object'&&!Array.isArray(data.outOverrides)?JSON.parse(JSON.stringify(data.outOverrides)):{};
   calcbookState.workbookKey=data.workbookKey||calcbookState.workbooks[0]?.key||'';calcbookState.sheetData=null;
-  document.getElementById('calcbook-workbook').value=calcbookState.workbookKey;
+  calcbookSet('calcbook-workbook','value',calcbookState.workbookKey);
   const sheets=calcbookState.workbooks.find(w=>w.key===calcbookState.workbookKey)?.sheets||[];
-  document.getElementById('calcbook-sheet').innerHTML=sheets.map(s=>'<option value="'+calcbookEsc(s.name)+'">'+calcbookEsc(s.name)+'</option>').join('');
-  calcbookState.sheetName=data.sheetName||sheets[0]?.name||'';document.getElementById('calcbook-sheet').value=calcbookState.sheetName;
+  calcbookSet('calcbook-sheet','innerHTML',sheets.map(s=>'<option value="'+calcbookEsc(s.name)+'">'+calcbookEsc(s.name)+'</option>').join(''));
+  calcbookState.sheetName=data.sheetName||sheets[0]?.name||'';calcbookSet('calcbook-sheet','value',calcbookState.sheetName);
   calcbookRenderCatalog();calcbookRenderOutFiles();calcbookResetConfirmation();
-  document.getElementById('calcbook-excel-link').textContent=calcbookState.linkedExcel?'已联动':'联动到计算书';
+  calcbookSet('calcbook-excel-link','textContent',calcbookState.linkedExcel?'已联动':'联动到计算书');
   await calcbookLoadSheet();
  },invalidate:calcbookResetConfirmation
 };
 window.CalculationBook.mcp={
- read(){return {project:calcbookProject(),...window.CalculationBook.capture(),outFiles:calcbookState.outFiles.map(({content_base64,...file})=>file),workbooks:calcbookState.workbooks,sheet:calcbookState.sheetData,assetsRevision:calcbookState.assetsRevision};},
+ read(){const resolved=calcbookResolvedOut();const {outFiles,outOverrides,...saved}=window.CalculationBook.capture();return {project:calcbookProject(),...saved,outFiles:resolved.files.map(({content_base64,...file})=>file),outSource:resolved.origin,missingOut:resolved.missing,outProblems:resolved.problems,workbooks:calcbookState.workbooks,sheet:calcbookState.sheetData,assetsRevision:calcbookState.assetsRevision};},
  catalog(sections){if(!Array.isArray(sections)||sections.length!==4)throw Error('计算书需要四组目录');calcbookState.sections=calcbookCloneSections(sections);calcbookChanged();return this.read();},
  async excel({workbook,sheet,edits={},link=false}){
   const selected=calcbookState.workbooks.find(w=>w.key===workbook),project=window.WorkbenchProjects.id;
@@ -525,9 +596,17 @@ window.CalculationBook.mcp={
   const key=workbook+'::'+sheet,defaults=workbook==='jump-column'&&window.WorkbenchProjects.mode!=='sample'?{A1:calcbookProject().project_name,B2:'',B3:'',B4:'',B5:'',B7:'',B9:''}:{},nextEdits={...(calcbookState.edits[key]||defaults),...edits};
   if(link&&workbook==='jump-column'&&window.WorkbenchProjects.mode!=='sample'&&['B2','B3','B4','B5','B7','B9'].some(cell=>!Number.isFinite(Number(nextEdits[cell]))||Number(nextEdits[cell])<=0))throw Error('请先填写本项目B2、B3、B4、B5、B7、B9有效正数');
   calcbookState.workbookKey=workbook;calcbookState.sheetName=sheet;calcbookState.sheetData=data;calcbookState.edits[key]=nextEdits;calcbookState.linkedExcel=null;
-  document.getElementById('calcbook-workbook').value=workbook;document.getElementById('calcbook-sheet').innerHTML=selected.sheets.map(s=>'<option value="'+calcbookEsc(s.name)+'">'+calcbookEsc(s.name)+'</option>').join('');document.getElementById('calcbook-sheet').value=sheet;
+  calcbookSet('calcbook-workbook','value',workbook);calcbookSet('calcbook-sheet','innerHTML',selected.sheets.map(s=>'<option value="'+calcbookEsc(s.name)+'">'+calcbookEsc(s.name)+'</option>').join(''));calcbookSet('calcbook-sheet','value',sheet);
   calcbookChanged();calcbookRenderSheet();if(link)calcbookLinkExcel();return this.read();
  },
- async model(files){if(files.some(f=>!/^w(mass|disp|zq)\.out$/i.test(f.name)))throw Error('计算书模型只接受WMASS、WDISP、WZQ.OUT');await calcbookReadOutFiles(files);return this.read();},
- package({confirmed=false}={}){return {...calcbookProject(),project_id:window.WorkbenchProjects.id,confirmed:confirmed===true,sections:calcbookCloneSections(calcbookState.sections),excel_blocks:calcbookState.linkedExcel?[JSON.parse(JSON.stringify(calcbookState.linkedExcel))]:[],out_files:JSON.parse(JSON.stringify(calcbookState.outFiles)),draft:true};},
+ async model(files){await calcbookReadOutFiles(files);return this.read();},
+ package({confirmed=false}={}){if(window.WorkbenchProjects.loading||window.ExpansionWorkbench?.busy)throw Error('项目或单体正在载入/导入');return {...calcbookProject(),project_id:window.WorkbenchProjects.id,confirmed:confirmed===true,sections:calcbookCloneSections(calcbookState.sections),excel_blocks:calcbookState.linkedExcel?[JSON.parse(JSON.stringify(calcbookState.linkedExcel))]:[],out_files:calcbookResolvedOut().files,draft:true};},
 };
+let calcbookLastUnitScope = '';
+function calcbookOutContextChanged() {
+  const scope = calcbookOutScope();
+  if (scope !== calcbookLastUnitScope) { ++calcbookOutTicket; calcbookLastUnitScope = scope; calcbookSourceCache = null; }
+  calcbookRenderOutFiles();
+}
+window.addEventListener('workbuddy:expansion-changed', calcbookOutContextChanged);
+window.addEventListener('workbuddy:project-changed', calcbookOutContextChanged);
