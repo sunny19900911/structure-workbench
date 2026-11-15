@@ -2,6 +2,7 @@ import {cafeteriaTemplate} from '../../ppt-template/cafeteria-template.js';
 import {singleImagePages} from './single-image-layout.js';
 import {reportTable} from '../../../reference-report.js';
 import {resolveText} from '../../../expansion-core.js';
+import {intensityDisplay} from '../../../parameter-display.js';
 
 export const templatePages=singleImagePages;
 export const templateVersion=cafeteriaTemplate.version;
@@ -42,7 +43,7 @@ export function buildCafeteriaSlides(snapshot={},unitName='',edits={}){
   const concreteGrade=(name,where)=>concrete.find(r=>name.test(r.name)&&(!where||where.test(r.where)))?.grade||'';
   const tableValues={
     '8:12':['',unitValue(val(p,'design_life'),'年'),val(p,'safety_grade'),val(p,'gamma0'),val(p,'seismic_cat'),val(p,'found_grade'),val(p,'anti_float')],
-    '8:10':['',[unitValue(val(p,'intensity'),'度'),val(p,'pga')&&'（'+val(p,'pga')+'）'].join(''),val(p,'eq_group'),val(p,'site_class'),unitValue(val(p,'tg'),'s'),spectrum([['多遇地震','alpha_f'],['设防地震','alpha_m'],['罕遇地震','alpha_r']],'alpha_max'),spectrum([['多遇地震','th_f'],['设防地震','th_m'],['罕遇地震','th_r']],'timehist')],
+    '8:10':['',[intensityDisplay(val(p,'intensity')),val(p,'pga')&&'（'+val(p,'pga')+'）'].join(''),val(p,'eq_group'),val(p,'site_class'),unitValue(val(p,'tg'),'s'),spectrum([['多遇地震','alpha_f'],['设防地震','alpha_m'],['罕遇地震','alpha_r']],'alpha_max'),spectrum([['多遇地震','th_f'],['设防地震','th_m'],['罕遇地震','th_r']],'timehist')],
     // Read component-specific measures, keeping underground and above-ground grades separate.
     '11:3':['',concreteGrade(/垫层/)||val(p,'concrete_cushion'),[grade(/筏板|承台|基础梁/)&&'底板、基础梁、承台：'+grade(/筏板|承台|基础梁/),grade(/地下室楼板/)&&'顶板：'+grade(/地下室楼板/)].filter(Boolean).join('\n'),grade(/地下室外墙/),concreteGrade(/框架柱/,/投影|主楼/),grade(/地下框架/),concreteGrade(/楼盖|框架梁|楼板/,/地上/),grade(/^框架柱$/)]
   };

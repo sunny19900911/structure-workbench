@@ -2,13 +2,14 @@ import {selectedRegulations,regulationNote,updateRegulationField} from './regula
 import {irregularityCategories,irregularityAnswer,irregularityMeasureBlocks} from './irregularity-library.js';
 import {REFERENCE_TABLES as T} from './reference-template-data.js';
 import {translationComponents,withFloor} from './model-out-results.js';
+import {intensityNumberText} from './parameter-display.js';
 export const referenceSections=[
  ['overview','1 工程概况'],['basis','2 设计依据'],['criteria','3 设计控制标准与等级'],['ground','4 工程地质'],['loads','5 荷载与作用'],['materials','6 主要结构材料'],['review','7 装配式'],['foundation','8 结构设计'],['selection','8.2 地下室及上部结构'],['model','9 结构计算分析'],['special','10 结构规则性判断与应对措施']
 ];
 export const isoEnabled=s=>['是','有','采用','1','true'].includes(String(s.parameters?.has_iso))||['是','有','采用','1','true'].includes(String(s.parameters?.has_damp));
 const aliases={found_gamma0:'gamma0_found',pile_grade:'pile',pile_gamma0:'pile_gamma',fire_class:'fire',fire_grade:'fire',period_factor:'period_reduce',eccentricity:'ecc_ratio',bidirectional:'bidir_eq',vertical_eq:'vert_eq',oblique_angle:'skew_angle',mode_method:'modal_combo',beam_stiffness:'stiff_amp'};
 const value=(s,k)=>String(s.parameters?.[k]??s.parameters?.[aliases[k]]??s.document?.parameters?.[k]??'').trim();
-const tok=(s,k)=>s.parameters?.[k]?`{{p:${k}}}`:s.document?.parameters?.[k]||'';
+const tok=(s,k)=>s.parameters?.[k]?`{{p:${k}}}`:(k==='intensity'?intensityNumberText(s.document?.parameters?.[k]):s.document?.parameters?.[k])||'';
 const marker=k=>'[[table:'+k+']]';
 const image=k=>'[[image:'+k+']]';
 // Reuse the explicit architectural use; never infer a design or seismic category.

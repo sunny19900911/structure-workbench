@@ -1,3 +1,4 @@
+import {createHumanRequests} from './human-request.mjs';
 import {BROWSER_OPERATIONS} from '../mcp-browser-operations.js';
 import {sourceFile} from './mcp-local-client.mjs';
 import {extname} from 'node:path';
@@ -12,6 +13,9 @@ const fileRevision={type:'integer',minimum:1,description:'明确文件历史版�
 const tool=(name,description,inputSchema,readOnly=true)=>({name:'workbench_'+name,description,inputSchema,annotations:{readOnlyHint:readOnly,destructiveHint:false,idempotentHint:readOnly,openWorldHint:false}});
 
 export const SERVICE_TOOLS=[
+ tool('human_request','需要人工填写、共享或处理阻塞时记录待办并语音提醒；返回message必须展示给用户。相同projectId和step去重。remind=true显式补叫，间隔180秒且最多一次。正常计算等待不调用。',obj({projectId:pid,step:s('同一人工事项稳定标识，新事项用新标识',160),page:s('需要操作的页面',1000),action:s('具体人工动作',1000),url:s('本机127.0.0.1页面入口，只展示不自动打开',2000),remind:{type:'boolean'}},['projectId','step','page','action']),false),
+ tool('human_status','读取该项目人工事项状态和语音结果，不播放声音。',obj({projectId:pid,step:s('人工事项标识',160)},['projectId','step'])),
+ tool('human_resolve','确认实际操作完成后结束人工等待，填写读回参数或连接恢复等依据。',obj({projectId:pid,step:s('人工事项标识',160),evidence:s('实际完成操作的核验依据',1000)},['projectId','step','evidence']),false),
  tool('status','读取离线工作台和网页连接状态；纯读取，不启动服务；未运行时请调用 workbench_open。',obj()),
  tool('start','显式启动或复用同数据目录、同版本的本机服务；不打开网页。',obj(),false),
  tool('open','打开本机工作台；浏览器编排操作需要此页面保持打开。',obj({projectId:pid}),false),
@@ -83,6 +87,9 @@ export async function callServiceTool(client,name,input={}){
  const operation=BROWSER_OPERATIONS.find(x=>'workbench_'+x.name.replaceAll('.','_')===name);
  if(operation)return browserCall(client,operation.name,input);
  switch(name){
+  case 'workbench_human_request':return createHumanRequests(client.paths.data).request(input);
+  case 'workbench_human_status':return createHumanRequests(client.paths.data).status(input);
+  case 'workbench_human_resolve':return createHumanRequests(client.paths.data).resolve(input);
   case 'workbench_status':return {...await client.status(),dataPolicy:'本机存储；MCP工具返回内容会进入调用方AI上下文。',knowledge:'先读 workbench://engineering/workflow'};
   case 'workbench_start':await client.base();return client.status();
   case 'workbench_open':return client.openBrowser(input.projectId);

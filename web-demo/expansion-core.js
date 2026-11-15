@@ -32,7 +32,15 @@ export function references(s) {
   s.regulations.filter(r=>r.selected&&r.review==='confirmed'&&r.status==='current').forEach(r=>refs.r[r.id]=`${r.title} ${r.code||''}${r.version?'（'+r.version+'）':''}`);
   return refs;
 }
-export function resolveText(text,s) { const refs=references(s); return String(text).replace(/\{\{([pfmrt]):([^{}]+)\}\}/g,(_,kind,key)=>refs[kind][key]??(kind==='f'&&s.facts.find(f=>f.id===key&&f.status==='candidate')?'【待核】'+textValue(s.facts.find(f=>f.id===key).value):'【待核引用】')); }
+export function resolveText(text,s) {
+  const refs=references(s);
+  return String(text).replace(/\{\{([pfmrt]):([^{}]+)\}\}/g,(token,kind,key,offset,source)=>{
+    const value=refs[kind][key]??(kind==='f'&&s.facts.find(f=>f.id===key&&f.status==='candidate')?'【待核】'+textValue(s.facts.find(f=>f.id===key).value):'【待核引用】');
+    // Saved templates already supply 度; keep parameter values and manual prose intact.
+    if(kind==='p'&&key==='intensity'&&/^[ \t]*度/.test(source.slice(offset+token.length)))return String(value).replace(/^\s*([6-9ⅥⅦⅧⅨ])\s*度\s*$/,'$1');
+    return value;
+  });
+}
 export function dependencies(s) { return fingerprint({identity:s.identity,measuresVersion:s.measuresVersion,parameters:s.parameters,confirmed:s.parametersConfirmed,templateText:s.templateText,templateTables:s.templateTables,regularity:s.regularity,unitTable:s.unitTable,tableEdits:s.tableEdits,referenceNorms:s.referenceNorms,reportImages:s.reportImages,unitParameters:s.unitParameters,document:s.document,facts:s.facts,model:s.model,regulations:s.regulations,regulationDocument:s.regulationDocument,criteria:s.criteria}); }
 export function requestStamp(s,id) { const d=s.sections[id];return fingerprint({deps:dependencies(s),section:d?{text:d.text||'',hidden:!!d.hidden}:null}); }
 export function isCurrent(s,id,stamp) { return requestStamp(s,id)===stamp; }

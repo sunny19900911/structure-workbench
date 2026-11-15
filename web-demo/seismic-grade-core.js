@@ -22,7 +22,7 @@ export function tableGrades(kind,h,i,basis='gb',large=false){
 const stronger=(a,b)=>a==null?b:b==null?a:Math.min(a,b);
 const words=g=>g==null?'':levels[g];
 export function seismicGrade(input={}){
- const h=number(input.height),i=number(input.intensity),pga=number(String(input.pga||'').replace(/g$/i,'')),span=number(input.span);
+ const h=number(input.height),i=number(String(input.intensity??'').trim().replace(/^([6-9])\s*度$/,'$1')),pga=number(String(input.pga||'').replace(/g$/i,'')),span=number(input.span);
  const cat=/乙|重点/.test(input.category)?'B':/丙|标准/.test(input.category)?'C':/甲|特殊/.test(input.category)?'A':/丁|适度/.test(input.category)?'D':'';
  let kind=structureKind(input.structure),basis=input.basis||'auto';
  const notices=[],missing=[];if(h===null||h<=0)missing.push('房屋高度');if(!kind)missing.push('支持的现浇混凝土结构形式');if(![6,7,8,9].includes(i))missing.push('设防烈度');if(!cat)missing.push('设防类别');

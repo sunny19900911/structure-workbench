@@ -1,4 +1,5 @@
 import './expansion-workbench.js';
+import {intensityDisplay} from './parameter-display.js';
 import {pptExpansionData} from './design/parallel-tasks/06-ppt-report/cafeteria-core.js';
 import './integrated-modules.css';
 import {renderMaterialTables,materialCsvRows} from './steel-material-view.js';
@@ -66,7 +67,7 @@ function renderDecisions(){
   decisionPanel.innerHTML='<div class="im-decision-heading"><div><h2>重难点判断</h2><p>先查国家规则，再核对地方规定；正式结论须经专业负责人确认。</p></div><div class="im-decision-tools">'+unitPicker('im-decision-unit')+'<button data-go="1">统一措施</button><button id="im-condition-edit" '+(!I.busy&&L.canEditMeasures()?'':'disabled')+'>补充判断条件</button><button data-go="3">核查规范</button></div></div>'+
     '<details class="im-tianjin-example"><summary>查看天津重难点示例</summary><p>天津河东区学校案例，仅演示判断过程，不写入当前项目。</p><iframe title="天津重难点示例" loading="lazy" sandbox="allow-scripts" src="./design/key-decisions/key-decisions-integrated-prototype.html?embedded=1" style="width:100%;height:760px;border:1px solid #dce4e9;border-radius:8px"></iframe></details>'+
     '<div class="im-decision-groups">'+DECISION_GROUPS.map(([id,title,sub])=>'<button data-decision-group="'+id+'" class="'+(id===activeDecisionGroup?'active':'')+'"><b>'+title+'</b><span>'+sub+'</span></button>').join('')+'</div>'+
-    '<div class="im-decision-params"><div><small>项目所在地</small><b>'+esc(input.location||'待确认')+'</b></div><div><small>项目条件</small><b>'+esc(conditions)+'</b></div><div><small>设防参数</small><b>'+esc([input.intensity&&input.intensity+'度',input.pga].filter(Boolean).join(' · ')||'待确认')+'</b></div></div>'+
+    '<div class="im-decision-params"><div><small>项目所在地</small><b>'+esc(input.location||'待确认')+'</b></div><div><small>项目条件</small><b>'+esc(conditions)+'</b></div><div><small>设防参数</small><b>'+esc([intensityDisplay(input.intensity),input.pga].filter(Boolean).join(' · ')||'待确认')+'</b></div></div>'+
     '<section class="im-decision-result"><div class="im-decision-title"><div><h3>'+esc(group[1])+'</h3><p>'+esc(group[1]==='抗震判断'?'抗震设防烈度与抗震等级合并判断。':group[1]==='绿色与装配式'?'绿色建筑等级与装配式要求分别判断。':'国标提出性能目标，地方规定落实适用条件。')+'</p></div><div class="im-decision-subtabs">'+topicIds.map(id=>'<button data-decision-topic="'+id+'" class="'+(id===activeDecisionTopic?'active':'')+'">'+esc(DECISION_TOPICS.find(t=>t[0]===id)?.[2])+'</button>').join('')+'</div></div>'+
     '<div class="im-scroll"><table class="im-decision-table"><thead><tr><th>判断层级</th><th>依据及版本</th><th>判断结果</th><th>条文摘要／落实要求</th></tr></thead><tbody>'+ruleRows+'</tbody></table></div>'+
     (guide?.steps?'<div class="im-decision-logic">'+guide.steps.map((s,i)=>'<div><small>'+esc((i+1)+' · '+s.label)+'</small><b>'+esc(s.value)+'</b><span>'+esc(s.result)+'</span></div>').join('')+'</div>':'')+

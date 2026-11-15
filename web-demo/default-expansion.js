@@ -1,10 +1,11 @@
 import {referenceText} from './reference-report.js';
+import {intensityNumberText} from './parameter-display.js';
 import {TEMPLATE_SOURCE,TEMPLATE_TEXT} from './approved-template.js';
 // This is the user's reusable document baseline, not a historical project's results.
 export function defaultExpansion(s,id){
  const evidence=new Set([TEMPLATE_SOURCE]);
  if(s.referenceTemplate)return {text:referenceText(s,id),evidence_ids:[TEMPLATE_SOURCE,...(s.document?.sourceIds||[])],kind:'template',sectionId:id,templateVersion:2,manual:false,warnings:[]};
- const p=(key,label)=>s.parameters[key]?`{{p:${key}}}`:s.document?.parameters?.[key]|| (facts.some(f=>f.key===key)?fact(facts.find(f=>f.key===key)):`【${label}待补充】`);
+ const p=(key,label)=>s.parameters[key]?`{{p:${key}}}`:(key==='intensity'?intensityNumberText(s.document?.parameters?.[key]):s.document?.parameters?.[key])|| (facts.some(f=>f.key===key)?fact(facts.find(f=>f.key===key)):`【${label}待补充】`);
  const fact=f=>{evidence.add(f.source_id);return `{{f:${f.id}}}`;};
  const facts=s.facts.filter(f=>f.status!=='rejected');
  const key=(name,label)=>{const f=facts.find(f=>f.key===name||f.key==='bldg_'+name);return f?fact(f):`【${label}待补充】`;};
