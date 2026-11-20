@@ -1,6 +1,11 @@
-param([switch]$Manager)
+﻿param([switch]$Manager)
 $ErrorActionPreference = 'Stop'
 $installDir = [IO.Path]::GetFullPath($PSScriptRoot)
+$nativeLauncher = Join-Path $installDir '结构工作台.exe'
+if (!$Manager -and (Test-Path -LiteralPath $nativeLauncher)) {
+ Start-Process -FilePath $nativeLauncher -WorkingDirectory $installDir | Out-Null
+ exit 0
+}
 $nodePath = Join-Path $installDir 'runtime\node\node.exe'
 $entryPath = Join-Path $installDir 'app\deploy\portable\start.mjs'
 $dataFolder = 'StructureWorkbench'
@@ -26,7 +31,16 @@ try {
    if ($process.ExitCode -ne 0) { throw "启动失败，请查看：`n$stderr" }
    $ready = $true; break
   }
-  if ((Test-Path -LiteralPath $stdout) -and [IO.File]::ReadAllText($stdout).Contains('本地工作台已启动')) { $ready = $true; break }
+  # Legacy/manager fallback: the writer may still hold the file open.
+  $logText = ''
+  if (Test-Path -LiteralPath $stdout) {
+   try {
+    $file = [IO.File]::Open($stdout,[IO.FileMode]::Open,[IO.FileAccess]::Read,([IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete))
+    $reader = New-Object IO.StreamReader($file,[Text.Encoding]::UTF8)
+    try { $logText = $reader.ReadToEnd() } finally { $reader.Dispose() }
+   } catch [IO.IOException] { $logText = '' }
+  }
+  if ($logText.Contains('本地工作台已启动')) { $ready = $true; break }
   Start-Sleep -Milliseconds 300
  }
  if (!$ready) { throw "启动尚未就绪，请查看：`n$stdout`n$stderr" }

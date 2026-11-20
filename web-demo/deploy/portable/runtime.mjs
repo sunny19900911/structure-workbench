@@ -2,7 +2,7 @@ import {join,resolve} from 'node:path';
 import {homedir} from 'node:os';
 import {existsSync,readFileSync} from 'node:fs';
 
-export const RELEASE='2026.11.11-ui-out.1';
+export const RELEASE='2026.11.15-default-a.1';
 export function portablePaths(appRoot,ambient=process.env){
  const home=ambient.LOCALAPPDATA||join(homedir(),'AppData','Local');
  let dataFolder='StructureWorkbench';

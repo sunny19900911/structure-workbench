@@ -52,15 +52,16 @@ with zipfile.ZipFile(ROOT/'outputs/baota/portable-app-base.zip') as archive:
         dest=app/relative;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(archive.read(item))
 for folder in ['server','deploy/portable','deploy/blackbox']:
     for original in (ROOT/folder).rglob('*'):
-        if not original.is_file() or original.suffix not in ('.mjs','.js','.py','.ps1','.md','.html','.css') or '.test.' in original.name:continue
+        if not original.is_file() or original.suffix not in ('.mjs','.js','.py','.ps1','.md','.html','.css','.cs','.manifest') or '.test.' in original.name:continue
         dest=app/original.relative_to(ROOT);dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(original,dest)
 for name in ['portable-projects-ui.js']:
     shutil.copy2(ROOT/name,app/'dist'/name)
+subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',str(ROOT/'deploy/portable/build-launcher.ps1'),'-OutputDirectory',str(stage)],check=True)
 for path in app.rglob('*.ps1'):
     text=path.read_text(encoding='utf-8-sig');path.write_text(text,encoding='utf-8-sig')
 for name in ['launch.ps1','mcp.cmd','启动工作台.cmd','启动小黑箱.cmd','启动工作台.vbs','生成MCP配置.cmd','使用说明.txt']:
     original=ROOT/'deploy/portable'/name
-    data=original.read_text(encoding='utf-8')
+    data=original.read_text(encoding='utf-8-sig')
     # Windows PowerShell 5 and WSH need an explicit encoding for Chinese text.
     encoding='utf-16' if name.endswith('.vbs') else 'utf-8-sig' if name.endswith('.ps1') else 'utf-8'
     (stage/name).write_text(data,encoding=encoding,newline='\r\n')

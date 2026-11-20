@@ -13,6 +13,7 @@ import {createManager} from '../blackbox/manager.mjs';
 import {sourceIdentity} from '../blackbox/identity.mjs';
 import {openManager} from '../blackbox/open-window.mjs';
 import {listenLocal} from './listen-local.mjs';
+import {initializeBundledTemplate} from './seed-template.mjs';
 
 const appRoot=fileURLToPath(new URL('../../',import.meta.url));
 process.chdir(appRoot);
@@ -35,6 +36,7 @@ for(const h of older)if(h?.app==='structure-workbench-portable'&&h.dataRoot&&
  (await serviceAddress(h.dataRoot)).dataRoot===lease.info.dataRoot)throw Error('此数据目录已有未采用单服务锁的工作台运行，请保存并关闭该服务后重试。');
 validateRuntime(env);
 for(const dir of [paths.data,paths.projects,paths.uploads,paths.cache,env.CALCBOOK_SOURCE_DIR])await mkdir(dir,{recursive:true});
+await initializeBundledTemplate(paths,env);
 Object.assign(process.env,env);
 // Only this user's explicit local settings are used. Never load .env or E:/00-key.
 let preferences={};

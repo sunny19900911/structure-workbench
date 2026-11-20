@@ -1,0 +1,94 @@
+{
+  "name": "第一版",
+  "tag": "v1.0.0",
+  "distributionDate": "2026-11-20",
+  "packageBuildDate": "2026-11-16",
+  "baseSourceCommit": "9894424aec650844815ff85236f46f51665d8bac",
+  "originalFilename": "结构工作台完整包-桌面快捷方式-默认A-20261116-R3-正式.zip",
+  "archiveFilename": "structure-workbench-first-version-windows-x64.zip",
+  "bytes": 365768930,
+  "sha256": "4559fb8cd6976dd42dceed5f965b5e414a841a9fe8163c72a7bdc9c991d6a0f2",
+  "packageVersion": {
+    "product": "结构工作台",
+    "version": "2026.11.15-default-a.1",
+    "baseCommit": "9894424aec650844815ff85236f46f51665d8bac",
+    "sourceOverlays": {
+      "deploy/portable/runtime.mjs": {
+        "sha256": "99435abf5c474c4e69b63bf11bbbaaa0f4019cabae42ca2f63c7d81eb0d8bc55"
+      },
+      "deploy/portable/start.mjs": {
+        "sha256": "dda10d8bfb0d47ce11e614723a84a3a91c8d6d9103fdfb5bbf8e2a827e84d503"
+      },
+      "deploy/portable/seed-template.mjs": {
+        "sha256": "c1eafd0b148597d5006a43f3591b1467b94d0bc50d19132c302c1f3f977c7014"
+      }
+    },
+    "builtAt": "2026-11-16T11:38:48.143446+00:00",
+    "runtimeSource": "结构工作台完整版-含小黑箱与OCR-20261110-build-202219",
+    "node": "v24.15.0",
+    "python": "3.12",
+    "ocrBundled": true,
+    "dataLocation": "%LOCALAPPDATA%/StructureWorkbenchColleague",
+    "bundledProjects": [
+      "默认A模板"
+    ],
+    "validation": "启动器夹具及相关14项测试通过；原生窗口渲染检查、归档逐文件校验；未做新包真实工程验收及另一台Windows 10验证。",
+    "launcherVersion": "2026.11.16.1",
+    "packageRevision": "20261116-R3",
+    "parentArchiveSha256": "c963982db51ddfdda5e80a0933cdcc554a7029a0708a1fd966a64f575ab5e264",
+    "launcherOverlays": {
+      "结构工作台.exe": "2ceb51490b845c71df2d4080ea4c8396c66283d2f1381fbebb74b514989422b8",
+      "app/deploy/portable/Launcher.cs": "62be6e28335f2ac1503dbdca719ebc43b49df0b59c60676c080d731a58a81f2f",
+      "app/deploy/portable/launcher.manifest": "b61192299352253b618eea0b67128d49a2e33f9c9b7fb34e67e806c685949465",
+      "app/deploy/portable/launcher-host.mjs": "11486b1292f84e7861b791a5d80c9d2752a33da5359752d03b4c0ddd13babb9d",
+      "app/deploy/portable/build-launcher.ps1": "457e4f29fb0924e3b16823a24fbe7ecba2ebbb7e7b30c9e038b1d49789fa66a5",
+      "app/deploy/portable/launch.ps1": "36b12370f6f987584dc57bec1b22344d1c0e53b88fe2341fe7215026b5d196de",
+      "app/deploy/portable/package.py": "c8206a780b8c3ff9bd20711c0d7ded1cbc373aaf1a73aa5e95864f54cc33afda",
+      "launch.ps1": "36b12370f6f987584dc57bec1b22344d1c0e53b88fe2341fe7215026b5d196de",
+      "启动工作台.cmd": "b2a6f93e816c5c93458b21ada1ba377f262dc5e660489a2202a4d7a3136447ab",
+      "启动工作台.vbs": "1b431545d0a2b41fc8fc98e3949d944759c5fae3a401b1ca919236ef3d6e3b41",
+      "mcp.cmd": "b2a6f93e816c5c93458b21ada1ba377f262dc5e660489a2202a4d7a3136447ab"
+    },
+    "desktopShortcut": "首次成功启动后询问，一次选择；快捷方式指向当前EXE",
+    "launcherSha256": "37a603afc273fec383be0716da22cc0f3b42e12c991bb7a06a3bbb3712c19f7b"
+  },
+  "sourceOverrides": [
+    {
+      "path": "measure-template.js",
+      "sha256": "7abcff85daab48176dec00154ddb60a1e4a4a3a9a6388d18e54afc0240f05710"
+    },
+    {
+      "path": "package.json",
+      "sha256": "5de8ff07addc9ff53f2ca7b4a09cfd4cb228f0ab29b8affa2bd531306d6a7c10"
+    },
+    {
+      "path": "project-legacy-adapter.js",
+      "sha256": "b49242be3c933f66915a5f826319a660c92dbba4632e7c64fe1ed1932c85416d"
+    },
+    {
+      "path": "workbuddy-integrated-studio.html",
+      "sha256": "ffe4971abc83e168a7bae2f24107fa0f3d5f5f0a92d4fe450ef612a9b788d380"
+    },
+    {
+      "path": "server/legacy-doc-word.ps1",
+      "sha256": "70c0ed72dc1b05c1278a2127fe9bd7fa36765a9184c2efef69fc502269274b7f"
+    },
+    {
+      "path": "server/mcp-server.mjs",
+      "sha256": "48912441c5cccb6f2590f5efcb3ff034fa9fee013a3c3552782f5431addcb331"
+    },
+    {
+      "path": "server/office-capabilities.ps1",
+      "sha256": "d288fd90440f268946b03334a6142c03506e72f0c9577ea810caf0e2d3838a9e"
+    },
+    {
+      "path": "server/word-render-native.ps1",
+      "sha256": "2904052815c0ad23912514f395f17ad2bcf9ec3c7e3d51e82e1259e57d5c69ad"
+    },
+    {
+      "path": "design/method-lab/main.jsx",
+      "sha256": "402b20bbc67aeccb233dd541f3d486df9d7d5119fcfae65b9272027d46cafdfe"
+    }
+  ],
+  "verification": "Matched previously distributed archive SHA256; no repackaging or new runtime acceptance performed."
+}
